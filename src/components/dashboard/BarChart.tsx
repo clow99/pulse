@@ -28,7 +28,7 @@ const defaultFormat = (n: number) => n.toLocaleString();
 export function BarChart({
   data,
   height = 280,
-  color = '#6366f1',
+  color = '#0ea5e9',
 }: BarChartProps) {
   return (
     <FadeIn>

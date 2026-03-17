@@ -76,7 +76,7 @@ export function TrafficParticlesScene({ particleCount = 200 }: TrafficParticlesS
     <Points positions={positions} stride={3}>
       <pointsMaterial
         size={0.03}
-        color="#6366f1"
+        color="#0ea5e9"
         transparent
         opacity={0.4}
         sizeAttenuation

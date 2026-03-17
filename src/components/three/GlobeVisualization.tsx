@@ -69,7 +69,7 @@ function slerpPoints(
   return points;
 }
 
-const startColor = new THREE.Color('#6366f1');
+const startColor = new THREE.Color('#0ea5e9');
 const endColor = new THREE.Color('#22c55e');
 
 function createArcLineData(radius: number, count: number) {
@@ -118,7 +118,7 @@ export function Globe() {
       <mesh>
         <icosahedronGeometry args={[RADIUS, 2]} />
         <meshBasicMaterial
-          color="#6366f1"
+          color="#0ea5e9"
           wireframe
           transparent
           opacity={0.15}

@@ -21,7 +21,7 @@ const features = [
         <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
       </svg>
     ),
-    color: '#6366f1',
+    color: '#0ea5e9',
   },
   {
     title: 'Real-Time Dashboard',
@@ -82,7 +82,7 @@ const features = [
         <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
       </svg>
     ),
-    color: '#8b5cf6',
+    color: '#1d4ed8',
   },
 ];
 
@@ -144,7 +144,7 @@ export default function LandingPage() {
               width: 32,
               height: 32,
               borderRadius: 10,
-              background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
+              background: 'linear-gradient(135deg, #0ea5e9, #1d4ed8)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -259,8 +259,8 @@ export default function LandingPage() {
                   <svg className="landing-hero-chart-svg" viewBox="0 0 800 200" preserveAspectRatio="none">
                     <defs>
                       <linearGradient id="heroChartFill1" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="#6366f1" stopOpacity="0.3" />
-                        <stop offset="100%" stopColor="#6366f1" stopOpacity="0" />
+                        <stop offset="0%" stopColor="#0ea5e9" stopOpacity="0.3" />
+                        <stop offset="100%" stopColor="#0ea5e9" stopOpacity="0" />
                       </linearGradient>
                       <linearGradient id="heroChartFill2" x1="0" y1="0" x2="0" y2="1">
                         <stop offset="0%" stopColor="#22c55e" stopOpacity="0.2" />
@@ -274,7 +274,7 @@ export default function LandingPage() {
                     <path
                       d="M0,160 C40,155 80,140 120,130 C160,120 200,100 240,95 C280,90 320,105 360,90 C400,75 440,55 480,50 C520,45 560,60 600,45 C640,30 680,25 720,30 C760,35 800,20 800,20"
                       fill="none"
-                      stroke="#6366f1"
+                      stroke="#0ea5e9"
                       strokeWidth="2"
                     />
                     <path
@@ -673,7 +673,7 @@ export default function LandingPage() {
               <span style={{ color: 'var(--pulse-text-primary)' }}>Ready to own </span>
               <span
                 style={{
-                  background: 'linear-gradient(135deg, #6366f1, #22c55e)',
+                  background: 'linear-gradient(135deg, #0ea5e9, #22d3ee)',
                   WebkitBackgroundClip: 'text',
                   WebkitTextFillColor: 'transparent',
                   backgroundClip: 'text',
@@ -724,7 +724,7 @@ export default function LandingPage() {
                   width: 28,
                   height: 28,
                   borderRadius: 8,
-                  background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
+                  background: 'linear-gradient(135deg, #0ea5e9, #1d4ed8)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',

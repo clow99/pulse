@@ -24,7 +24,7 @@ const STEPS = [
 ];
 
 const PARTICLE_COUNT = 40;
-const PARTICLE_COLORS = ['#6366f1', '#8b5cf6', '#06b6d4', '#10b981', '#f59e0b', '#ef4444'];
+const PARTICLE_COLORS = ['#0ea5e9', '#1d4ed8', '#22d3ee', '#10b981', '#f59e0b', '#ef4444'];
 
 function seededRandom(seed: number) {
   const x = Math.sin(seed * 9301 + 49297) * 233280;

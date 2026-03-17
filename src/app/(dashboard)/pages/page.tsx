@@ -124,28 +124,28 @@ export default function PagesPage() {
           <Title level="h1" size="lg">
             Pages
           </Title>
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '1rem',
-              flexWrap: 'wrap',
-            }}
-          >
-            <DateRangePicker from={from} to={to} onChange={handleDateChange} />
-            <Input
-              type="text"
-              placeholder="Filter by pathname"
-              value={searchInput}
-              onChange={(e) => setSearchInput(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-              size="sm"
-              style={{ width: 220 }}
-            />
-            <Button variant="secondary" size="sm" onClick={handleSearch}>
-              Search
-            </Button>
-          </div>
+          <DateRangePicker from={from} to={to} onChange={handleDateChange} />
+        </div>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.5rem',
+            marginBottom: '1.5rem',
+          }}
+        >
+          <Input
+            type="text"
+            placeholder="Filter by pathname"
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+            size="sm"
+            style={{ width: 280 }}
+          />
+          <Button variant="secondary" size="sm" onClick={handleSearch}>
+            Search
+          </Button>
         </div>
 
         <div className="pulse-section">

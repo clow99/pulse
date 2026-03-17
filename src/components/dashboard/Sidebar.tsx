@@ -103,7 +103,7 @@ export function Sidebar({ orgName, siteName, orgId, sites }: SidebarProps) {
             src="/logo.png"
             alt="Pulse"
             style={{
-              height: 40,
+              height: 56,
               objectFit: 'contain',
             }}
           />
@@ -193,7 +193,7 @@ export function Sidebar({ orgName, siteName, orgId, sites }: SidebarProps) {
                             width: '100%',
                             padding: '0.4375rem 0.625rem',
                             fontSize: '0.8125rem',
-                            backgroundColor: isSelected ? 'rgba(99, 102, 241, 0.12)' : 'transparent',
+                            backgroundColor: isSelected ? 'rgba(14, 165, 233, 0.12)' : 'transparent',
                             color: isSelected ? 'var(--pulse-accent)' : 'var(--pulse-text-primary)',
                             border: 'none',
                             borderRadius: '5px',
@@ -206,7 +206,7 @@ export function Sidebar({ orgName, siteName, orgId, sites }: SidebarProps) {
                             if (!isSelected) e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.05)';
                           }}
                           onMouseLeave={(e) => {
-                            e.currentTarget.style.backgroundColor = isSelected ? 'rgba(99, 102, 241, 0.12)' : 'transparent';
+                            e.currentTarget.style.backgroundColor = isSelected ? 'rgba(14, 165, 233, 0.12)' : 'transparent';
                           }}
                         >
                           {site.name || site.domain}
@@ -257,7 +257,7 @@ export function Sidebar({ orgName, siteName, orgId, sites }: SidebarProps) {
               return (
                 <motion.div
                   key={item.href}
-                  whileHover={{ backgroundColor: 'rgba(99, 102, 241, 0.08)' }}
+                  whileHover={{ backgroundColor: 'rgba(14, 165, 233, 0.08)' }}
                   style={{ borderRadius: '8px' }}
                 >
                   <Link
@@ -285,7 +285,7 @@ export function Sidebar({ orgName, siteName, orgId, sites }: SidebarProps) {
                           top: 0,
                           bottom: 0,
                           width: '100%',
-                          backgroundColor: 'rgba(99, 102, 241, 0.15)',
+                          backgroundColor: 'rgba(14, 165, 233, 0.15)',
                           borderRadius: '8px',
                           borderLeft: '3px solid var(--pulse-accent)',
                           zIndex: -1,

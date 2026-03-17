@@ -41,7 +41,7 @@ export function ActiveSites({ sites, siteId }: ActiveSitesProps) {
               ? Math.min(100, Math.round((site.pageviews / site.pageviewTarget) * 100))
               : 0;
             const colors = [
-              { bg: 'rgba(99, 102, 241, 0.1)', border: 'rgba(99, 102, 241, 0.2)', bar: 'var(--pulse-accent)' },
+              { bg: 'rgba(14, 165, 233, 0.1)', border: 'rgba(14, 165, 233, 0.2)', bar: 'var(--pulse-accent)' },
               { bg: 'rgba(34, 197, 94, 0.1)', border: 'rgba(34, 197, 94, 0.2)', bar: 'var(--pulse-success)' },
             ];
             const color = colors[i % colors.length];
