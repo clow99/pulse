@@ -1,0 +1,127 @@
+name: Build and Deploy Next.js App
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build-web:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: pulse_test
+        options: >-
+          --health-cmd="pg_isready -U postgres -d pulse_test"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+    env:
+      CI: "true"
+      NPM_CONFIG_AUDIT: "false"
+      NPM_CONFIG_FUND: "false"
+      NPM_CONFIG_MAXSOCKETS: "10"
+      NPM_CACHE_DIR: ~/.npm
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/pulse_test?schema=public
+      NEXTAUTH_SECRET: test-secret
+      NEXTAUTH_URL: http://localhost:3000
+      NEXT_PUBLIC_APP_URL: http://localhost:3000
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js (with caching)
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20.19.0"
+          cache: "npm"
+          cache-dependency-path: |
+            package-lock.json
+            **/package-lock.json
+
+      - name: Restore npm cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.NPM_CACHE_DIR }}
+          key: npm-${{ runner.os }}-node20-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            npm-${{ runner.os }}-node20-
+
+      - name: Install dependencies
+        run: |
+          npm ci --no-audit --no-fund --prefer-offline --cache "${NPM_CACHE_DIR}"
+
+      - name: Guard Prisma schema changes include migrations
+        run: |
+          set -euo pipefail
+
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            BASE_SHA="${{ github.event.pull_request.base.sha }}"
+            HEAD_SHA="${{ github.event.pull_request.head.sha }}"
+          else
+            BASE_SHA="${{ github.event.before }}"
+            HEAD_SHA="${{ github.sha }}"
+          fi
+
+          if [ -z "${BASE_SHA}" ] || [ "${BASE_SHA}" = "0000000000000000000000000000000000000000" ]; then
+            echo "::notice::[Prisma Guard] No comparable base SHA; skipping migration guard."
+            exit 0
+          fi
+
+          CHANGED_FILES="$(git diff --name-only "${BASE_SHA}" "${HEAD_SHA}")"
+
+          schema_changed=false
+          migration_changed=false
+
+          while IFS= read -r changed_file; do
+            case "${changed_file}" in
+              prisma/schema.prisma)
+                schema_changed=true
+                ;;
+              prisma/migrations/*/migration.sql)
+                migration_changed=true
+                ;;
+            esac
+          done <<< "${CHANGED_FILES}"
+
+          if [ "${schema_changed}" = true ] && [ "${migration_changed}" = false ]; then
+            echo "::error::[Prisma Guard] prisma/schema.prisma changed without a migration SQL file."
+            echo "::error::[Prisma Guard] Run 'npx prisma migrate dev --name <change>' and commit the generated migration."
+            exit 1
+          fi
+
+          echo "::notice::[Prisma Guard] Migration guard passed."
+
+      - name: Apply database migrations
+        run: npx prisma migrate deploy
+
+      - name: Run lint
+        run: npm run lint
+
+      - name: Run Next.js build
+        run: npm run build
+
+      - name: Build web Docker image
+        run: docker build -f Dockerfile -t pulse:latest .
+
+      - name: Verify web image exists
+        run: docker image inspect pulse:latest > /dev/null
+
+      - name: Tag web image (live)
+        if: success() && github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: docker tag pulse:latest localhost:5000/pulse:live
+
+      - name: Push web image (live)
+        if: success() && github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: docker push localhost:5000/pulse:live
