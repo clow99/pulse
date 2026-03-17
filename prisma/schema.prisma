@@ -1,0 +1,102 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum OrgRole {
+  owner
+  admin
+  viewer
+}
+
+model User {
+  id           String          @id @default(uuid())
+  email        String          @unique
+  name         String
+  passwordHash String
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+  memberships  OrgMembership[]
+}
+
+model Organization {
+  id        String          @id @default(uuid())
+  name      String
+  slug      String          @unique
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+  members   OrgMembership[]
+  sites     Site[]
+}
+
+model OrgMembership {
+  id     String       @id @default(uuid())
+  role   OrgRole      @default(viewer)
+  user   User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+  org    Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  orgId  String
+
+  @@unique([userId, orgId])
+  @@index([orgId])
+}
+
+model Site {
+  id        String       @id @default(uuid())
+  name      String
+  domain    String
+  token     String       @unique
+  active    Boolean      @default(true)
+  org       Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  orgId     String
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+  pageviews Pageview[]
+  events    Event[]
+
+  @@index([orgId])
+}
+
+model Pageview {
+  id          String   @id @default(uuid())
+  site        Site     @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  siteId      String
+  pathname    String
+  referrer    String   @default("")
+  utmSource   String   @default("")
+  utmMedium   String   @default("")
+  utmCampaign String   @default("")
+  browser     String   @default("")
+  os          String   @default("")
+  device      String   @default("")
+  country     String   @default("")
+  language    String   @default("")
+  timestamp   DateTime @default(now())
+
+  @@index([siteId, timestamp])
+  @@index([siteId, pathname])
+  @@index([siteId, referrer])
+}
+
+model Event {
+  id          String   @id @default(uuid())
+  site        Site     @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  siteId      String
+  name        String
+  properties  Json     @default("{}")
+  pathname    String   @default("")
+  referrer    String   @default("")
+  browser     String   @default("")
+  os          String   @default("")
+  device      String   @default("")
+  country     String   @default("")
+  language    String   @default("")
+  timestamp   DateTime @default(now())
+
+  @@index([siteId, timestamp])
+  @@index([siteId, name])
+}

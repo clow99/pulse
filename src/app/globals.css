@@ -1,0 +1,208 @@
+:root {
+  --pulse-bg-primary: #0a0a0f;
+  --pulse-bg-secondary: #12121a;
+  --pulse-bg-card: #16161f;
+  --pulse-border: #23232f;
+  --pulse-text-primary: #f0f0f5;
+  --pulse-text-secondary: #8888a0;
+  --pulse-accent: #6366f1;
+  --pulse-accent-hover: #4f46e5;
+  --pulse-success: #22c55e;
+  --pulse-warning: #f59e0b;
+  --pulse-danger: #ef4444;
+}
+
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+html,
+body {
+  max-width: 100vw;
+  overflow-x: hidden;
+  font-family:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue',
+    Arial, sans-serif;
+  background: var(--pulse-bg-primary);
+  color: var(--pulse-text-primary);
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--pulse-border);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--pulse-text-secondary);
+}
+
+/* Dashboard-specific layout utilities */
+.pulse-page {
+  padding: 2rem;
+  max-width: 1400px;
+  width: 100%;
+}
+
+.pulse-page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.pulse-grid {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.pulse-grid-2 {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.pulse-grid-4 {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+@media (max-width: 1024px) {
+  .pulse-grid-4 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .pulse-page {
+    padding: 1rem;
+  }
+
+  .pulse-grid-2,
+  .pulse-grid-4 {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Card overrides for dark theme */
+.pulse-stat-card {
+  background: var(--pulse-bg-card);
+  border: 1px solid var(--pulse-border);
+  border-radius: 12px;
+  padding: 1.25rem;
+}
+
+.pulse-stat-label {
+  font-size: 0.8125rem;
+  color: var(--pulse-text-secondary);
+  margin-bottom: 0.25rem;
+}
+
+.pulse-stat-value {
+  font-size: 1.75rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.pulse-stat-change {
+  font-size: 0.75rem;
+  margin-top: 0.25rem;
+}
+
+.pulse-stat-change.positive {
+  color: var(--pulse-success);
+}
+
+.pulse-stat-change.negative {
+  color: var(--pulse-danger);
+}
+
+/* Chart container */
+.pulse-chart-container {
+  background: var(--pulse-bg-card);
+  border: 1px solid var(--pulse-border);
+  border-radius: 12px;
+  padding: 1.5rem;
+}
+
+/* Section spacing */
+.pulse-section {
+  margin-bottom: 2rem;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Report table row stagger */
+.pulse-report-table tbody tr {
+  animation: reportRowFadeIn 0.35s ease-out backwards;
+}
+
+.pulse-report-table tbody tr:nth-child(1) { animation-delay: 0.02s; }
+.pulse-report-table tbody tr:nth-child(2) { animation-delay: 0.04s; }
+.pulse-report-table tbody tr:nth-child(3) { animation-delay: 0.06s; }
+.pulse-report-table tbody tr:nth-child(4) { animation-delay: 0.08s; }
+.pulse-report-table tbody tr:nth-child(5) { animation-delay: 0.1s; }
+.pulse-report-table tbody tr:nth-child(6) { animation-delay: 0.12s; }
+.pulse-report-table tbody tr:nth-child(7) { animation-delay: 0.14s; }
+.pulse-report-table tbody tr:nth-child(8) { animation-delay: 0.16s; }
+.pulse-report-table tbody tr:nth-child(9) { animation-delay: 0.18s; }
+.pulse-report-table tbody tr:nth-child(10) { animation-delay: 0.2s; }
+
+@keyframes reportRowFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Dashboard layout */
+.dashboard-main {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 100vh;
+  background-color: var(--pulse-bg-primary);
+  margin-left: 260px;
+}
+
+@media (max-width: 768px) {
+  .dashboard-main {
+    margin-left: 0;
+    padding-top: 3.5rem;
+  }
+}
+
+/* Code snippet styling */
+.pulse-code-block {
+  background: #0d0d14;
+  border: 1px solid var(--pulse-border);
+  border-radius: 8px;
+  padding: 1rem;
+  font-family: 'SF Mono', 'Fira Code', 'Fira Mono', Menlo, monospace;
+  font-size: 0.8125rem;
+  line-height: 1.6;
+  overflow-x: auto;
+  color: #e0e0f0;
+}
