@@ -11,8 +11,9 @@ import { AreaChart } from '@/components/dashboard/AreaChart';
 import { DateRangePicker } from '@/components/dashboard/DateRangePicker';
 import { TasksList } from '@/components/dashboard/TasksList';
 import { SitesTable } from '@/components/dashboard/SitesTable';
+import { UptimeSummaryCard } from '@/components/dashboard/UptimeSummaryCard';
 import { subDays, startOfDay, endOfDay } from 'date-fns';
-import type { StatsOverview, TimeseriesPoint, TopPage, TopReferrer } from '@/types';
+import type { StatsOverview, TimeseriesPoint, TopPage, TopReferrer, UptimeSummary } from '@/types';
 
 interface OverviewData {
   stats: StatsOverview;
@@ -47,6 +48,8 @@ export default function OverviewPage() {
   const [events, setEvents] = useState<EventSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [userName, setUserName] = useState('');
+  const [uptimeSummary, setUptimeSummary] = useState<UptimeSummary | null>(null);
+  const [uptimeLoading, setUptimeLoading] = useState(true);
 
   const fetchData = useCallback(async () => {
     if (!siteId) return;
@@ -108,6 +111,16 @@ export default function OverviewPage() {
     fetchSites();
     fetchUser();
   }, []);
+
+  useEffect(() => {
+    if (!siteId) return;
+    setUptimeLoading(true);
+    fetch(`/api/reports/uptime/summary?siteId=${siteId}`)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => { if (data) setUptimeSummary(data); })
+      .catch(() => {})
+      .finally(() => setUptimeLoading(false));
+  }, [siteId]);
 
   const handleDateChange = (newFrom: string, newTo: string) => {
     setFrom(newFrom);
@@ -185,6 +198,10 @@ export default function OverviewPage() {
             <StatsCards stats={stats} />
           </div>
         )}
+
+        <div className="pulse-section">
+          <UptimeSummaryCard data={uptimeSummary} siteId={siteId} loading={uptimeLoading} />
+        </div>
 
         <div className="pulse-overview-grid">
           <div className="pulse-overview-chart">

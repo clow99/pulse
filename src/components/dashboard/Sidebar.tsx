@@ -41,6 +41,12 @@ const NAV_SECTIONS: NavSection[] = [
     ],
   },
   {
+    label: 'MONITORING',
+    items: [
+      { href: '/uptime', label: 'Uptime', icon: '\u25CE' },
+    ],
+  },
+  {
     label: 'MANAGE',
     items: [
       { href: '/settings', label: 'Settings', icon: '\u2699' },

@@ -76,3 +76,26 @@ export interface SiteWithStats {
   createdAt: string;
   pageviewCount: number;
 }
+
+export interface UptimeCheckResult {
+  id: string;
+  statusCode: number;
+  responseTime: number;
+  isUp: boolean;
+  error: string | null;
+  checkedAt: string;
+}
+
+export interface UptimeSummary {
+  uptimePercentage: number;
+  avgResponseTime: number;
+  totalChecks: number;
+  currentStatus: 'up' | 'down' | 'unknown';
+  lastCheck: UptimeCheckResult | null;
+}
+
+export interface UptimeTimeseriesPoint {
+  date: string;
+  uptimePercentage: number;
+  avgResponseTime: number;
+}
