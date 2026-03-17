@@ -17,10 +17,31 @@ model User {
   id           String          @id @default(uuid())
   email        String          @unique
   name         String
-  passwordHash String
+  passwordHash String?
+  image        String?
   createdAt    DateTime        @default(now())
   updatedAt    DateTime        @updatedAt
   memberships  OrgMembership[]
+  accounts     Account[]
+}
+
+model Account {
+  id                String  @id @default(uuid())
+  userId            String
+  provider          String
+  providerAccountId String
+  type              String
+  access_token      String?
+  refresh_token     String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
 }
 
 model Organization {

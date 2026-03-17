@@ -3,6 +3,62 @@ import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { createSiteSchema } from '@/lib/validation';
 import { generateSiteToken } from '@/lib/tokens';
+import type { SessionUser } from '@/types';
+
+export async function GET() {
+  try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const user = session.user as SessionUser;
+    const memberships = await prisma.orgMembership.findMany({
+      where: { userId: user.id },
+      select: { orgId: true },
+    });
+
+    if (memberships.length === 0) {
+      return NextResponse.json([]);
+    }
+
+    const orgIds = memberships.map((m) => m.orgId);
+    const sites = await prisma.site.findMany({
+      where: { orgId: { in: orgIds } },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    const now = new Date();
+    const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+
+    const sitesWithStats = await Promise.all(
+      sites.map(async (site) => {
+        const pageviewCount = await prisma.pageview.count({
+          where: {
+            siteId: site.id,
+            timestamp: { gte: thirtyDaysAgo, lte: now },
+          },
+        });
+        return {
+          id: site.id,
+          name: site.name,
+          domain: site.domain,
+          token: site.token,
+          active: site.active,
+          createdAt: site.createdAt.toISOString(),
+          pageviewCount,
+        };
+      })
+    );
+
+    return NextResponse.json(sitesWithStats);
+  } catch {
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
+  }
+}
 
 export async function POST(request: Request) {
   try {

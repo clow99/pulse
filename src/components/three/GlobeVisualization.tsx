@@ -105,7 +105,7 @@ export function Globe() {
     }
     const offset = -state.clock.elapsedTime * 0.3;
     arcRefs.current.forEach((line) => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const mat = (line as any)?.material;
       if (mat) {
         mat.dashOffset = offset;

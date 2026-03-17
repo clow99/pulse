@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation';
 import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { Sidebar } from '@/components/dashboard/Sidebar';
+import { AIChatPanel } from '@/components/dashboard/AIChatPanel';
 import type { SessionUser } from '@/types';
 
 export default async function DashboardLayout({
@@ -35,12 +36,7 @@ export default async function DashboardLayout({
   const defaultSite = sites[0];
 
   return (
-    <div
-      style={{
-        display: 'flex',
-        minHeight: '100vh',
-      }}
-    >
+    <div className="pulse-dashboard-layout">
       <Sidebar
         orgName={org.name}
         siteName={defaultSite?.name ?? defaultSite?.domain ?? ''}
@@ -50,6 +46,7 @@ export default async function DashboardLayout({
       <main className="dashboard-main">
         {children}
       </main>
+      <AIChatPanel siteId={defaultSite?.id ?? ''} />
     </div>
   );
 }

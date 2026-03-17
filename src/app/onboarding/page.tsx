@@ -24,40 +24,55 @@ const STEPS = [
 ];
 
 const PARTICLE_COUNT = 40;
+const PARTICLE_COLORS = ['#6366f1', '#8b5cf6', '#06b6d4', '#10b981', '#f59e0b', '#ef4444'];
+
+function seededRandom(seed: number) {
+  const x = Math.sin(seed * 9301 + 49297) * 233280;
+  return x - Math.floor(x);
+}
+
+const PARTICLE_DATA = Array.from({ length: PARTICLE_COUNT }, (_, i) => {
+  const r1 = seededRandom(i);
+  const r2 = seededRandom(i + 100);
+  const r3 = seededRandom(i + 200);
+  const r4 = seededRandom(i + 300);
+  const r5 = seededRandom(i + 400);
+  const r6 = seededRandom(i + 500);
+  return {
+    angle: (Math.PI * 2 * i) / PARTICLE_COUNT + (r1 - 0.5) * 0.5,
+    distance: 80 + r2 * 120,
+    size: 4 + r3 * 6,
+    color: PARTICLE_COLORS[Math.floor(r4 * PARTICLE_COLORS.length)],
+    duration: 0.8 + r5 * 0.4,
+    delay: r6 * 0.15,
+  };
+});
 
 function CelebrationBurst() {
-  const particles = Array.from({ length: PARTICLE_COUNT }, (_, i) => {
-    const angle = (Math.PI * 2 * i) / PARTICLE_COUNT + (Math.random() - 0.5) * 0.5;
-    const distance = 80 + Math.random() * 120;
-    const size = 4 + Math.random() * 6;
-    const colors = ['#6366f1', '#8b5cf6', '#06b6d4', '#10b981', '#f59e0b', '#ef4444'];
-    const color = colors[Math.floor(Math.random() * colors.length)];
-
-    return (
-      <motion.div
-        key={i}
-        initial={{ x: 0, y: 0, scale: 1, opacity: 1 }}
-        animate={{
-          x: Math.cos(angle) * distance,
-          y: Math.sin(angle) * distance,
-          scale: 0,
-          opacity: 0,
-        }}
-        transition={{
-          duration: 0.8 + Math.random() * 0.4,
-          ease: 'easeOut',
-          delay: Math.random() * 0.15,
-        }}
-        style={{
-          position: 'absolute',
-          width: size,
-          height: size,
-          borderRadius: '50%',
-          backgroundColor: color,
-        }}
-      />
-    );
-  });
+  const particles = PARTICLE_DATA.map((p, i) => (
+    <motion.div
+      key={i}
+      initial={{ x: 0, y: 0, scale: 1, opacity: 1 }}
+      animate={{
+        x: Math.cos(p.angle) * p.distance,
+        y: Math.sin(p.angle) * p.distance,
+        scale: 0,
+        opacity: 0,
+      }}
+      transition={{
+        duration: p.duration,
+        ease: 'easeOut',
+        delay: p.delay,
+      }}
+      style={{
+        position: 'absolute',
+        width: p.size,
+        height: p.size,
+        borderRadius: '50%',
+        backgroundColor: p.color,
+      }}
+    />
+  ));
 
   return (
     <div style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>

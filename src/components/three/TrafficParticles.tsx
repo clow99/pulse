@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useMemo } from 'react';
+import { useRef, useMemo, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import { useFrame } from '@react-three/fiber';
 import { Points } from '@react-three/drei';
@@ -10,33 +10,45 @@ interface TrafficParticlesSceneProps {
   particleCount?: number;
 }
 
+function seededRandom(seed: number) {
+  const x = Math.sin(seed * 9301 + 49297) * 233280;
+  return x - Math.floor(x);
+}
+
+function generatePositions(count: number) {
+  const pos = new Float32Array(count * 3);
+  const base = new Float32Array(count * 3);
+
+  for (let i = 0; i < count; i++) {
+    const x = (seededRandom(i * 3) - 0.5) * 8;
+    const y = (seededRandom(i * 3 + 1) - 0.5) * 8;
+    const z = (seededRandom(i * 3 + 2) - 0.5) * 8;
+
+    pos[i * 3] = x;
+    pos[i * 3 + 1] = y;
+    pos[i * 3 + 2] = z;
+
+    base[i * 3] = x;
+    base[i * 3 + 1] = y;
+    base[i * 3 + 2] = z;
+  }
+
+  return { pos, base };
+}
+
 export function TrafficParticlesScene({ particleCount = 200 }: TrafficParticlesSceneProps) {
   const positionsRef = useRef<Float32Array | null>(null);
   const basePositionsRef = useRef<Float32Array | null>(null);
 
-  const positions = useMemo(() => {
-    const count = particleCount;
-    const pos = new Float32Array(count * 3);
-    const base = new Float32Array(count * 3);
-
-    for (let i = 0; i < count; i++) {
-      const x = (Math.random() - 0.5) * 8;
-      const y = (Math.random() - 0.5) * 8;
-      const z = (Math.random() - 0.5) * 8;
-
-      pos[i * 3] = x;
-      pos[i * 3 + 1] = y;
-      pos[i * 3 + 2] = z;
-
-      base[i * 3] = x;
-      base[i * 3 + 1] = y;
-      base[i * 3 + 2] = z;
-    }
-
-    positionsRef.current = pos;
-    basePositionsRef.current = base;
-    return pos;
+  const { positions, basePositions } = useMemo(() => {
+    const { pos, base } = generatePositions(particleCount);
+    return { positions: pos, basePositions: base };
   }, [particleCount]);
+
+  useEffect(() => {
+    positionsRef.current = positions;
+    basePositionsRef.current = basePositions;
+  }, [positions, basePositions]);
 
   useFrame((state) => {
     const pos = positionsRef.current;

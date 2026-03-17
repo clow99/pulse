@@ -37,9 +37,8 @@ export default function SitesPage() {
   const orgId = user?.activeOrgId;
 
   const fetchSites = useCallback(async () => {
-    if (!orgId) return;
     try {
-      const res = await fetch(`/api/orgs/${orgId}/sites`);
+      const res = await fetch('/api/sites');
       if (res.ok) {
         setSites(await res.json());
       }
@@ -48,7 +47,7 @@ export default function SitesPage() {
     } finally {
       setLoading(false);
     }
-  }, [orgId]);
+  }, []);
 
   useEffect(() => {
     fetchSites();

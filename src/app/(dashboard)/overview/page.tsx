@@ -3,25 +3,37 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Title } from '@velocityuikit/velocityui';
-import dynamic from 'next/dynamic';
 import { PageTransition } from '@/components/motion';
+import { WelcomeHeader } from '@/components/dashboard/WelcomeHeader';
+import { ActiveSites } from '@/components/dashboard/ActiveSites';
 import { StatsCards } from '@/components/dashboard/StatsCards';
 import { AreaChart } from '@/components/dashboard/AreaChart';
 import { DateRangePicker } from '@/components/dashboard/DateRangePicker';
-import { ReportTable } from '@/components/dashboard/ReportTable';
+import { TasksList } from '@/components/dashboard/TasksList';
+import { SitesTable } from '@/components/dashboard/SitesTable';
 import { subDays, startOfDay, endOfDay } from 'date-fns';
 import type { StatsOverview, TimeseriesPoint, TopPage, TopReferrer } from '@/types';
-
-const TrafficParticles = dynamic(
-  () => import('@/components/three/TrafficParticles'),
-  { ssr: false }
-);
 
 interface OverviewData {
   stats: StatsOverview;
   timeseries: TimeseriesPoint[];
   topPages: TopPage[];
   topReferrers: TopReferrer[];
+}
+
+interface SiteInfo {
+  id: string;
+  name: string;
+  domain: string;
+  active: boolean;
+  createdAt: string;
+  pageviewCount: number;
+}
+
+interface EventSummary {
+  name: string;
+  count: number;
+  uniqueTriggers: number;
 }
 
 export default function OverviewPage() {
@@ -31,16 +43,29 @@ export default function OverviewPage() {
   const [from, setFrom] = useState(() => startOfDay(subDays(new Date(), 30)).toISOString());
   const [to, setTo] = useState(() => endOfDay(new Date()).toISOString());
   const [data, setData] = useState<OverviewData | null>(null);
+  const [sites, setSites] = useState<SiteInfo[]>([]);
+  const [events, setEvents] = useState<EventSummary[]>([]);
   const [loading, setLoading] = useState(true);
+  const [userName, setUserName] = useState('');
 
   const fetchData = useCallback(async () => {
     if (!siteId) return;
     setLoading(true);
     try {
       const params = new URLSearchParams({ siteId, from, to });
-      const res = await fetch(`/api/reports/overview?${params}`);
-      if (res.ok) {
-        setData(await res.json());
+      const [overviewRes, eventsRes] = await Promise.all([
+        fetch(`/api/reports/overview?${params}`),
+        fetch(`/api/reports/events?${params}`),
+      ]);
+
+      if (overviewRes.ok) {
+        setData(await overviewRes.json());
+      }
+      if (eventsRes.ok) {
+        const eventsData = await eventsRes.json();
+        if (Array.isArray(eventsData)) {
+          setEvents(eventsData);
+        }
       }
     } catch {
       // silently fail
@@ -52,6 +77,37 @@ export default function OverviewPage() {
   useEffect(() => {
     fetchData();
   }, [fetchData]);
+
+  useEffect(() => {
+    async function fetchSites() {
+      try {
+        const res = await fetch('/api/sites');
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data)) {
+            setSites(data);
+          }
+        }
+      } catch {
+        // silently fail
+      }
+    }
+
+    async function fetchUser() {
+      try {
+        const res = await fetch('/api/auth/session');
+        if (res.ok) {
+          const session = await res.json();
+          setUserName(session?.user?.name || '');
+        }
+      } catch {
+        // silently fail
+      }
+    }
+
+    fetchSites();
+    fetchUser();
+  }, []);
 
   const handleDateChange = (newFrom: string, newTo: string) => {
     setFrom(newFrom);
@@ -77,33 +133,52 @@ export default function OverviewPage() {
       ]
     : [];
 
-  const pageColumns = [
-    { key: 'pathname', header: 'Page' },
-    { key: 'views', header: 'Views', sortable: true },
-    { key: 'visitors', header: 'Visitors', sortable: true },
-  ];
+  const activeSitesData = sites.slice(0, 2).map((site) => ({
+    id: site.id,
+    name: site.name,
+    domain: site.domain,
+    visitors: site.id === siteId ? (data?.stats?.visitors ?? 0) : 0,
+    pageviews: site.pageviewCount ?? 0,
+    pageviewTarget: 10000,
+  }));
 
-  const referrerColumns = [
-    { key: 'referrer', header: 'Source' },
-    { key: 'visitors', header: 'Visitors', sortable: true },
-    {
-      key: 'percentage',
-      header: '%',
-      render: (val: unknown) => `${(val as number).toFixed(1)}%`,
-    },
-  ];
+  const recentItems = (data?.topPages || []).slice(0, 5).map((page, i) => ({
+    id: `page-${i}`,
+    icon: '\u25A4',
+    title: page.pathname,
+    detail: `${page.views.toLocaleString()} views, ${page.visitors.toLocaleString()} visitors`,
+    time: 'Last 30d',
+    type: 'page' as const,
+  }));
+
+  const eventItems = events.slice(0, 5).map((evt, i) => ({
+    id: `event-${i}`,
+    icon: '\u25C6',
+    title: evt.name,
+    detail: `${evt.count.toLocaleString()} triggers, ${evt.uniqueTriggers.toLocaleString()} unique`,
+    time: 'Last 30d',
+    type: 'event' as const,
+  }));
+
+  const sitesTableData = sites.map((site) => ({
+    id: site.id,
+    name: site.name,
+    domain: site.domain,
+    visitors: site.id === siteId ? (data?.stats?.visitors ?? 0) : 0,
+    pageviews: site.pageviewCount ?? 0,
+    active: site.active,
+    createdAt: site.createdAt,
+  }));
 
   return (
     <PageTransition>
       <div className="pulse-page">
-        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 400, opacity: 0.15, pointerEvents: 'none', overflow: 'hidden' }}>
-          <TrafficParticles />
-        </div>
+        <WelcomeHeader
+          userName={userName || 'there'}
+          siteCount={sites.length}
+        />
 
-        <div className="pulse-page-header">
-          <Title level="h1" size="lg">Overview</Title>
-          <DateRangePicker from={from} to={to} onChange={handleDateChange} />
-        </div>
+        <ActiveSites sites={activeSitesData} siteId={siteId} />
 
         {stats.length > 0 && (
           <div className="pulse-section">
@@ -111,38 +186,30 @@ export default function OverviewPage() {
           </div>
         )}
 
-        {data?.timeseries && data.timeseries.length > 0 && (
-          <div className="pulse-section">
+        <div className="pulse-overview-grid">
+          <div className="pulse-overview-chart">
             <div className="pulse-chart-container">
-              <Title level="h3" size="sm" style={{ marginBottom: '1rem' }}>
-                Traffic Over Time
-              </Title>
-              <AreaChart data={data.timeseries} />
+              <div className="pulse-section-header" style={{ marginBottom: '1rem' }}>
+                <Title level="h3" size="sm">Site Statistics</Title>
+                <DateRangePicker from={from} to={to} onChange={handleDateChange} />
+              </div>
+              {data?.timeseries && data.timeseries.length > 0 ? (
+                <AreaChart data={data.timeseries} />
+              ) : (
+                <div style={{ height: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--pulse-text-secondary)' }}>
+                  {loading ? 'Loading...' : 'No data available'}
+                </div>
+              )}
             </div>
           </div>
-        )}
 
-        <div className="pulse-section" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
-          <div className="pulse-chart-container">
-            <Title level="h3" size="sm" style={{ marginBottom: '1rem' }}>
-              Top Pages
-            </Title>
-            <ReportTable
-              columns={pageColumns}
-              data={data?.topPages || []}
-              loading={loading}
-            />
+          <div className="pulse-overview-tasks">
+            <TasksList recentItems={recentItems} eventItems={eventItems} />
           </div>
-          <div className="pulse-chart-container">
-            <Title level="h3" size="sm" style={{ marginBottom: '1rem' }}>
-              Top Sources
-            </Title>
-            <ReportTable
-              columns={referrerColumns}
-              data={data?.topReferrers || []}
-              loading={loading}
-            />
-          </div>
+        </div>
+
+        <div className="pulse-section">
+          <SitesTable sites={sitesTableData} loading={loading && sites.length === 0} />
         </div>
       </div>
     </PageTransition>
