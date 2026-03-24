@@ -470,11 +470,7 @@ export default function LandingPage() {
                       {stat.prefix ?? ''}
                       <AnimatedCounter
                         value={stat.value}
-                        formatFn={(v) =>
-                          stat.decimals
-                            ? v.toFixed(1)
-                            : Math.round(v).toLocaleString()
-                        }
+                        formatFn={(v) => Math.round(v).toLocaleString()}
                         duration={2}
                       />
                       {stat.suffix}
