@@ -12,6 +12,102 @@
   --pulse-danger: #ef4444;
 }
 
+/* ===== VelocityUI theme overrides =====
+   Align the midnight theme's purple/zinc palette
+   with Pulse's sky-blue/blue-tinted-dark palette. */
+.vui-theme-midnight {
+  --vui-bg: var(--pulse-bg-primary);
+  --vui-surface: var(--pulse-bg-card);
+  --vui-surface-muted: var(--pulse-bg-secondary);
+  --vui-surface-translucent: rgba(22, 22, 31, 0.8);
+
+  --vui-text: var(--pulse-text-primary);
+  --vui-text-muted: var(--pulse-text-secondary);
+  --vui-text-subtle: var(--pulse-text-secondary);
+  --vui-text-inverse: var(--pulse-bg-primary);
+
+  --vui-border: var(--pulse-border);
+  --vui-border-strong: #2e2e3d;
+  --vui-divider: var(--pulse-border);
+
+  --vui-primary: var(--pulse-accent);
+  --vui-primary-hover: var(--pulse-accent-hover);
+  --vui-primary-contrast: #ffffff;
+  --vui-primary-soft: rgba(14, 165, 233, 0.15);
+
+  --vui-secondary: var(--pulse-bg-secondary);
+  --vui-secondary-hover: var(--pulse-border);
+  --vui-secondary-text: var(--pulse-text-primary);
+
+  --vui-danger: var(--pulse-danger);
+  --vui-danger-hover: #dc2626;
+  --vui-danger-contrast: #ffffff;
+
+  --vui-focus-ring: rgba(14, 165, 233, 0.2);
+  --vui-focus-danger-ring: rgba(239, 68, 68, 0.2);
+
+  --vui-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.5);
+  --vui-shadow-md: 0 8px 18px rgba(0, 0, 0, 0.5);
+  --vui-shadow-lg: 0 14px 30px rgba(0, 0, 0, 0.6);
+
+  --vui-input-bg: var(--pulse-bg-card);
+  --vui-input-color: var(--pulse-text-primary);
+  --vui-input-border: var(--pulse-border);
+  --vui-input-focus-border: var(--pulse-accent);
+  --vui-input-focus-ring: rgba(14, 165, 233, 0.2);
+  --vui-input-disabled-bg: var(--pulse-bg-secondary);
+  --vui-input-disabled-color: var(--pulse-text-secondary);
+  --vui-input-placeholder: var(--pulse-text-secondary);
+  --vui-input-label-color: var(--pulse-text-secondary);
+  --vui-input-hint-color: var(--pulse-text-secondary);
+  --vui-input-icon-color: var(--pulse-text-secondary);
+
+  --vui-success-soft: rgba(34, 197, 94, 0.15);
+  --vui-success-text: var(--pulse-success);
+  --vui-success-border: rgba(34, 197, 94, 0.3);
+  --vui-warning-soft: rgba(245, 158, 11, 0.15);
+  --vui-warning-text: var(--pulse-warning);
+  --vui-warning-border: rgba(245, 158, 11, 0.3);
+  --vui-info-soft: rgba(14, 165, 233, 0.15);
+  --vui-info-text: var(--pulse-accent);
+  --vui-info-border: rgba(14, 165, 233, 0.3);
+
+  --vui-badge-default-bg: var(--pulse-bg-secondary);
+  --vui-badge-default-color: var(--pulse-text-secondary);
+  --vui-badge-default-border: var(--pulse-border);
+  --vui-badge-success-bg: rgba(34, 197, 94, 0.15);
+  --vui-badge-success-color: var(--pulse-success);
+  --vui-badge-success-border: rgba(34, 197, 94, 0.3);
+  --vui-badge-warning-bg: rgba(245, 158, 11, 0.15);
+  --vui-badge-warning-color: var(--pulse-warning);
+  --vui-badge-warning-border: rgba(245, 158, 11, 0.3);
+  --vui-badge-danger-bg: rgba(239, 68, 68, 0.15);
+  --vui-badge-danger-color: var(--pulse-danger);
+  --vui-badge-danger-border: rgba(239, 68, 68, 0.3);
+  --vui-badge-info-bg: rgba(14, 165, 233, 0.15);
+  --vui-badge-info-color: var(--pulse-accent);
+  --vui-badge-info-border: rgba(14, 165, 233, 0.3);
+
+  --vui-title-color: var(--pulse-text-primary);
+  --vui-title-muted-color: var(--pulse-text-secondary);
+  --vui-color-gradient-end: #1d4ed8;
+
+  --vui-ghost-hover: rgba(14, 165, 233, 0.1);
+
+  --vui-card-bg: var(--pulse-bg-card);
+  --vui-card-border: var(--pulse-border);
+  --vui-card-divider: var(--pulse-border);
+  --vui-card-header-bg: transparent;
+  --vui-card-footer-bg: transparent;
+
+  --vui-ambient-primary: rgba(14, 165, 233, 0.24);
+  --vui-ambient-secondary: rgba(2, 132, 199, 0.18);
+  --vui-ambient-accent: rgba(34, 211, 238, 0.16);
+  --vui-ambient-highlight: rgba(255, 255, 255, 0.18);
+  --vui-ambient-grid: rgba(14, 165, 233, 0.12);
+  --vui-ambient-line: rgba(255, 255, 255, 0.2);
+}
+
 * {
   box-sizing: border-box;
   padding: 0;
@@ -606,33 +702,56 @@ a {
 /* ===== AI Chat Panel ===== */
 
 .pulse-chat-toggle {
-  display: none;
+  display: flex;
   position: fixed;
   bottom: 1.5rem;
   right: 1.5rem;
   z-index: 60;
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
+  min-height: 48px;
+  padding: 0.5rem 1rem 0.5rem 0.625rem;
+  border-radius: 999px;
   border: 1px solid var(--pulse-border);
   background: var(--pulse-accent);
   color: #fff;
-  font-size: 1.25rem;
   cursor: pointer;
   box-shadow: 0 4px 16px rgba(14, 165, 233, 0.4);
   align-items: center;
   justify-content: center;
+  gap: 0.625rem;
+  font-weight: 600;
 }
 
-@media (max-width: 1200px) {
+.pulse-chat-toggle-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.18);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+}
+
+.pulse-chat-toggle-label {
+  font-size: 0.875rem;
+  white-space: nowrap;
+}
+
+@media (max-width: 640px) {
   .pulse-chat-toggle {
-    display: flex;
+    width: 48px;
+    height: 48px;
+    min-height: 48px;
+    padding: 0;
+    border-radius: 50%;
+  }
+
+  .pulse-chat-toggle-label {
+    display: none;
   }
 }
 
 .pulse-chat-panel {
-  width: 360px;
-  height: 100vh;
   position: fixed;
   right: 0;
   top: 0;
@@ -641,12 +760,55 @@ a {
   display: flex;
   flex-direction: column;
   z-index: 55;
+  overflow: hidden;
+}
+
+@media (min-width: 1201px) {
+  .pulse-chat-panel {
+    top: auto;
+    right: 1.5rem;
+    bottom: 1.5rem;
+    width: 380px;
+    height: min(620px, calc(100vh - 3rem));
+    border: 1px solid var(--pulse-border);
+    border-radius: 20px;
+    box-shadow: 0 20px 48px rgba(15, 23, 42, 0.3);
+  }
 }
 
 @media (max-width: 1200px) {
   .pulse-chat-panel {
+    width: min(360px, 100vw);
+    height: 100vh;
     box-shadow: -8px 0 32px rgba(0, 0, 0, 0.3);
   }
+}
+
+.pulse-chat-panel--minimized {
+  height: auto !important;
+}
+
+.pulse-chat-panel--minimized .pulse-chat-header {
+  border-bottom: none;
+}
+
+.pulse-chat-resize-handle {
+  position: absolute;
+  top: 0.625rem;
+  left: 0.625rem;
+  width: 14px;
+  height: 14px;
+  padding: 0;
+  border: none;
+  border-top: 2px solid var(--pulse-border);
+  border-left: 2px solid var(--pulse-border);
+  background: transparent;
+  cursor: nwse-resize;
+  opacity: 0.75;
+}
+
+.pulse-chat-resize-handle:hover {
+  border-color: var(--pulse-accent);
 }
 
 .pulse-chat-header {
@@ -676,20 +838,28 @@ a {
   color: var(--pulse-text-primary);
 }
 
-.pulse-chat-close {
-  background: transparent;
-  border: none;
-  color: var(--pulse-text-secondary);
-  font-size: 1rem;
-  cursor: pointer;
-  padding: 0.25rem;
-  display: none;
+.pulse-chat-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
 }
 
-@media (max-width: 1200px) {
-  .pulse-chat-close {
-    display: block;
-  }
+.pulse-chat-header-btn {
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--pulse-text-secondary);
+  cursor: pointer;
+  padding: 0.25rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+}
+
+.pulse-chat-header-btn:hover {
+  color: var(--pulse-text-primary);
+  border-color: var(--pulse-border);
+  background: var(--pulse-bg-card);
 }
 
 /* Chat messages */
@@ -796,9 +966,103 @@ a {
   padding: 0.625rem 0.875rem;
   font-size: 0.8125rem;
   line-height: 1.55;
-  max-width: 260px;
+  max-width: min(420px, 100%);
   word-wrap: break-word;
+  overflow-wrap: anywhere;
+}
+
+.pulse-chat-plain-text {
+  margin: 0;
   white-space: pre-wrap;
+}
+
+.pulse-chat-markdown > *:first-child {
+  margin-top: 0;
+}
+
+.pulse-chat-markdown > *:last-child {
+  margin-bottom: 0;
+}
+
+.pulse-chat-markdown p,
+.pulse-chat-markdown ul,
+.pulse-chat-markdown ol,
+.pulse-chat-markdown pre,
+.pulse-chat-markdown blockquote,
+.pulse-chat-markdown table,
+.pulse-chat-markdown h1,
+.pulse-chat-markdown h2,
+.pulse-chat-markdown h3,
+.pulse-chat-markdown h4 {
+  margin: 0 0 0.625rem;
+}
+
+.pulse-chat-markdown h1,
+.pulse-chat-markdown h2,
+.pulse-chat-markdown h3,
+.pulse-chat-markdown h4 {
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  font-weight: 700;
+}
+
+.pulse-chat-markdown ul,
+.pulse-chat-markdown ol {
+  padding-left: 1rem;
+}
+
+.pulse-chat-markdown li + li {
+  margin-top: 0.25rem;
+}
+
+.pulse-chat-markdown a {
+  color: var(--pulse-accent);
+  text-decoration: underline;
+}
+
+.pulse-chat-markdown strong {
+  font-weight: 700;
+}
+
+.pulse-chat-markdown code {
+  font-family: 'SF Mono', 'Fira Code', 'Fira Mono', Menlo, monospace;
+  font-size: 0.75rem;
+  background: rgba(148, 163, 184, 0.14);
+  border-radius: 6px;
+  padding: 0.1rem 0.35rem;
+}
+
+.pulse-chat-markdown pre {
+  background: #0d0d14;
+  border: 1px solid var(--pulse-border);
+  border-radius: 8px;
+  padding: 0.75rem;
+  overflow-x: auto;
+}
+
+.pulse-chat-markdown pre code {
+  background: transparent;
+  padding: 0;
+}
+
+.pulse-chat-markdown blockquote {
+  margin-left: 0;
+  padding-left: 0.75rem;
+  border-left: 2px solid var(--pulse-border);
+  color: var(--pulse-text-secondary);
+}
+
+.pulse-chat-markdown table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.75rem;
+}
+
+.pulse-chat-markdown th,
+.pulse-chat-markdown td {
+  border: 1px solid var(--pulse-border);
+  padding: 0.4rem 0.5rem;
+  text-align: left;
 }
 
 /* Typing indicator */

@@ -36,6 +36,9 @@ export default function SitesPage() {
 
   const orgId = user?.activeOrgId;
 
+  const closeAddDialog = useCallback(() => setAddDialogOpen(false), []);
+  const closeDeleteDialog = useCallback(() => setDeleteTarget(null), []);
+
   const fetchSites = useCallback(async () => {
     try {
       const res = await fetch('/api/sites');
@@ -298,7 +301,7 @@ export default function SitesPage() {
           </Card>
         </div>
 
-        <Dialog open={addDialogOpen} onClose={() => setAddDialogOpen(false)}>
+        <Dialog open={addDialogOpen} onClose={closeAddDialog}>
           <Dialog.Header>
             <Title level="h3" size="sm">Add Site</Title>
           </Dialog.Header>
@@ -323,7 +326,7 @@ export default function SitesPage() {
             </div>
           </Dialog.Body>
           <Dialog.Footer>
-            <Button variant="ghost" onClick={() => setAddDialogOpen(false)}>
+            <Button variant="ghost" onClick={closeAddDialog}>
               Cancel
             </Button>
             <Button variant="primary" onClick={handleAddSite} loading={submitting}>
@@ -332,7 +335,7 @@ export default function SitesPage() {
           </Dialog.Footer>
         </Dialog>
 
-        <Dialog open={!!deleteTarget} onClose={() => setDeleteTarget(null)}>
+        <Dialog open={!!deleteTarget} onClose={closeDeleteDialog}>
           <Dialog.Header>
             <Title level="h3" size="sm">Delete Site</Title>
           </Dialog.Header>
@@ -343,7 +346,7 @@ export default function SitesPage() {
             </p>
           </Dialog.Body>
           <Dialog.Footer>
-            <Button variant="ghost" onClick={() => setDeleteTarget(null)}>
+            <Button variant="ghost" onClick={closeDeleteDialog}>
               Cancel
             </Button>
             <Button variant="danger" onClick={handleDeleteSite} loading={submitting}>

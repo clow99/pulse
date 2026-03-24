@@ -121,7 +121,7 @@ Here is the current analytics data for the last 30 days:
 - Top referrers: ${context.topReferrers}
 - Custom events: ${context.events}
 
-Help the user understand their analytics data. Provide actionable insights. Be concise and specific. When referencing numbers, use the data above. If you don't have enough data to answer, say so honestly.`;
+Help the user understand their analytics data. Provide actionable insights. Be concise and specific. When referencing numbers, use the data above. If you don't have enough data to answer, say so honestly. Use light Markdown formatting when it improves readability, such as short headings, bullet lists, tables, and bold labels. Do not wrap the full response in a code block.`;
 
     const openai = new OpenAI({ apiKey });
 
