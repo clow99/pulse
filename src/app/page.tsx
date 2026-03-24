@@ -1,6 +1,7 @@
 'use client';
 
 import { motion, useScroll, useTransform } from 'framer-motion';
+import Image from 'next/image';
 import Link from 'next/link';
 import { useRef } from 'react';
 import { Button, Title } from '@velocityuikit/velocityui';
@@ -106,6 +107,107 @@ const steps = [
 
 const barHeights = [35, 55, 42, 70, 58, 85, 65, 92, 78, 60, 88, 95, 72, 80, 68, 90, 75, 82];
 
+const repositoryUrl = 'https://git.cameronlow.com/cam/pulse';
+
+const navLinks = [
+  { label: 'Features', href: '#features' },
+  { label: 'Why Pulse', href: '#why-pulse' },
+  { label: 'How it works', href: '#how-it-works' },
+];
+
+const heroHighlights = [
+  {
+    title: 'Own the stack',
+    description: 'Run analytics on infrastructure your team already trusts with a simple Docker setup.',
+  },
+  {
+    title: 'Skip the cookie banner',
+    description: 'Privacy-first tracking keeps compliance simpler without sacrificing useful reporting.',
+  },
+  {
+    title: 'See the full picture',
+    description: 'Pages, acquisition, technology, custom events, and uptime live in one focused dashboard.',
+  },
+];
+
+const trustSignals = [
+  { label: 'Deployment', value: 'Docker + Postgres' },
+  { label: 'Privacy model', value: 'No cookies by default' },
+  { label: 'Coverage', value: 'Analytics + events + uptime' },
+];
+
+const whyPulseCards = [
+  {
+    kicker: 'Own your data',
+    title: 'Keep visitor analytics on infrastructure you control',
+    description:
+      'No third-party black box, no rerouting sensitive traffic through another vendor, and no tradeoff between privacy and visibility.',
+  },
+  {
+    kicker: 'Useful on day one',
+    title: 'Start with clean defaults, then layer on custom events',
+    description:
+      'Pulse gives you pages, referrers, technology, and real-time reporting out of the box, then grows with your product instrumentation.',
+  },
+  {
+    kicker: 'Built for product teams',
+    title: 'Understand growth, reliability, and behavior from one workspace',
+    description:
+      'Use one dashboard to answer what people saw, how they found you, what they clicked, and whether your site stayed up.',
+  },
+];
+
+const comparisonRows = [
+  {
+    label: 'Data ownership',
+    pulse: 'Stored on your infrastructure',
+    typical: 'Shared with a hosted vendor',
+  },
+  {
+    label: 'Consent complexity',
+    pulse: 'Cookie-free defaults reduce friction',
+    typical: 'Often requires a banner and extra setup',
+  },
+  {
+    label: 'Time to first signal',
+    pulse: 'Deploy and add one script',
+    typical: 'Create account, configure project, wire exports',
+  },
+  {
+    label: 'What you can monitor',
+    pulse: 'Traffic, events, acquisition, uptime',
+    typical: 'Often split across multiple tools',
+  },
+];
+
+const footerSections = [
+  {
+    title: 'Product',
+    links: [
+      { label: 'Features', href: '#features' },
+      { label: 'Why Pulse', href: '#why-pulse' },
+      { label: 'How it works', href: '#how-it-works' },
+      { label: 'Dashboard preview', href: '#dashboard-preview' },
+    ],
+  },
+  {
+    title: 'Get started',
+    links: [
+      { label: 'Create account', href: '/register' },
+      { label: 'Sign in', href: '/login' },
+      { label: 'Onboarding', href: '/onboarding' },
+    ],
+  },
+  {
+    title: 'Resources',
+    links: [
+      { label: 'Source code', href: repositoryUrl, external: true },
+      { label: 'Deployment workflow', href: '#how-it-works' },
+      { label: 'Overview section', href: '#features' },
+    ],
+  },
+];
+
 export default function LandingPage() {
   const heroRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
@@ -139,25 +241,29 @@ export default function LandingPage() {
           transition={{ duration: 0.5 }}
           style={{ display: 'flex', alignItems: 'center', gap: '0.625rem' }}
         >
-          <div
-            style={{
-              width: 32,
-              height: 32,
-              borderRadius: 10,
-              background: 'linear-gradient(135deg, #0ea5e9, #1d4ed8)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              position: 'relative',
-            }}
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round">
-              <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
-            </svg>
-          </div>
-          <span style={{ fontSize: '1.125rem', fontWeight: 700, letterSpacing: '-0.02em' }}>
-            Pulse
-          </span>
+          <Link href="/" aria-label="Pulse home" style={{ display: 'flex', alignItems: 'center' }}>
+            <Image
+              src="/logo.png"
+              alt="Pulse"
+              width={120}
+              height={32}
+              priority
+              style={{ height: 32, width: 'auto', objectFit: 'contain' }}
+            />
+          </Link>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.1 }}
+          className="landing-nav-links"
+        >
+          {navLinks.map((item) => (
+            <Link key={item.href} href={item.href} className="landing-nav-link">
+              {item.label}
+            </Link>
+          ))}
         </motion.div>
 
         <motion.div
@@ -185,23 +291,23 @@ export default function LandingPage() {
           <FadeIn direction="up" delay={0.1}>
             <div className="landing-badge">
               <span className="landing-badge-dot" />
-              Open Source &middot; Self-Hosted &middot; Privacy-First
+              Analytics, events, and uptime for self-hosted teams
             </div>
           </FadeIn>
 
           <FadeIn direction="up" delay={0.2}>
             <h1 className="landing-hero-title">
-              Know your audience.
+              Self-hosted analytics
               <br />
-              <span className="landing-hero-title-accent">Own your data.</span>
+              <span className="landing-hero-title-accent">without the black box.</span>
             </h1>
           </FadeIn>
 
           <FadeIn direction="up" delay={0.35}>
             <p className="landing-hero-subtitle">
-              Privacy-first web analytics that runs on your infrastructure.
-              No cookies, no consent banners, no compromises &mdash; just
-              clean data and real-time insights.
+              Pulse gives your team real-time traffic, acquisition, technology,
+              custom event, and uptime reporting from infrastructure you control.
+              Keep the data, skip the cookies, and stay fast.
             </p>
           </FadeIn>
 
@@ -210,13 +316,21 @@ export default function LandingPage() {
               <Link href="/register">
                 <Button variant="primary" size="lg">Get Started Free</Button>
               </Link>
-              <Link href="/login">
-                <Button variant="outline" size="lg">View Demo</Button>
+              <Link href="#how-it-works">
+                <Button variant="outline" size="lg">See setup</Button>
               </Link>
             </div>
             <p className="landing-hero-note">
-              No credit card required &middot; Deploy in under 5 minutes
+              Free to self-host &middot; No credit card &middot; First data in minutes
             </p>
+            <div className="landing-hero-highlights">
+              {heroHighlights.map((highlight) => (
+                <div key={highlight.title} className="landing-hero-highlight">
+                  <div className="landing-hero-highlight-title">{highlight.title}</div>
+                  <p className="landing-hero-highlight-description">{highlight.description}</p>
+                </div>
+              ))}
+            </div>
           </FadeIn>
         </motion.div>
 
@@ -228,7 +342,7 @@ export default function LandingPage() {
                 <div className="landing-mockup-dot" style={{ background: '#febc2e' }} />
                 <div className="landing-mockup-dot" style={{ background: '#28c840' }} />
                 <span style={{ marginLeft: '0.75rem', fontSize: '0.75rem', color: 'var(--pulse-text-secondary)' }}>
-                  pulse.yourdomain.com/overview
+                  analytics.acme.io/overview
                 </span>
               </div>
               <div className="landing-hero-dashboard">
@@ -296,12 +410,20 @@ export default function LandingPage() {
 
         <FadeIn direction="up" delay={0.9}>
           <div className="landing-hero-social">
-            <span style={{ fontSize: '0.75rem', color: 'var(--pulse-text-secondary)', opacity: 0.6 }}>
-              Trusted by teams at
-            </span>
-            <div className="landing-social-logos">
-              {['Vercel', 'Supabase', 'Railway', 'Netlify', 'Hetzner', 'DigitalOcean'].map((name) => (
-                <span key={name} className="landing-social-logo">{name}</span>
+            <div className="landing-hero-social-copy">
+              <span style={{ fontSize: '0.75rem', color: 'var(--pulse-text-secondary)', opacity: 0.8 }}>
+                Built for teams that want trustworthy product signals
+              </span>
+              <p className="landing-hero-social-text">
+                Replace vague vendor promises with a setup you can inspect, host, and adapt.
+              </p>
+            </div>
+            <div className="landing-trust-grid">
+              {trustSignals.map((signal) => (
+                <div key={signal.label} className="landing-trust-card">
+                  <span className="landing-trust-card-label">{signal.label}</span>
+                  <span className="landing-trust-card-value">{signal.value}</span>
+                </div>
               ))}
             </div>
           </div>
@@ -326,9 +448,9 @@ export default function LandingPage() {
               }}
             >
               {[
-                { value: 10000, label: 'Sites Tracked', suffix: '+' },
-                { value: 50, label: 'Events Per Second', suffix: 'M+', formatMultiplier: 1 },
-                { value: 99.9, label: 'Uptime SLA', suffix: '%', decimals: true },
+                { value: 0, label: 'Cookies Required', suffix: '' },
+                { value: 5, label: 'Minutes to First Data', suffix: ' min' },
+                { value: 100, label: 'Data Ownership', suffix: '%' },
                 { value: 2, label: 'Script Size', suffix: 'KB', prefix: '<' },
               ].map((stat) => (
                 <StaggerItem key={stat.label}>
@@ -369,7 +491,7 @@ export default function LandingPage() {
       </section>
 
       {/* Features Section */}
-      <section style={{ padding: '6rem 2rem', maxWidth: 1200, margin: '0 auto' }}>
+      <section id="features" style={{ padding: '6rem 2rem', maxWidth: 1200, margin: '0 auto', scrollMarginTop: '6rem' }}>
         <FadeIn direction="up">
           <div style={{ textAlign: 'center', marginBottom: '4rem' }}>
             <Title level="h2" size="lg">
@@ -439,7 +561,7 @@ export default function LandingPage() {
       </section>
 
       {/* Dashboard Preview Section */}
-      <section style={{ padding: '4rem 2rem 6rem', maxWidth: 1100, margin: '0 auto' }}>
+      <section id="dashboard-preview" style={{ padding: '4rem 2rem 6rem', maxWidth: 1100, margin: '0 auto', scrollMarginTop: '6rem' }}>
         <FadeIn direction="up">
           <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
             <Title level="h2" size="lg">
@@ -473,7 +595,7 @@ export default function LandingPage() {
                   color: 'var(--pulse-text-secondary)',
                 }}
               >
-                pulse.yourdomain.com/overview
+                analytics.acme.io/overview
               </span>
             </div>
             <div className="landing-mockup-content">
@@ -553,11 +675,82 @@ export default function LandingPage() {
         </FadeIn>
       </section>
 
+      {/* Why Pulse Section */}
+      <section
+        id="why-pulse"
+        style={{
+          padding: '0 2rem 6rem',
+          maxWidth: 1100,
+          margin: '0 auto',
+          scrollMarginTop: '6rem',
+        }}
+      >
+        <FadeIn direction="up">
+          <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
+            <Title level="h2" size="lg">
+              Built for teams that need signal, not surveillance
+            </Title>
+            <p
+              style={{
+                color: 'var(--pulse-text-secondary)',
+                marginTop: '1rem',
+                fontSize: '1.0625rem',
+                maxWidth: 620,
+                margin: '1rem auto 0',
+                lineHeight: 1.6,
+              }}
+            >
+              Pulse keeps your analytics stack simple: privacy-safe by default,
+              self-hosted by design, and practical enough for engineers,
+              marketers, and product teams to use together.
+            </p>
+          </div>
+        </FadeIn>
+
+        <div className="landing-why-grid">
+          <FadeIn direction="up" delay={0.1}>
+            <div className="landing-why-stack">
+              {whyPulseCards.map((card) => (
+                <div key={card.title} className="landing-why-card">
+                  <span className="landing-why-card-kicker">{card.kicker}</span>
+                  <h3 className="landing-why-card-title">{card.title}</h3>
+                  <p className="landing-why-card-description">{card.description}</p>
+                </div>
+              ))}
+            </div>
+          </FadeIn>
+
+          <FadeIn direction="up" delay={0.2}>
+            <div className="landing-comparison-card">
+              <div className="landing-comparison-title">
+                Pulse vs typical hosted analytics
+              </div>
+              <div className="landing-comparison-table">
+                <div className="landing-comparison-row landing-comparison-row--head">
+                  <span className="landing-comparison-cell">Category</span>
+                  <span className="landing-comparison-cell">Pulse</span>
+                  <span className="landing-comparison-cell">Typical hosted tool</span>
+                </div>
+                {comparisonRows.map((row) => (
+                  <div key={row.label} className="landing-comparison-row">
+                    <span className="landing-comparison-cell landing-comparison-cell-label">{row.label}</span>
+                    <span className="landing-comparison-cell">{row.pulse}</span>
+                    <span className="landing-comparison-cell">{row.typical}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </FadeIn>
+        </div>
+      </section>
+
       {/* How It Works Section */}
       <section
+        id="how-it-works"
         style={{
           padding: '6rem 2rem',
           borderTop: '1px solid var(--pulse-border)',
+          scrollMarginTop: '6rem',
         }}
       >
         <div style={{ maxWidth: 900, margin: '0 auto' }}>
@@ -690,19 +883,19 @@ export default function LandingPage() {
                 marginBottom: '2.5rem',
               }}
             >
-              Join thousands of developers who switched to privacy-first analytics.
-              Deploy Pulse in minutes and start getting clean, accurate data.
+              Launch a privacy-first analytics stack your team can inspect,
+              control, and extend without adding another hosted dependency.
             </p>
             <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
               <Link href="/register">
                 <Button variant="primary" size="lg">Get Started Free</Button>
               </Link>
               <Link
-                href="https://github.com"
+                href={repositoryUrl}
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                <Button variant="outline" size="lg">View on GitHub</Button>
+                <Button variant="outline" size="lg">View source</Button>
               </Link>
             </div>
           </div>
@@ -718,23 +911,16 @@ export default function LandingPage() {
       >
         <div className="landing-footer-grid" style={{ padding: '0 0 2rem' }}>
           <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
-              <div
-                style={{
-                  width: 28,
-                  height: 28,
-                  borderRadius: 8,
-                  background: 'linear-gradient(135deg, #0ea5e9, #1d4ed8)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-              >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round">
-                  <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
-                </svg>
-              </div>
-              <span style={{ fontWeight: 700, fontSize: '1rem' }}>Pulse</span>
+            <div style={{ marginBottom: '0.75rem' }}>
+              <Link href="/" aria-label="Pulse home" style={{ display: 'inline-flex' }}>
+                <Image
+                  src="/logo.png"
+                  alt="Pulse"
+                  width={104}
+                  height={28}
+                  style={{ height: 28, width: 'auto', objectFit: 'contain' }}
+                />
+              </Link>
             </div>
             <p style={{ fontSize: '0.8125rem', color: 'var(--pulse-text-secondary)', lineHeight: 1.6, maxWidth: 280 }}>
               Open-source, self-hosted web analytics. Built for developers who value privacy.
@@ -742,37 +928,49 @@ export default function LandingPage() {
           </div>
           <div>
             <h4 style={{ fontSize: '0.8125rem', fontWeight: 600, marginBottom: '0.75rem', color: 'var(--pulse-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-              Product
+              {footerSections[0].title}
             </h4>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-              {['Features', 'Documentation', 'Pricing', 'Changelog'].map((item) => (
-                <span key={item} style={{ fontSize: '0.8125rem', color: 'var(--pulse-text-secondary)', cursor: 'pointer' }}>
-                  {item}
-                </span>
+              {footerSections[0].links.map((item) => (
+                <Link key={item.label} href={item.href} style={{ fontSize: '0.8125rem', color: 'var(--pulse-text-secondary)' }}>
+                  {item.label}
+                </Link>
               ))}
             </div>
           </div>
           <div>
             <h4 style={{ fontSize: '0.8125rem', fontWeight: 600, marginBottom: '0.75rem', color: 'var(--pulse-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-              Resources
+              {footerSections[1].title}
             </h4>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-              {['Self-Hosting Guide', 'API Reference', 'Docker Hub', 'GitHub'].map((item) => (
-                <span key={item} style={{ fontSize: '0.8125rem', color: 'var(--pulse-text-secondary)', cursor: 'pointer' }}>
-                  {item}
-                </span>
+              {footerSections[1].links.map((item) => (
+                <Link key={item.label} href={item.href} style={{ fontSize: '0.8125rem', color: 'var(--pulse-text-secondary)' }}>
+                  {item.label}
+                </Link>
               ))}
             </div>
           </div>
           <div>
             <h4 style={{ fontSize: '0.8125rem', fontWeight: 600, marginBottom: '0.75rem', color: 'var(--pulse-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-              Legal
+              {footerSections[2].title}
             </h4>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-              {['Privacy Policy', 'Terms of Service', 'License (AGPL-3.0)'].map((item) => (
-                <span key={item} style={{ fontSize: '0.8125rem', color: 'var(--pulse-text-secondary)', cursor: 'pointer' }}>
-                  {item}
-                </span>
+              {footerSections[2].links.map((item) => (
+                item.external ? (
+                  <a
+                    key={item.label}
+                    href={item.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ fontSize: '0.8125rem', color: 'var(--pulse-text-secondary)' }}
+                  >
+                    {item.label}
+                  </a>
+                ) : (
+                  <Link key={item.label} href={item.href} style={{ fontSize: '0.8125rem', color: 'var(--pulse-text-secondary)' }}>
+                    {item.label}
+                  </Link>
+                )
               ))}
             </div>
           </div>
