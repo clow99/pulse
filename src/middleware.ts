@@ -1,4 +1,5 @@
-import { auth } from '@/lib/auth';
+import { getToken } from 'next-auth/jwt';
+import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
 const protectedPaths = [
@@ -13,9 +14,19 @@ const protectedPaths = [
 
 const authPaths = ['/login', '/register'];
 
-export default auth((req) => {
+const secureCookie =
+  process.env.AUTH_URL?.startsWith('https://') ??
+  process.env.NEXTAUTH_URL?.startsWith('https://') ??
+  false;
+
+export default async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
-  const isAuthenticated = !!req.auth?.user;
+  const token = await getToken({
+    req,
+    secret: process.env.AUTH_SECRET ?? process.env.NEXTAUTH_SECRET,
+    secureCookie,
+  });
+  const isAuthenticated = !!token;
 
   const isProtected = protectedPaths.some((p) => pathname.startsWith(p));
   if (isProtected && !isAuthenticated) {
@@ -30,7 +41,7 @@ export default auth((req) => {
   }
 
   return NextResponse.next();
-});
+}
 
 export const config = {
   matcher: [

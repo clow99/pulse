@@ -5,6 +5,7 @@ import { compare } from 'bcryptjs';
 import { prisma } from './prisma';
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
+  trustHost: true,
   providers: [
     Google({
       clientId: process.env.GOOGLE_CLIENT_ID,
