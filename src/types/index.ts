@@ -73,8 +73,34 @@ export interface SiteWithStats {
   domain: string;
   token: string;
   active: boolean;
+  collectWebVitals: boolean;
   createdAt: string;
   pageviewCount: number;
+}
+
+export interface AgentTokenView {
+  id: string;
+  orgId: string;
+  site: { id: string; name: string; domain: string } | null;
+  name: string;
+  tokenPrefix: string;
+  scopes: string[];
+  role: OrgRole;
+  expiresAt: string | null;
+  revokedAt: string | null;
+  lastUsedAt: string | null;
+  createdAt: string;
+  createdBy?: { id: string; name: string; email: string } | null;
+}
+
+export interface InsightSummary {
+  id: string;
+  type: string;
+  severity: 'info' | 'warning' | 'critical';
+  title: string;
+  body: string;
+  evidence: Record<string, unknown>;
+  createdAt: string;
 }
 
 export interface UptimeCheckResult {

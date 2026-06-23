@@ -100,6 +100,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       return true;
     },
     async jwt({ token, user, account }) {
+      const isEdgeRuntime = process.env.NEXT_RUNTIME === 'edge';
+
       if (user && account?.provider === 'credentials') {
         token.id = user.id;
         token.activeOrgId = (user as any).activeOrgId ?? null;
@@ -121,7 +123,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         }
       }
 
-      if (token.id && !token.activeOrgId) {
+      if (!isEdgeRuntime && token.id && !token.activeOrgId) {
         const membership = await prisma.orgMembership.findFirst({
           where: { userId: token.id as string },
           orderBy: { org: { createdAt: 'desc' } },

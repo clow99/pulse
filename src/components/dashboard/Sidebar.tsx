@@ -31,6 +31,7 @@ const NAV_SECTIONS: NavSection[] = [
       { href: '/overview', label: 'Overview', icon: '\u25C9' },
       { href: '/pages', label: 'Pages', icon: '\u25A4' },
       { href: '/events', label: 'Events', icon: '\u25C6' },
+      { href: '/funnels', label: 'Funnels', icon: '\u25B3' },
     ],
   },
   {
@@ -38,12 +39,15 @@ const NAV_SECTIONS: NavSection[] = [
     items: [
       { href: '/acquisition', label: 'Acquisition', icon: '\u2197' },
       { href: '/technology', label: 'Technology', icon: '\u2699' },
+      { href: '/revenue', label: 'Revenue', icon: '$' },
     ],
   },
   {
     label: 'MONITORING',
     items: [
       { href: '/uptime', label: 'Uptime', icon: '\u25CE' },
+      { href: '/performance', label: 'Performance', icon: '\u23F1' },
+      { href: '/insights', label: 'Insights', icon: '\u2726' },
     ],
   },
   {

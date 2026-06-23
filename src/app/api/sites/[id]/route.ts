@@ -37,9 +37,20 @@ export async function PUT(request: Request, context: RouteContext) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
+    const updateData: {
+      active?: boolean;
+      collectWebVitals?: boolean;
+      name?: string;
+      domain?: string;
+    } = {};
+    if (typeof body.active === 'boolean') updateData.active = body.active;
+    if (typeof body.collectWebVitals === 'boolean') updateData.collectWebVitals = body.collectWebVitals;
+    if (typeof body.name === 'string' && body.name.trim()) updateData.name = body.name.trim();
+    if (typeof body.domain === 'string' && body.domain.trim()) updateData.domain = body.domain.trim();
+
     const updated = await prisma.site.update({
       where: { id },
-      data: { active: body.active },
+      data: updateData,
     });
 
     return NextResponse.json(updated);

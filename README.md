@@ -7,11 +7,15 @@ Privacy-first, self-hosted web analytics. Track pageviews, custom events, and up
 - **Multi-site analytics** — manage multiple websites under one organization with role-based access (owner / admin / viewer)
 - **Pageview & event tracking** — lightweight script (`t.js`) that supports SPAs, `sendBeacon`, and works cross-origin
 - **Dashboard** — overview, pages, events, acquisition, and technology breakdowns with interactive charts
-- **Uptime monitoring** — periodic HTTP health checks for each site with status history
-- **AI assistant** — ask natural-language questions about your analytics (powered by OpenAI)
+- **Goals, funnels & revenue** — conversion tracking, funnel drop-off, and ecommerce revenue attribution
+- **Uptime monitoring** — periodic HTTP health checks with incidents, alerts, and public status pages
+- **Performance monitoring** — optional Core Web Vitals collection for real-user page health
+- **AI assistant & insights** — ask natural-language questions and generate proactive findings
 - **Auth** — email/password and Google OAuth via NextAuth v5
 - **Docker-ready** — standalone Next.js build with a multi-stage Dockerfile and Compose file
 - **Privacy by default** — no cookies, DNT respected, data stays on your server
+
+- **Agent access** - scoped, revocable API tokens plus MCP tools for AI agents and custom report workflows
 
 ## Tech Stack
 
@@ -21,7 +25,7 @@ Privacy-first, self-hosted web analytics. Track pageviews, custom events, and up
 | UI        | React 19, Framer Motion, Recharts, Three.js     |
 | Auth      | NextAuth v5 (JWT sessions)                      |
 | Database  | PostgreSQL via Prisma 6                          |
-| AI        | OpenAI SDK                                      |
+| AI        | OpenAI-compatible SDK, Anthropic Messages API, MCP |
 | Runtime   | Node 20                                         |
 
 ## Getting Started
@@ -58,8 +62,15 @@ Optional variables:
 | --------------------- | ---------------------------------------------- |
 | `GOOGLE_CLIENT_ID`    | Google OAuth client ID                         |
 | `GOOGLE_CLIENT_SECRET` | Google OAuth client secret                    |
-| `OPENAI_API_KEY`      | Enables the AI assistant                       |
+| `PULSE_AI_PROVIDER`   | `openai`, `anthropic`, or `perplexity` for the in-app assistant |
+| `OPENAI_API_KEY`      | Enables OpenAI for the AI assistant            |
+| `ANTHROPIC_API_KEY`   | Enables Anthropic for the AI assistant         |
+| `PERPLEXITY_API_KEY`  | Enables Perplexity Sonar for the AI assistant  |
+| `PULSE_MCP_RESOURCE_URL` | Public MCP resource URL, usually `https://your-pulse-host/api/mcp` |
+| `REDIS_URL`           | Enables MCP SSE transport in addition to Streamable HTTP |
 | `UPTIME_CHECK_SECRET` | Bearer token for the uptime cron endpoint      |
+| `INSIGHTS_CRON_SECRET` | Bearer token for the insights cron endpoint   |
+| `SMTP_HOST` / `SMTP_PORT` / `SMTP_USER` / `SMTP_PASS` / `SMTP_FROM` | Enables email alert channels |
 
 ### 3. Set up the database
 
@@ -110,6 +121,19 @@ Add the following snippet to any site you want to track:
 
 - `data-token` — the site token shown in your Pulse dashboard under **Settings > Sites**
 - `data-endpoint` (optional) — override the collection URL if it differs from the script origin
+- `data-web-vitals="true"` (optional) — collect Core Web Vitals when the site setting is enabled
+
+Custom events can include revenue metadata:
+
+```html
+<script>
+  window.pulse('event', 'purchase', {
+    value: 49,
+    currency: 'USD',
+    orderId: 'ord_123'
+  });
+</script>
+```
 
 ## Uptime Monitoring
 
@@ -120,6 +144,92 @@ curl -X POST https://your-pulse-host/api/uptime/check \
   -H "Authorization: Bearer $UPTIME_CHECK_SECRET"
 ```
 
+Generate proactive insights with a cron job:
+
+```bash
+curl -X POST https://your-pulse-host/api/insights/generate \
+  -H "Authorization: Bearer $INSIGHTS_CRON_SECRET"
+```
+
+## Agent and MCP Access
+
+Pulse exposes read-only analytics to external agents without giving them database access.
+
+1. In the dashboard, go to **Settings > Agent Tokens**.
+2. Create a token scoped to an organization or one site.
+3. Copy the token immediately; Pulse stores only a SHA-256 hash.
+4. Give the token to your agent as a Bearer token.
+
+Supported scopes:
+
+| Scope | Allows |
+| ----- | ------ |
+| `analytics:read` | Overview, pages, and acquisition reports |
+| `events:read` | Custom event reports |
+| `uptime:read` | Uptime reports and summaries |
+| `reports:generate` | Multi-report bundles for custom reports and charts |
+
+### MCP
+
+Use Streamable HTTP at:
+
+```text
+https://your-pulse-host/api/mcp
+```
+
+Set the Authorization header:
+
+```text
+Authorization: Bearer pulse_at_...
+```
+
+Registered MCP tools:
+
+- `get_overview`
+- `get_pages_report`
+- `get_events_report`
+- `get_acquisition_report`
+- `get_uptime_summary`
+- `generate_report_data`
+
+OAuth protected-resource metadata is available at:
+
+```text
+https://your-pulse-host/.well-known/oauth-protected-resource
+```
+
+If you need the older HTTP/SSE MCP transport, configure `REDIS_URL`; the SSE endpoint is `/api/sse`.
+
+### Scoped REST Reports
+
+Agents that do not speak MCP can call REST report endpoints with the same Bearer token:
+
+```bash
+curl "https://your-pulse-host/api/agent/reports/overview?siteId=SITE_ID" \
+  -H "Authorization: Bearer pulse_at_..."
+```
+
+Available report names are `overview`, `pages`, `events`, `acquisition`, `uptime`, and `uptime_summary`.
+
+Generate a multi-report payload:
+
+```bash
+curl -X POST "https://your-pulse-host/api/agent/reports/generate" \
+  -H "Authorization: Bearer pulse_at_..." \
+  -H "Content-Type: application/json" \
+  -d '{"siteId":"SITE_ID","reports":["overview","events","uptime_summary"]}'
+```
+
+## AI Provider BYOK
+
+The in-app assistant uses the provider configured by `PULSE_AI_PROVIDER`. For self-hosted installs, each business should use its own provider keys:
+
+- OpenAI: `PULSE_AI_PROVIDER=openai`, `OPENAI_API_KEY`, optional `OPENAI_MODEL`
+- Anthropic: `PULSE_AI_PROVIDER=anthropic`, `ANTHROPIC_API_KEY`, optional `ANTHROPIC_MODEL`
+- Perplexity: `PULSE_AI_PROVIDER=perplexity`, `PERPLEXITY_API_KEY`, optional `PERPLEXITY_MODEL`
+
+External agents can also ignore Pulse's in-app assistant and connect directly to `/api/mcp` with their own OpenAI, Anthropic, or Perplexity account.
+
 ## Scripts
 
 | Command            | Description                        |
@@ -128,6 +238,7 @@ curl -X POST https://your-pulse-host/api/uptime/check \
 | `npm run build`    | Production build                   |
 | `npm run start`    | Start production server            |
 | `npm run lint`     | Run ESLint                         |
+| `npm run test`     | Run Vitest unit tests              |
 | `npm run db:generate` | Generate Prisma client          |
 | `npm run db:push`  | Push schema without migrations     |
 | `npm run db:migrate` | Run Prisma migrations (dev)      |

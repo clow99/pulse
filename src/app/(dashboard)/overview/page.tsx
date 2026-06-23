@@ -37,6 +37,20 @@ interface EventSummary {
   uniqueTriggers: number;
 }
 
+interface RevenueSummary {
+  totalRevenue: number;
+  orders: number;
+  averageOrderValue: number;
+  currency: string;
+}
+
+interface InsightItem {
+  id: string;
+  severity: string;
+  title: string;
+  body: string;
+}
+
 export default function OverviewPage() {
   const searchParams = useSearchParams();
   const siteId = searchParams.get('siteId') || '';
@@ -46,6 +60,8 @@ export default function OverviewPage() {
   const [data, setData] = useState<OverviewData | null>(null);
   const [sites, setSites] = useState<SiteInfo[]>([]);
   const [events, setEvents] = useState<EventSummary[]>([]);
+  const [revenue, setRevenue] = useState<RevenueSummary | null>(null);
+  const [insights, setInsights] = useState<InsightItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [userName, setUserName] = useState('');
   const [uptimeSummary, setUptimeSummary] = useState<UptimeSummary | null>(null);
@@ -56,9 +72,11 @@ export default function OverviewPage() {
     setLoading(true);
     try {
       const params = new URLSearchParams({ siteId, from, to });
-      const [overviewRes, eventsRes] = await Promise.all([
+      const [overviewRes, eventsRes, revenueRes, insightsRes] = await Promise.all([
         fetch(`/api/reports/overview?${params}`),
         fetch(`/api/reports/events?${params}`),
+        fetch(`/api/reports/revenue?${params}`),
+        fetch(`/api/insights?siteId=${siteId}`),
       ]);
 
       if (overviewRes.ok) {
@@ -69,6 +87,14 @@ export default function OverviewPage() {
         if (Array.isArray(eventsData)) {
           setEvents(eventsData);
         }
+      }
+      if (revenueRes.ok) {
+        const revenueData = await revenueRes.json();
+        setRevenue(revenueData.summary ?? null);
+      }
+      if (insightsRes.ok) {
+        const insightData = await insightsRes.json();
+        if (Array.isArray(insightData)) setInsights(insightData.slice(0, 3));
       }
     } catch {
       // silently fail
@@ -143,6 +169,12 @@ export default function OverviewPage() {
           change: 0,
           formatFn: (n: number) => n.toFixed(1),
         },
+        ...(revenue && revenue.totalRevenue > 0 ? [{
+          label: 'Revenue',
+          value: revenue.totalRevenue,
+          change: 0,
+          formatFn: (n: number) => `${revenue.currency === 'MIXED' ? '' : `${revenue.currency} `}${n.toLocaleString()}`,
+        }] : []),
       ]
     : [];
 
@@ -202,6 +234,22 @@ export default function OverviewPage() {
         <div className="pulse-section">
           <UptimeSummaryCard data={uptimeSummary} siteId={siteId} loading={uptimeLoading} />
         </div>
+
+        {insights.length > 0 && (
+          <div className="pulse-section">
+            <div className="pulse-section-header" style={{ marginBottom: '1rem' }}>
+              <Title level="h3" size="sm">Active Insights</Title>
+            </div>
+            <div style={{ display: 'grid', gap: '0.75rem' }}>
+              {insights.map((insight) => (
+                <div key={insight.id} style={{ padding: '1rem', border: '1px solid var(--pulse-border)', borderRadius: 8, background: 'var(--pulse-bg-card)' }}>
+                  <strong>{insight.title}</strong>
+                  <p style={{ color: 'var(--pulse-text-secondary)', fontSize: '0.875rem', margin: '0.375rem 0 0' }}>{insight.body}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         <div className="pulse-overview-grid">
           <div className="pulse-overview-chart">

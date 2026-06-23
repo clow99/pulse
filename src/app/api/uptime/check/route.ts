@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { handleUptimeAlert } from '@/lib/uptime-alerts';
 
 const TIMEOUT_MS = 10_000;
 
@@ -45,7 +46,7 @@ export async function POST(request: Request) {
 
     const sites = await prisma.site.findMany({
       where: { active: true },
-      select: { id: true, domain: true },
+      select: { id: true, name: true, domain: true },
     });
 
     const results = await Promise.allSettled(
@@ -62,6 +63,8 @@ export async function POST(request: Request) {
             error: result.error,
           },
         });
+
+        await handleUptimeAlert(site, record);
 
         return { siteId: site.id, domain: site.domain, ...result, id: record.id };
       })

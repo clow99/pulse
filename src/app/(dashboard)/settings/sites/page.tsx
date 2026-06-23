@@ -17,6 +17,36 @@ import { PageTransition } from '@/components/motion';
 import { createSiteSchema } from '@/lib/validation';
 import type { SessionUser, SiteWithStats } from '@/types';
 
+interface SetupCheck {
+  snippet: string;
+  hasData: boolean;
+  recentData: boolean;
+  domainMatch: boolean | null;
+  tokenStatus: string;
+  lastSeen: {
+    type: string;
+    at: string;
+    hostname: string;
+    pathname: string;
+    name: string | null;
+  } | null;
+  troubleshooting: string[];
+}
+
+function ChecklistItem({ label, done, muted = false }: { label: string; done: boolean; muted?: boolean }) {
+  const color = muted
+    ? 'var(--pulse-text-secondary)'
+    : done
+      ? 'var(--pulse-success)'
+      : 'var(--pulse-warning)';
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color }}>
+      <span>{muted ? '-' : done ? 'OK' : '!'}</span>
+      <span>{label}</span>
+    </div>
+  );
+}
+
 export default function SitesPage() {
   const { data: session } = useSession();
   const user = session?.user as SessionUser | undefined;
@@ -27,6 +57,8 @@ export default function SitesPage() {
   const [deleteTarget, setDeleteTarget] = useState<SiteWithStats | null>(null);
   const [expandedSiteId, setExpandedSiteId] = useState<string | null>(null);
   const [copiedTokenId, setCopiedTokenId] = useState<string | null>(null);
+  const [setupChecks, setSetupChecks] = useState<Record<string, SetupCheck>>({});
+  const [setupLoadingId, setSetupLoadingId] = useState<string | null>(null);
 
   const [newName, setNewName] = useState('');
   const [newDomain, setNewDomain] = useState('');
@@ -114,6 +146,52 @@ export default function SitesPage() {
     }
   }
 
+  async function handleToggleWebVitals(site: SiteWithStats) {
+    try {
+      const res = await fetch(`/api/sites/${site.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ collectWebVitals: !site.collectWebVitals }),
+      });
+
+      if (res.ok) {
+        setSites((prev) =>
+          prev.map((s) => (s.id === site.id ? { ...s, collectWebVitals: !s.collectWebVitals } : s))
+        );
+        setSetupChecks((prev) => {
+          const next = { ...prev };
+          delete next[site.id];
+          return next;
+        });
+      }
+    } catch {
+      // silently fail
+    }
+  }
+
+  async function fetchSetupCheck(siteId: string) {
+    setSetupLoadingId(siteId);
+    try {
+      const res = await fetch(`/api/sites/${siteId}/setup-check`);
+      if (res.ok) {
+        const data = await res.json();
+        setSetupChecks((prev) => ({ ...prev, [siteId]: data }));
+      }
+    } catch {
+      // silently fail
+    } finally {
+      setSetupLoadingId(null);
+    }
+  }
+
+  function toggleSetup(siteId: string) {
+    const next = expandedSiteId === siteId ? null : siteId;
+    setExpandedSiteId(next);
+    if (next && !setupChecks[siteId]) {
+      fetchSetupCheck(siteId);
+    }
+  }
+
   async function handleRegenerateToken(siteId: string) {
     try {
       const res = await fetch(`/api/sites/${siteId}/regenerate-token`, {
@@ -152,7 +230,7 @@ export default function SitesPage() {
   }
 
   function handleCopySnippet(site: SiteWithStats) {
-    const snippet = `<script defer data-token="${site.token}" src="https://your-pulse-instance.com/t.js"></script>`;
+    const snippet = setupChecks[site.id]?.snippet || `<script defer data-token="${site.token}" src="/t.js"></script>`;
     navigator.clipboard.writeText(snippet);
     setCopiedTokenId(site.id);
     setTimeout(() => setCopiedTokenId(null), 2000);
@@ -198,6 +276,17 @@ export default function SitesPage() {
       render: (val: unknown) => formatDate(String(val)),
     },
     {
+      key: 'collectWebVitals' as const,
+      header: 'Vitals',
+      render: (_val: unknown, row: SiteWithStats) => (
+        <Switch
+          checked={row.collectWebVitals}
+          onChange={() => handleToggleWebVitals(row)}
+          size="sm"
+        />
+      ),
+    },
+    {
       key: 'id' as const,
       header: '',
       render: (_val: unknown, row: SiteWithStats) => (
@@ -210,11 +299,9 @@ export default function SitesPage() {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() =>
-              setExpandedSiteId(expandedSiteId === row.id ? null : row.id)
-            }
+            onClick={() => toggleSetup(row.id)}
           >
-            Tracking Code
+            Setup
           </Button>
           <Button
             variant="ghost"
@@ -263,7 +350,8 @@ export default function SitesPage() {
                   {expandedSiteId && (() => {
                     const site = sites.find((s) => s.id === expandedSiteId);
                     if (!site) return null;
-                    const snippet = `<script defer data-token="${site.token}" src="https://your-pulse-instance.com/t.js"></script>`;
+                    const setup = setupChecks[site.id];
+                    const snippet = setup?.snippet || 'Loading setup snippet...';
 
                     return (
                       <div
@@ -277,12 +365,13 @@ export default function SitesPage() {
                       >
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
                           <Title level="h4" size="xs">
-                            Tracking Code for {site.name}
+                            Setup for {site.name}
                           </Title>
                           <Button
                             variant="ghost"
                             size="sm"
                             onClick={() => handleCopySnippet(site)}
+                            disabled={!setup}
                           >
                             {copiedTokenId === site.id ? 'Copied' : 'Copy'}
                           </Button>
@@ -292,6 +381,33 @@ export default function SitesPage() {
                             <code>{snippet}</code>
                           </pre>
                         </div>
+                        {setupLoadingId === site.id ? (
+                          <p style={{ color: 'var(--pulse-text-secondary)', fontSize: '0.8125rem', marginTop: '0.75rem' }}>
+                            Checking setup...
+                          </p>
+                        ) : setup && (
+                          <div style={{ display: 'grid', gap: '0.5rem', marginTop: '1rem', fontSize: '0.8125rem' }}>
+                            <ChecklistItem label="Site token active" done={setup.tokenStatus === 'active'} />
+                            <ChecklistItem label="Tracking data received" done={setup.hasData} />
+                            <ChecklistItem label="Data received in the last 24 hours" done={setup.recentData} />
+                            <ChecklistItem
+                              label="Observed hostname matches configured domain"
+                              done={setup.domainMatch !== false}
+                              muted={setup.domainMatch === null}
+                            />
+                            {setup.lastSeen && (
+                              <p style={{ color: 'var(--pulse-text-secondary)', margin: '0.25rem 0 0' }}>
+                                Last seen {new Date(setup.lastSeen.at).toLocaleString()} from {setup.lastSeen.hostname || 'unknown host'}{setup.lastSeen.pathname}
+                              </p>
+                            )}
+                            <div style={{ marginTop: '0.5rem' }}>
+                              <strong style={{ fontSize: '0.75rem' }}>Troubleshooting</strong>
+                              <ul style={{ margin: '0.375rem 0 0', paddingLeft: '1rem', color: 'var(--pulse-text-secondary)' }}>
+                                {setup.troubleshooting.map((item) => <li key={item}>{item}</li>)}
+                              </ul>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     );
                   })()}

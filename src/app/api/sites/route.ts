@@ -45,6 +45,7 @@ export async function GET() {
           domain: site.domain,
           token: site.token,
           active: site.active,
+          collectWebVitals: site.collectWebVitals,
           createdAt: site.createdAt.toISOString(),
           pageviewCount,
         };
@@ -103,6 +104,7 @@ export async function POST(request: Request) {
       data: {
         name: parsed.data.name,
         domain: parsed.data.domain,
+        collectWebVitals: parsed.data.collectWebVitals ?? false,
         token,
         orgId,
       },

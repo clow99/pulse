@@ -127,6 +127,38 @@ export default function SettingsPage() {
             <StaggerItem>
               <Card variant="shadow">
                 <Card.Header>
+                  <Title level="h3" size="sm">Agent Access</Title>
+                </Card.Header>
+                <Card.Body>
+                  <p style={{ fontSize: '0.875rem', color: 'var(--pulse-text-secondary)', marginBottom: '1rem' }}>
+                    Create scoped tokens for AI agents, MCP clients, and report automations.
+                  </p>
+                  <Link href="/settings/agent-tokens">
+                    <Button variant="secondary">Manage Agent Tokens</Button>
+                  </Link>
+                </Card.Body>
+              </Card>
+            </StaggerItem>
+
+            <StaggerItem>
+              <Card variant="shadow">
+                <Card.Header>
+                  <Title level="h3" size="sm">Monitoring</Title>
+                </Card.Header>
+                <Card.Body>
+                  <p style={{ fontSize: '0.875rem', color: 'var(--pulse-text-secondary)', marginBottom: '1rem' }}>
+                    Configure uptime notifications, alert rules, and public status pages.
+                  </p>
+                  <Link href="/settings/monitoring">
+                    <Button variant="secondary">Manage Monitoring</Button>
+                  </Link>
+                </Card.Body>
+              </Card>
+            </StaggerItem>
+
+            <StaggerItem>
+              <Card variant="shadow">
+                <Card.Header>
                   <Title level="h3" size="sm" style={{ color: 'var(--pulse-danger, #ef4444)' }}>
                     Danger Zone
                   </Title>

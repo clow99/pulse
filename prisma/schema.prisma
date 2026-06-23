@@ -13,6 +13,37 @@ enum OrgRole {
   viewer
 }
 
+enum GoalType {
+  pageview
+  event
+}
+
+enum GoalMatchType {
+  exact
+  prefix
+}
+
+enum FunnelMode {
+  sequential
+  strict
+}
+
+enum NotificationChannelType {
+  email
+  webhook
+}
+
+enum IncidentStatus {
+  open
+  resolved
+}
+
+enum InsightSeverity {
+  info
+  warning
+  critical
+}
+
 model User {
   id           String          @id @default(uuid())
   email        String          @unique
@@ -23,6 +54,7 @@ model User {
   updatedAt    DateTime        @updatedAt
   memberships  OrgMembership[]
   accounts     Account[]
+  agentTokens  AgentToken[]    @relation("AgentTokenCreator")
 }
 
 model Account {
@@ -52,6 +84,10 @@ model Organization {
   updatedAt DateTime        @updatedAt
   members   OrgMembership[]
   sites     Site[]
+  notificationChannels NotificationChannel[]
+  statusPages StatusPage[]
+  agentTokens AgentToken[]
+  agentAuditLogs AgentAuditLog[]
 }
 
 model OrgMembership {
@@ -72,6 +108,7 @@ model Site {
   domain    String
   token     String       @unique
   active    Boolean      @default(true)
+  collectWebVitals Boolean @default(false)
   org       Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
   orgId     String
   createdAt DateTime     @default(now())
@@ -79,6 +116,15 @@ model Site {
   pageviews    Pageview[]
   events       Event[]
   uptimeChecks UptimeCheck[]
+  goals        Goal[]
+  funnels      Funnel[]
+  alertRules   AlertRule[]
+  incidents    Incident[]
+  statusComponents StatusPageComponent[]
+  webVitals    WebVital[]
+  insights     Insight[]
+  agentTokens  AgentToken[]
+  agentAuditLogs AgentAuditLog[]
 
   @@index([orgId])
 }
@@ -87,6 +133,8 @@ model Pageview {
   id          String   @id @default(uuid())
   site        Site     @relation(fields: [siteId], references: [id], onDelete: Cascade)
   siteId      String
+  visitId     String?
+  hostname    String   @default("")
   pathname    String
   referrer    String   @default("")
   utmSource   String   @default("")
@@ -100,6 +148,7 @@ model Pageview {
   timestamp   DateTime @default(now())
 
   @@index([siteId, timestamp])
+  @@index([siteId, visitId, timestamp])
   @@index([siteId, pathname])
   @@index([siteId, referrer])
 }
@@ -108,19 +157,30 @@ model Event {
   id          String   @id @default(uuid())
   site        Site     @relation(fields: [siteId], references: [id], onDelete: Cascade)
   siteId      String
+  visitId     String?
   name        String
   properties  Json     @default("{}")
+  hostname    String   @default("")
   pathname    String   @default("")
   referrer    String   @default("")
+  utmSource   String   @default("")
+  utmMedium   String   @default("")
+  utmCampaign String   @default("")
   browser     String   @default("")
   os          String   @default("")
   device      String   @default("")
   country     String   @default("")
   language    String   @default("")
+  revenueValue Decimal? @db.Decimal(12, 2)
+  revenueCurrency String?
+  orderId     String?
   timestamp   DateTime @default(now())
 
   @@index([siteId, timestamp])
+  @@index([siteId, visitId, timestamp])
   @@index([siteId, name])
+  @@index([siteId, orderId])
+  @@unique([siteId, name, orderId])
 }
 
 model UptimeCheck {
@@ -134,4 +194,208 @@ model UptimeCheck {
   checkedAt    DateTime @default(now())
 
   @@index([siteId, checkedAt])
+}
+
+model NotificationChannel {
+  id        String                  @id @default(uuid())
+  org       Organization            @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  orgId     String
+  type      NotificationChannelType
+  name      String
+  target    String
+  enabled   Boolean                 @default(true)
+  createdAt DateTime                @default(now())
+  updatedAt DateTime                @updatedAt
+  alertRules AlertRule[]
+
+  @@index([orgId])
+}
+
+model AlertRule {
+  id                    String              @id @default(uuid())
+  site                  Site                @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  siteId                String
+  notificationChannel   NotificationChannel @relation(fields: [notificationChannelId], references: [id], onDelete: Cascade)
+  notificationChannelId String
+  enabled               Boolean             @default(true)
+  consecutiveFailures   Int                 @default(2)
+  recoveryChecks        Int                 @default(1)
+  createdAt             DateTime            @default(now())
+  updatedAt             DateTime            @updatedAt
+
+  @@index([siteId])
+  @@index([notificationChannelId])
+}
+
+model Incident {
+  id             String         @id @default(uuid())
+  site           Site           @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  siteId         String
+  status         IncidentStatus @default(open)
+  title          String
+  description    String?
+  startedAt      DateTime       @default(now())
+  resolvedAt     DateTime?
+  lastNotifiedAt DateTime?
+
+  @@index([siteId, status])
+  @@index([siteId, startedAt])
+}
+
+model StatusPage {
+  id          String                @id @default(uuid())
+  org         Organization          @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  orgId       String
+  slug        String                @unique
+  name        String
+  description String?
+  enabled     Boolean               @default(true)
+  createdAt   DateTime              @default(now())
+  updatedAt   DateTime              @updatedAt
+  components  StatusPageComponent[]
+
+  @@index([orgId])
+}
+
+model StatusPageComponent {
+  id           String     @id @default(uuid())
+  statusPage   StatusPage @relation(fields: [statusPageId], references: [id], onDelete: Cascade)
+  statusPageId String
+  site         Site       @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  siteId       String
+  name         String
+  sortOrder    Int        @default(0)
+
+  @@unique([statusPageId, siteId])
+  @@index([siteId])
+}
+
+model Goal {
+  id            String        @id @default(uuid())
+  site          Site          @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  siteId        String
+  name          String
+  type          GoalType
+  matchType     GoalMatchType @default(exact)
+  path          String?
+  eventName     String?
+  propertyKey   String?
+  propertyValue String?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  funnelSteps   FunnelStep[]
+
+  @@index([siteId])
+}
+
+model Funnel {
+  id        String      @id @default(uuid())
+  site      Site        @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  siteId    String
+  name      String
+  mode      FunnelMode  @default(sequential)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  steps     FunnelStep[]
+
+  @@index([siteId])
+}
+
+model FunnelStep {
+  id       String @id @default(uuid())
+  funnel   Funnel @relation(fields: [funnelId], references: [id], onDelete: Cascade)
+  funnelId String
+  goal     Goal   @relation(fields: [goalId], references: [id], onDelete: Cascade)
+  goalId   String
+  position Int
+
+  @@unique([funnelId, position])
+  @@index([goalId])
+}
+
+model WebVital {
+  id        String   @id @default(uuid())
+  site      Site     @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  siteId    String
+  visitId   String?
+  name      String
+  value     Float
+  rating    String
+  hostname  String   @default("")
+  pathname  String   @default("")
+  browser   String   @default("")
+  os        String   @default("")
+  device    String   @default("")
+  country   String   @default("")
+  language  String   @default("")
+  timestamp DateTime @default(now())
+
+  @@index([siteId, timestamp])
+  @@index([siteId, name, timestamp])
+}
+
+model Insight {
+  id          String          @id @default(uuid())
+  site        Site            @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  siteId      String
+  type        String
+  severity    InsightSeverity @default(info)
+  title       String
+  body        String
+  evidence    Json            @default("{}")
+  dismissedAt DateTime?
+  createdAt   DateTime        @default(now())
+
+  @@index([siteId, createdAt])
+  @@index([siteId, dismissedAt])
+}
+
+model AgentToken {
+  id          String       @id @default(uuid())
+  org         Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  orgId       String
+  site        Site?        @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  siteId      String?
+  name        String
+  tokenHash   String       @unique
+  tokenPrefix String
+  scopes      String[]
+  role        OrgRole      @default(viewer)
+  expiresAt   DateTime?
+  revokedAt   DateTime?
+  lastUsedAt  DateTime?
+  createdBy   User?        @relation("AgentTokenCreator", fields: [createdById], references: [id], onDelete: SetNull)
+  createdById String?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  auditLogs   AgentAuditLog[]
+
+  @@index([orgId])
+  @@index([siteId])
+  @@index([tokenPrefix])
+  @@index([revokedAt])
+  @@index([expiresAt])
+}
+
+model AgentAuditLog {
+  id         String        @id @default(uuid())
+  org        Organization? @relation(fields: [orgId], references: [id], onDelete: SetNull)
+  orgId      String?
+  site       Site?         @relation(fields: [siteId], references: [id], onDelete: SetNull)
+  siteId     String?
+  token      AgentToken?   @relation(fields: [tokenId], references: [id], onDelete: SetNull)
+  tokenId    String?
+  action     String
+  outcome    String
+  toolName   String?
+  scopes     String[]
+  ipAddress  String?
+  userAgent  String?
+  metadata   Json          @default("{}")
+  createdAt  DateTime      @default(now())
+
+  @@index([orgId, createdAt])
+  @@index([siteId, createdAt])
+  @@index([tokenId, createdAt])
+  @@index([action, createdAt])
 }

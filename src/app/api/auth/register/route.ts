@@ -1,12 +1,12 @@
 import { NextResponse } from 'next/server';
 import { hash } from 'bcryptjs';
 import { prisma } from '@/lib/prisma';
-import { registerSchema } from '@/lib/validation';
+import { registerRequestSchema } from '@/lib/validation';
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const parsed = registerSchema.safeParse(body);
+    const parsed = registerRequestSchema.safeParse(body);
 
     if (!parsed.success) {
       return NextResponse.json(
@@ -38,7 +38,8 @@ export async function POST(request: Request) {
       { id: user.id, email: user.email, name: user.name },
       { status: 201 }
     );
-  } catch {
+  } catch (error) {
+    console.error('Registration failed', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
