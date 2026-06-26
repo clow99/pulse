@@ -60,7 +60,7 @@ export function ActiveSites({ sites, siteId }: ActiveSitesProps) {
                   <div className="pulse-active-site-name">{site.name}</div>
                   <div className="pulse-active-site-domain">{site.domain}</div>
                   <div className="pulse-active-site-stats">
-                    <span>{site.visitors.toLocaleString()} visitors</span>
+                    <span>{site.visitors.toLocaleString()} est. visitors</span>
                     <span style={{ color: 'var(--pulse-text-secondary)' }}>&middot;</span>
                     <span>{site.pageviews.toLocaleString()} pageviews</span>
                   </div>

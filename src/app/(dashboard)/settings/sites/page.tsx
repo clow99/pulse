@@ -15,6 +15,7 @@ import {
 } from '@velocityuikit/velocityui';
 import { PageTransition } from '@/components/motion';
 import { createSiteSchema } from '@/lib/validation';
+import { buildTrackingSnippet } from '@/lib/tracking';
 import type { SessionUser, SiteWithStats } from '@/types';
 
 interface SetupCheck {
@@ -230,7 +231,7 @@ export default function SitesPage() {
   }
 
   function handleCopySnippet(site: SiteWithStats) {
-    const snippet = setupChecks[site.id]?.snippet || `<script defer data-token="${site.token}" src="/t.js"></script>`;
+    const snippet = setupChecks[site.id]?.snippet || buildTrackingSnippet(site.token, site.collectWebVitals);
     navigator.clipboard.writeText(snippet);
     setCopiedTokenId(site.id);
     setTimeout(() => setCopiedTokenId(null), 2000);
@@ -351,7 +352,7 @@ export default function SitesPage() {
                     const site = sites.find((s) => s.id === expandedSiteId);
                     if (!site) return null;
                     const setup = setupChecks[site.id];
-                    const snippet = setup?.snippet || 'Loading setup snippet...';
+                    const snippet = setup?.snippet || buildTrackingSnippet(site.token, site.collectWebVitals);
 
                     return (
                       <div
@@ -371,7 +372,6 @@ export default function SitesPage() {
                             variant="ghost"
                             size="sm"
                             onClick={() => handleCopySnippet(site)}
-                            disabled={!setup}
                           >
                             {copiedTokenId === site.id ? 'Copied' : 'Copy'}
                           </Button>

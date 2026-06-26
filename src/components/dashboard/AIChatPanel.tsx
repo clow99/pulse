@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect, useCallback } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -29,6 +30,8 @@ const MIN_PANEL_HEIGHT = 360;
 const MAX_PANEL_HEIGHT = 900;
 
 export function AIChatPanel({ siteId }: AIChatPanelProps) {
+  const searchParams = useSearchParams();
+  const selectedSiteId = searchParams.get('siteId') || siteId;
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
   const [isStreaming, setIsStreaming] = useState(false);
@@ -87,8 +90,12 @@ export function AIChatPanel({ siteId }: AIChatPanelProps) {
     }
   }, [isOpen, isMinimized]);
 
+  useEffect(() => {
+    setMessages([]);
+  }, [selectedSiteId]);
+
   const sendMessage = useCallback(async (content: string) => {
-    if (!content.trim() || isStreaming) return;
+    if (!content.trim() || isStreaming || !selectedSiteId) return;
 
     const userMessage: ChatMessage = { role: 'user', content: content.trim() };
     const updatedMessages = [...messages, userMessage];
@@ -102,7 +109,7 @@ export function AIChatPanel({ siteId }: AIChatPanelProps) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           messages: updatedMessages,
-          siteId,
+          siteId: selectedSiteId,
         }),
       });
 
@@ -165,7 +172,7 @@ export function AIChatPanel({ siteId }: AIChatPanelProps) {
     } finally {
       setIsStreaming(false);
     }
-  }, [messages, isStreaming, siteId]);
+  }, [messages, isStreaming, selectedSiteId]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

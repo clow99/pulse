@@ -155,18 +155,19 @@ export default function OverviewPage() {
 
   const stats = data?.stats
     ? [
-        { label: 'Visitors', value: data.stats.visitors, change: data.stats.visitorsChange },
+        { label: 'Estimated Visitors', value: data.stats.visitors, change: data.stats.visitorsChange },
         { label: 'Pageviews', value: data.stats.pageviews, change: data.stats.pageviewsChange },
         {
-          label: 'Bounce Rate',
-          value: data.stats.bounceRate,
+          label: 'Tracked Events',
+          value: events.reduce((sum, event) => sum + event.count, 0),
           change: 0,
-          formatFn: (n: number) => `${n.toFixed(1)}%`,
+          hideChange: true,
         },
         {
-          label: 'Pages / Visit',
+          label: 'Views / Est. Visitor',
           value: data.stats.avgPagesPerVisit,
           change: 0,
+          hideChange: true,
           formatFn: (n: number) => n.toFixed(1),
         },
         ...(revenue && revenue.totalRevenue > 0 ? [{
@@ -191,7 +192,7 @@ export default function OverviewPage() {
     id: `page-${i}`,
     icon: '\u25A4',
     title: page.pathname,
-    detail: `${page.views.toLocaleString()} views, ${page.visitors.toLocaleString()} visitors`,
+    detail: `${page.views.toLocaleString()} views, ${page.visitors.toLocaleString()} estimated visitors`,
     time: 'Last 30d',
     type: 'page' as const,
   }));
@@ -200,7 +201,7 @@ export default function OverviewPage() {
     id: `event-${i}`,
     icon: '\u25C6',
     title: evt.name,
-    detail: `${evt.count.toLocaleString()} triggers, ${evt.uniqueTriggers.toLocaleString()} unique`,
+    detail: `${evt.count.toLocaleString()} triggers, ${evt.uniqueTriggers.toLocaleString()} estimated unique`,
     time: 'Last 30d',
     type: 'event' as const,
   }));

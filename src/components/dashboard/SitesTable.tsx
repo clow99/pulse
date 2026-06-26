@@ -39,7 +39,7 @@ export function SitesTable({ sites, loading = false }: SitesTableProps) {
               <tr>
                 <th>Site</th>
                 <th>Domain</th>
-                <th>Visitors</th>
+                <th>Est. Visitors</th>
                 <th>Pageviews</th>
                 <th>Status</th>
               </tr>

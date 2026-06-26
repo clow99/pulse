@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname, useSearchParams, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -109,11 +110,14 @@ export function Sidebar({ orgName, siteName, orgId, sites }: SidebarProps) {
         }}
       >
         <div style={{ marginBottom: '1rem' }}>
-          <img
+          <Image
             src="/logo.png"
             alt="Pulse"
+            width={144}
+            height={56}
             style={{
               height: 56,
+              width: 144,
               objectFit: 'contain',
             }}
           />

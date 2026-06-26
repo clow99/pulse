@@ -13,6 +13,7 @@ export interface StatItem {
   value: number;
   change: number;
   formatFn?: (n: number) => string;
+  hideChange?: boolean;
 }
 
 interface StatsCardsProps {
@@ -34,15 +35,17 @@ export function StatsCards({ stats }: StatsCardsProps) {
                     formatFn={stat.formatFn}
                   />
                 </div>
-                <div className="pulse-stat-change">
-                  <Badge
-                    variant={stat.change >= 0 ? 'success' : 'danger'}
-                    size="sm"
-                  >
-                    {stat.change >= 0 ? '\u2191' : '\u2193'}{' '}
-                    {Math.abs(stat.change).toFixed(1)}%
-                  </Badge>
-                </div>
+                {!stat.hideChange && (
+                  <div className="pulse-stat-change">
+                    <Badge
+                      variant={stat.change >= 0 ? 'success' : 'danger'}
+                      size="sm"
+                    >
+                      {stat.change >= 0 ? '\u2191' : '\u2193'}{' '}
+                      {Math.abs(stat.change).toFixed(1)}%
+                    </Badge>
+                  </div>
+                )}
               </Card.Body>
             </Card>
           </motion.div>

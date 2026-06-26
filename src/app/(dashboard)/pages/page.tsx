@@ -114,7 +114,7 @@ export default function PagesPage() {
   const columns = [
     { key: 'pathname', header: 'Path', sortable: true },
     { key: 'views', header: 'Views', sortable: true },
-    { key: 'visitors', header: 'Visitors', sortable: true },
+    { key: 'visitors', header: 'Est. Visitors', sortable: true },
   ];
 
   return (

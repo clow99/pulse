@@ -15,6 +15,7 @@ import {
 import { FadeIn } from '@/components/motion';
 import { createOrgSchema, createSiteSchema } from '@/lib/validation';
 import { generateSlug } from '@/lib/slugify';
+import { buildTrackingSnippet } from '@/lib/tracking';
 
 const STEPS = [
   { label: 'Create Organization' },
@@ -215,8 +216,7 @@ export default function OnboardingPage() {
   }
 
   function handleCopySnippet() {
-    const snippet = `<script defer data-token="${siteToken}" src="https://your-pulse-instance.com/t.js"></script>`;
-    navigator.clipboard.writeText(snippet);
+    navigator.clipboard.writeText(buildTrackingSnippet(siteToken));
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   }
@@ -251,7 +251,7 @@ export default function OnboardingPage() {
     return () => clearTimeout(timeout);
   }, [verified, router]);
 
-  const snippet = `<script defer data-token="${siteToken}" src="https://your-pulse-instance.com/t.js"></script>`;
+  const snippet = buildTrackingSnippet(siteToken);
 
   return (
     <div style={{ maxWidth: 560, margin: '0 auto' }}>

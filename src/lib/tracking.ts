@@ -5,7 +5,9 @@ export type TrackingProperties = Record<string, TrackingPropertyValue>;
 
 export function getAppUrl() {
   const configured = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXTAUTH_URL;
-  return (configured || 'http://localhost:3000').replace(/\/$/, '');
+  if (configured) return configured.replace(/\/$/, '');
+  if (typeof window !== 'undefined') return window.location.origin;
+  return 'http://localhost:3000';
 }
 
 export function buildTrackingSnippet(token: string, collectWebVitals = false) {

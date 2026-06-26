@@ -23,7 +23,6 @@ export interface ReportFilters {
 export interface StatsOverview {
   visitors: number;
   pageviews: number;
-  bounceRate: number;
   avgPagesPerVisit: number;
   visitorsChange: number;
   pageviewsChange: number;

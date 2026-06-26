@@ -208,7 +208,6 @@ export async function getOverviewReport(siteId: string, range: ReportRange) {
     stats: {
       visitors,
       pageviews,
-      bounceRate: 0,
       avgPagesPerVisit: Math.round(avgPagesPerVisit * 100) / 100,
       visitorsChange: Math.round(visitorsChange * 100) / 100,
       pageviewsChange: Math.round(pageviewsChange * 100) / 100,
