@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { createSiteSchema } from '@/lib/validation';
 
 interface RouteContext {
   params: Promise<{ id: string }>;
@@ -45,8 +46,26 @@ export async function PUT(request: Request, context: RouteContext) {
     } = {};
     if (typeof body.active === 'boolean') updateData.active = body.active;
     if (typeof body.collectWebVitals === 'boolean') updateData.collectWebVitals = body.collectWebVitals;
-    if (typeof body.name === 'string' && body.name.trim()) updateData.name = body.name.trim();
-    if (typeof body.domain === 'string' && body.domain.trim()) updateData.domain = body.domain.trim();
+    if (typeof body.name === 'string') {
+      const parsedName = createSiteSchema.shape.name.safeParse(body.name.trim());
+      if (!parsedName.success) {
+        return NextResponse.json(
+          { error: parsedName.error.issues[0]?.message || 'Name is invalid' },
+          { status: 400 }
+        );
+      }
+      updateData.name = parsedName.data;
+    }
+    if (typeof body.domain === 'string') {
+      const parsedDomain = createSiteSchema.shape.domain.safeParse(body.domain.trim());
+      if (!parsedDomain.success) {
+        return NextResponse.json(
+          { error: parsedDomain.error.issues[0]?.message || 'Domain is invalid' },
+          { status: 400 }
+        );
+      }
+      updateData.domain = parsedDomain.data;
+    }
 
     const updated = await prisma.site.update({
       where: { id },

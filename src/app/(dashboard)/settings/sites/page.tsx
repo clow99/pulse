@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 import {
   Card,
   Title,
@@ -50,11 +51,13 @@ function ChecklistItem({ label, done, muted = false }: { label: string; done: bo
 
 export default function SitesPage() {
   const { data: session } = useSession();
+  const router = useRouter();
   const user = session?.user as SessionUser | undefined;
 
   const [sites, setSites] = useState<SiteWithStats[]>([]);
   const [loading, setLoading] = useState(true);
   const [addDialogOpen, setAddDialogOpen] = useState(false);
+  const [editTarget, setEditTarget] = useState<SiteWithStats | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<SiteWithStats | null>(null);
   const [expandedSiteId, setExpandedSiteId] = useState<string | null>(null);
   const [copiedTokenId, setCopiedTokenId] = useState<string | null>(null);
@@ -63,13 +66,22 @@ export default function SitesPage() {
 
   const [newName, setNewName] = useState('');
   const [newDomain, setNewDomain] = useState('');
+  const [editName, setEditName] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [editError, setEditError] = useState<string | null>(null);
+  const [editNameError, setEditNameError] = useState<string | undefined>();
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   const orgId = user?.activeOrgId;
 
   const closeAddDialog = useCallback(() => setAddDialogOpen(false), []);
+  const closeEditDialog = useCallback(() => {
+    setEditTarget(null);
+    setEditName('');
+    setEditError(null);
+    setEditNameError(undefined);
+  }, []);
   const closeDeleteDialog = useCallback(() => setDeleteTarget(null), []);
 
   const fetchSites = useCallback(async () => {
@@ -122,8 +134,56 @@ export default function SitesPage() {
       setNewName('');
       setNewDomain('');
       fetchSites();
+      router.refresh();
     } catch {
       setError('Something went wrong');
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  function openEditDialog(site: SiteWithStats) {
+    setEditTarget(site);
+    setEditName(site.name);
+    setEditError(null);
+    setEditNameError(undefined);
+  }
+
+  async function handleEditSite() {
+    if (!editTarget) return;
+
+    setEditError(null);
+    setEditNameError(undefined);
+
+    const parsedName = createSiteSchema.shape.name.safeParse(editName.trim());
+    if (!parsedName.success) {
+      setEditNameError(parsedName.error.issues[0]?.message || 'Name is invalid');
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      const res = await fetch(`/api/sites/${editTarget.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: parsedName.data }),
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        setEditError(data.error || 'Failed to update site');
+        return;
+      }
+
+      setSites((prev) =>
+        prev.map((site) =>
+          site.id === editTarget.id ? { ...site, name: data.name } : site
+        )
+      );
+      closeEditDialog();
+      router.refresh();
+    } catch {
+      setEditError('Something went wrong');
     } finally {
       setSubmitting(false);
     }
@@ -141,6 +201,7 @@ export default function SitesPage() {
         setSites((prev) =>
           prev.map((s) => (s.id === site.id ? { ...s, active: !s.active } : s))
         );
+        router.refresh();
       }
     } catch {
       // silently fail
@@ -222,6 +283,7 @@ export default function SitesPage() {
       if (res.ok) {
         setSites((prev) => prev.filter((s) => s.id !== deleteTarget.id));
         setDeleteTarget(null);
+        router.refresh();
       }
     } catch {
       // silently fail
@@ -297,6 +359,13 @@ export default function SitesPage() {
             onChange={() => handleToggleActive(row)}
             size="sm"
           />
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => openEditDialog(row)}
+          >
+            Edit
+          </Button>
           <Button
             variant="ghost"
             size="sm"
@@ -447,6 +516,32 @@ export default function SitesPage() {
             </Button>
             <Button variant="primary" onClick={handleAddSite} loading={submitting}>
               Add Site
+            </Button>
+          </Dialog.Footer>
+        </Dialog>
+
+        <Dialog open={!!editTarget} onClose={closeEditDialog}>
+          <Dialog.Header>
+            <Title level="h3" size="sm">Edit Site</Title>
+          </Dialog.Header>
+          <Dialog.Body>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              {editError && <Alert variant="danger">{editError}</Alert>}
+              <Input
+                label="Site Name"
+                value={editName}
+                onChange={(e) => setEditName(e.target.value)}
+                fullWidth
+                error={editNameError}
+              />
+            </div>
+          </Dialog.Body>
+          <Dialog.Footer>
+            <Button variant="ghost" onClick={closeEditDialog}>
+              Cancel
+            </Button>
+            <Button variant="primary" onClick={handleEditSite} loading={submitting}>
+              Save
             </Button>
           </Dialog.Footer>
         </Dialog>
