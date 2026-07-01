@@ -67,6 +67,7 @@ Optional variables:
 | `ANTHROPIC_API_KEY`   | Enables Anthropic for the AI assistant         |
 | `PERPLEXITY_API_KEY`  | Enables Perplexity Sonar for the AI assistant  |
 | `PULSE_MCP_RESOURCE_URL` | Public MCP resource URL, usually `https://your-pulse-host/api/mcp` |
+| `PULSE_SELF_ANALYTICS_SITE_TOKEN` | Optional Pulse site token for tracking the Pulse app itself |
 | `REDIS_URL`           | Enables MCP SSE transport in addition to Streamable HTTP |
 | `UPTIME_CHECK_SECRET` | Bearer token for the uptime cron endpoint      |
 | `INSIGHTS_CRON_SECRET` | Bearer token for the insights cron endpoint   |

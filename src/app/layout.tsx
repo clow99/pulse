@@ -28,6 +28,7 @@ export default function RootLayout({
         <Providers>
           {children}
         </Providers>
+        <script defer src="/self-analytics.js" />
       </body>
     </html>
   );
