@@ -176,11 +176,11 @@ export default function SettingsPage() {
           </div>
         </StaggerContainer>
 
-        <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>
+        <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)} className="pulse-dialog">
           <Dialog.Header>
             <Title level="h3" size="sm">Delete Organization</Title>
           </Dialog.Header>
-          <Dialog.Body>
+          <Dialog.Body className="pulse-dialog-body">
             {error && (
               <Alert variant="danger" style={{ marginBottom: '1rem' }}>{error}</Alert>
             )}
@@ -189,7 +189,7 @@ export default function SettingsPage() {
               memberships will be permanently removed.
             </p>
           </Dialog.Body>
-          <Dialog.Footer>
+          <Dialog.Footer className="pulse-dialog-footer">
             <Button variant="ghost" onClick={() => setDeleteDialogOpen(false)}>
               Cancel
             </Button>

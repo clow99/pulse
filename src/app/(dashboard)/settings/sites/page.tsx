@@ -353,7 +353,7 @@ export default function SitesPage() {
       key: 'id' as const,
       header: '',
       render: (_val: unknown, row: SiteWithStats) => (
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+        <div className="pulse-table-actions">
           <Switch
             checked={row.active}
             onChange={() => handleToggleActive(row)}
@@ -415,7 +415,7 @@ export default function SitesPage() {
                 </p>
               ) : (
                 <div>
-                  <Table columns={columns} data={sites} />
+                  <Table className="pulse-report-table" size="sm" columns={columns} data={sites} />
 
                   {expandedSiteId && (() => {
                     const site = sites.find((s) => s.id === expandedSiteId);
@@ -424,16 +424,8 @@ export default function SitesPage() {
                     const snippet = setup?.snippet || buildTrackingSnippet(site.token, site.collectWebVitals);
 
                     return (
-                      <div
-                        style={{
-                          marginTop: '1rem',
-                          padding: '1rem',
-                          backgroundColor: 'var(--pulse-bg-primary)',
-                          borderRadius: '8px',
-                          border: '1px solid var(--pulse-border)',
-                        }}
-                      >
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                      <div className="pulse-setup-panel">
+                        <div className="pulse-setup-header" style={{ marginBottom: '0.5rem' }}>
                           <Title level="h4" size="xs">
                             Setup for {site.name}
                           </Title>
@@ -486,12 +478,12 @@ export default function SitesPage() {
           </Card>
         </div>
 
-        <Dialog open={addDialogOpen} onClose={closeAddDialog}>
+        <Dialog open={addDialogOpen} onClose={closeAddDialog} className="pulse-dialog">
           <Dialog.Header>
             <Title level="h3" size="sm">Add Site</Title>
           </Dialog.Header>
-          <Dialog.Body>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          <Dialog.Body className="pulse-dialog-body">
+            <div className="pulse-form-stack">
               {error && <Alert variant="danger">{error}</Alert>}
               <Input
                 label="Site Name"
@@ -510,7 +502,7 @@ export default function SitesPage() {
               />
             </div>
           </Dialog.Body>
-          <Dialog.Footer>
+          <Dialog.Footer className="pulse-dialog-footer">
             <Button variant="ghost" onClick={closeAddDialog}>
               Cancel
             </Button>
@@ -520,12 +512,12 @@ export default function SitesPage() {
           </Dialog.Footer>
         </Dialog>
 
-        <Dialog open={!!editTarget} onClose={closeEditDialog}>
+        <Dialog open={!!editTarget} onClose={closeEditDialog} className="pulse-dialog">
           <Dialog.Header>
             <Title level="h3" size="sm">Edit Site</Title>
           </Dialog.Header>
-          <Dialog.Body>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          <Dialog.Body className="pulse-dialog-body">
+            <div className="pulse-form-stack">
               {editError && <Alert variant="danger">{editError}</Alert>}
               <Input
                 label="Site Name"
@@ -536,7 +528,7 @@ export default function SitesPage() {
               />
             </div>
           </Dialog.Body>
-          <Dialog.Footer>
+          <Dialog.Footer className="pulse-dialog-footer">
             <Button variant="ghost" onClick={closeEditDialog}>
               Cancel
             </Button>
@@ -546,17 +538,17 @@ export default function SitesPage() {
           </Dialog.Footer>
         </Dialog>
 
-        <Dialog open={!!deleteTarget} onClose={closeDeleteDialog}>
+        <Dialog open={!!deleteTarget} onClose={closeDeleteDialog} className="pulse-dialog">
           <Dialog.Header>
             <Title level="h3" size="sm">Delete Site</Title>
           </Dialog.Header>
-          <Dialog.Body>
+          <Dialog.Body className="pulse-dialog-body">
             <p style={{ fontSize: '0.875rem', color: 'var(--pulse-text-secondary)' }}>
               Are you sure you want to delete <strong>{deleteTarget?.name}</strong>?
               All tracking data for this site will be permanently removed.
             </p>
           </Dialog.Body>
-          <Dialog.Footer>
+          <Dialog.Footer className="pulse-dialog-footer">
             <Button variant="ghost" onClick={closeDeleteDialog}>
               Cancel
             </Button>

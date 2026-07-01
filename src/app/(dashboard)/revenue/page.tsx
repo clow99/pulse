@@ -83,20 +83,13 @@ export default function RevenuePage() {
         </div>
 
         <div className="pulse-section">
-          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '1rem' }}>
+          <div className="pulse-tasks-tabs" style={{ display: 'inline-flex', flexWrap: 'wrap', marginBottom: '1rem' }}>
             {Object.entries(breakdownLabels).map(([key, label]) => (
               <button
                 key={key}
                 type="button"
                 onClick={() => setActiveBreakdown(key)}
-                style={{
-                  padding: '0.5rem 0.75rem',
-                  borderRadius: 6,
-                  border: '1px solid var(--pulse-border)',
-                  background: activeBreakdown === key ? 'var(--pulse-accent)' : 'var(--pulse-bg-card)',
-                  color: activeBreakdown === key ? '#fff' : 'var(--pulse-text-primary)',
-                  cursor: 'pointer',
-                }}
+                className={`pulse-tasks-tab ${activeBreakdown === key ? 'active' : ''}`}
               >
                 {label}
               </button>

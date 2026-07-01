@@ -145,6 +145,11 @@ curl -X POST https://your-pulse-host/api/uptime/check \
   -H "Authorization: Bearer $UPTIME_CHECK_SECRET"
 ```
 
+Email notification channels require `SMTP_HOST` and `SMTP_FROM`; set
+`SMTP_PORT`, `SMTP_USER`, and `SMTP_PASS` when your relay requires them. Pulse
+does not run a built-in scheduler, so uptime checks and insight generation must
+be invoked by cron, systemd timers, or an external scheduler.
+
 Generate proactive insights with a cron job:
 
 ```bash

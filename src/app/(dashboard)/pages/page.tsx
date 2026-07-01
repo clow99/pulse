@@ -126,14 +126,7 @@ export default function PagesPage() {
           </Title>
           <DateRangePicker from={from} to={to} onChange={handleDateChange} />
         </div>
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.5rem',
-            marginBottom: '1.5rem',
-          }}
-        >
+        <div className="pulse-toolbar">
           <Input
             type="text"
             placeholder="Filter by pathname"
@@ -141,7 +134,7 @@ export default function PagesPage() {
             onChange={(e) => setSearchInput(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
             size="sm"
-            style={{ width: 280 }}
+            style={{ width: 'min(100%, 320px)' }}
           />
           <Button variant="secondary" size="sm" onClick={handleSearch}>
             Search

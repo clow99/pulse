@@ -76,22 +76,10 @@ export function ReportTable({
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.3 }}
-      className="pulse-chart-container"
-      style={{ position: 'relative' }}
+      className="pulse-chart-container pulse-report-table-shell"
     >
       {loading && (
-        <div
-          style={{
-            position: 'absolute',
-            inset: 0,
-            backgroundColor: 'rgba(10, 10, 15, 0.7)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            borderRadius: 12,
-            zIndex: 10,
-          }}
-        >
+        <div className="pulse-loading-overlay">
           <div
             style={{
               width: 32,
@@ -111,6 +99,7 @@ export function ReportTable({
         sortDir={sortDir}
         onSort={onSort}
         className="pulse-report-table"
+        size="sm"
       />
       {totalPages > 1 && onPageChange && (
         <div style={{ marginTop: '1rem', display: 'flex', justifyContent: 'center' }}>

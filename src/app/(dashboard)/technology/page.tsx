@@ -113,7 +113,7 @@ export default function TechnologyPage() {
           exit={{ opacity: 0 }}
           transition={{ duration: 0.2 }}
         >
-          <div className="pulse-section">
+          <div className="pulse-section" style={{ display: 'grid', gap: '1rem' }}>
             <div className="pulse-chart-container">
               <BarChart data={chart} />
             </div>

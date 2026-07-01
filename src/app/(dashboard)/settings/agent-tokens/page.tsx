@@ -187,7 +187,7 @@ export default function AgentTokensPage() {
       key: 'id' as const,
       header: '',
       render: (_value: unknown, row: AgentTokenView) => (
-        <div style={{ display: 'flex', gap: '0.5rem' }}>
+        <div className="pulse-table-actions">
           <Button variant="ghost" size="sm" onClick={() => rotateToken(row)}>
             Rotate
           </Button>
@@ -216,8 +216,8 @@ export default function AgentTokensPage() {
 
         {secret && (
           <Alert variant="success" style={{ marginBottom: '1rem' }}>
-            <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
-              <code style={{ wordBreak: 'break-all' }}>{secret}</code>
+            <div className="pulse-token-alert">
+              <code>{secret}</code>
               <Button variant="secondary" size="sm" onClick={copySecret}>
                 {copied ? 'Copied' : 'Copy'}
               </Button>
@@ -239,17 +239,17 @@ export default function AgentTokensPage() {
                 No agent tokens yet.
               </p>
             ) : (
-              <Table columns={columns} data={tokens} />
+              <Table className="pulse-report-table" size="sm" columns={columns} data={tokens} />
             )}
           </Card.Body>
         </Card>
 
-        <Dialog open={createOpen} onClose={() => setCreateOpen(false)}>
+        <Dialog open={createOpen} onClose={() => setCreateOpen(false)} className="pulse-dialog" size="lg">
           <Dialog.Header>
             <Title level="h3" size="sm">New Agent Token</Title>
           </Dialog.Header>
-          <Dialog.Body>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          <Dialog.Body className="pulse-dialog-body">
+            <div className="pulse-form-stack">
               {error && <Alert variant="danger">{error}</Alert>}
               <Input
                 label="Name"
@@ -257,20 +257,12 @@ export default function AgentTokensPage() {
                 onChange={(event) => setName(event.target.value)}
                 fullWidth
               />
-              <label style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-                <span style={{ fontSize: '0.75rem', color: 'var(--pulse-text-secondary)' }}>
-                  Site
-                </span>
+              <label className="pulse-label">
+                <span>Site</span>
                 <select
+                  className="pulse-select"
                   value={siteId}
                   onChange={(event) => setSiteId(event.target.value)}
-                  style={{
-                    border: '1px solid var(--pulse-border)',
-                    borderRadius: '8px',
-                    padding: '0.65rem 0.75rem',
-                    background: 'var(--pulse-bg-primary)',
-                    color: 'var(--pulse-text-primary)',
-                  }}
                 >
                   <option value="">All organization sites</option>
                   {sites.map((site) => (
@@ -280,21 +272,13 @@ export default function AgentTokensPage() {
                   ))}
                 </select>
               </label>
-              <label style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-                <span style={{ fontSize: '0.75rem', color: 'var(--pulse-text-secondary)' }}>
-                  Expires
-                </span>
+              <label className="pulse-label">
+                <span>Expires</span>
                 <input
+                  className="pulse-input-native"
                   type="datetime-local"
                   value={expiresAt}
                   onChange={(event) => setExpiresAt(event.target.value)}
-                  style={{
-                    border: '1px solid var(--pulse-border)',
-                    borderRadius: '8px',
-                    padding: '0.65rem 0.75rem',
-                    background: 'var(--pulse-bg-primary)',
-                    color: 'var(--pulse-text-primary)',
-                  }}
                 />
               </label>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
@@ -316,7 +300,7 @@ export default function AgentTokensPage() {
               </div>
             </div>
           </Dialog.Body>
-          <Dialog.Footer>
+          <Dialog.Footer className="pulse-dialog-footer">
             <Button variant="ghost" onClick={() => setCreateOpen(false)}>
               Cancel
             </Button>

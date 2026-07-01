@@ -30,18 +30,27 @@ export async function sendNotification(
   if (!channel.enabled) return;
 
   if (channel.type === 'webhook') {
-    await fetch(channel.target, {
+    const res = await fetch(channel.target, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
     });
+    if (!res.ok) {
+      throw new Error(`Webhook notification failed with HTTP ${res.status}`);
+    }
     return;
   }
 
   if (channel.type === 'email') {
     const host = process.env.SMTP_HOST;
     const from = process.env.SMTP_FROM;
-    if (!host || !from) return;
+    if (!host || !from) {
+      const missing = [
+        !host ? 'SMTP_HOST' : null,
+        !from ? 'SMTP_FROM' : null,
+      ].filter(Boolean).join(', ');
+      throw new Error(`Email notification is not configured. Missing ${missing}.`);
+    }
 
     const port = Number(process.env.SMTP_PORT || 587);
     const transporter = nodemailer.createTransport({

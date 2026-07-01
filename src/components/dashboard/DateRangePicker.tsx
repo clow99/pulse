@@ -82,14 +82,7 @@ export function DateRangePicker({ from, to, onChange }: DateRangePickerProps) {
   }
 
   return (
-    <div
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: '0.5rem',
-        flexWrap: 'wrap',
-      }}
-    >
+    <div className="pulse-date-range">
       <Button
         variant={activePreset === 'today' ? 'secondary' : 'ghost'}
         size="sm"
@@ -126,7 +119,7 @@ export function DateRangePicker({ from, to, onChange }: DateRangePickerProps) {
         Custom
       </Button>
       {showCustom && (
-        <>
+        <div className="pulse-date-range-custom">
           <Input
             type="date"
             value={customFrom}
@@ -144,7 +137,7 @@ export function DateRangePicker({ from, to, onChange }: DateRangePickerProps) {
           <Button variant="primary" size="sm" onClick={handleCustomApply}>
             Apply
           </Button>
-        </>
+        </div>
       )}
     </div>
   );

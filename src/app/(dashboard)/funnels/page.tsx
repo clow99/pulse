@@ -110,13 +110,13 @@ export default function FunnelsPage() {
           <DateRangePicker from={from} to={to} onChange={(nextFrom, nextTo) => { setFrom(nextFrom); setTo(nextTo); }} />
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 320px), 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
           <Card variant="shadow">
             <Card.Header><Title level="h3" size="sm">Create Goal</Title></Card.Header>
             <Card.Body>
               <div style={{ display: 'grid', gap: '0.75rem' }}>
                 <Input placeholder="Goal name" value={goalName} onChange={(e) => setGoalName(e.target.value)} />
-                <select value={goalType} onChange={(e) => setGoalType(e.target.value as 'pageview' | 'event')} style={{ padding: '0.625rem', borderRadius: 6 }}>
+                <select className="pulse-select" value={goalType} onChange={(e) => setGoalType(e.target.value as 'pageview' | 'event')}>
                   <option value="pageview">Pageview</option>
                   <option value="event">Event</option>
                 </select>
@@ -131,12 +131,12 @@ export default function FunnelsPage() {
             <Card.Body>
               <div style={{ display: 'grid', gap: '0.75rem' }}>
                 <Input placeholder="Funnel name" value={funnelName} onChange={(e) => setFunnelName(e.target.value)} />
-                <select value={funnelMode} onChange={(e) => setFunnelMode(e.target.value as 'sequential' | 'strict')} style={{ padding: '0.625rem', borderRadius: 6 }}>
+                <select className="pulse-select" value={funnelMode} onChange={(e) => setFunnelMode(e.target.value as 'sequential' | 'strict')}>
                   <option value="sequential">Sequential</option>
                   <option value="strict">Strict</option>
                 </select>
                 {[stepA, stepB, stepC].map((value, index) => (
-                  <select key={index} value={value} onChange={(e) => [setStepA, setStepB, setStepC][index](e.target.value)} style={{ padding: '0.625rem', borderRadius: 6 }}>
+                  <select key={index} className="pulse-select" value={value} onChange={(e) => [setStepA, setStepB, setStepC][index](e.target.value)}>
                     <option value="">{index < 2 ? `Step ${index + 1}` : 'Optional step 3'}</option>
                     {goals.map((goal) => <option key={goal.id} value={goal.id}>{goal.name}</option>)}
                   </select>
@@ -149,47 +149,59 @@ export default function FunnelsPage() {
 
         <div className="pulse-section">
           <Title level="h3" size="sm">Goal Results</Title>
-          <div style={{ display: 'grid', gap: '0.75rem', marginTop: '1rem' }}>
-            {goalReports.map((goal) => (
-              <Card key={goal.id} variant="bordered">
-                <Card.Body>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap' }}>
-                    <strong>{goal.name}</strong>
-                    <span>{goal.count.toLocaleString()} conversions</span>
-                  </div>
-                  <p style={{ color: 'var(--pulse-text-secondary)', fontSize: '0.8125rem', marginTop: '0.375rem' }}>
-                    {goal.uniqueVisits.toLocaleString()} visits {goal.legacyCount > 0 ? `; ${goal.legacyCount} legacy rows excluded from visit-based math` : ''}
-                  </p>
-                </Card.Body>
-              </Card>
-            ))}
-          </div>
+          {goalReports.length === 0 ? (
+            <div className="pulse-empty-state" style={{ marginTop: '1rem' }}>
+              No goal results for this date range.
+            </div>
+          ) : (
+            <div style={{ display: 'grid', gap: '0.75rem', marginTop: '1rem' }}>
+              {goalReports.map((goal) => (
+                <Card key={goal.id} variant="bordered">
+                  <Card.Body>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap' }}>
+                      <strong>{goal.name}</strong>
+                      <span>{goal.count.toLocaleString()} conversions</span>
+                    </div>
+                    <p style={{ color: 'var(--pulse-text-secondary)', fontSize: '0.8125rem', marginTop: '0.375rem' }}>
+                      {goal.uniqueVisits.toLocaleString()} visits {goal.legacyCount > 0 ? `; ${goal.legacyCount} legacy rows excluded from visit-based math` : ''}
+                    </p>
+                  </Card.Body>
+                </Card>
+              ))}
+            </div>
+          )}
         </div>
 
         <div className="pulse-section">
           <Title level="h3" size="sm">Funnel Results</Title>
-          <div style={{ display: 'grid', gap: '1rem', marginTop: '1rem' }}>
-            {funnelReports.map((funnel) => (
-              <Card key={funnel.id} variant="shadow">
-                <Card.Body>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap', marginBottom: '1rem' }}>
-                    <div><strong>{funnel.name}</strong> <Badge size="sm" variant="info">{funnel.mode}</Badge></div>
-                    <span>{funnel.conversionRate.toFixed(2)}% conversion</span>
-                  </div>
-                  <div style={{ display: 'grid', gap: '0.5rem' }}>
-                    {funnel.steps.map((step) => (
-                      <div key={step.goalId} style={{ display: 'grid', gridTemplateColumns: '2rem 1fr auto auto', gap: '0.75rem', alignItems: 'center' }}>
-                        <span>{step.position}</span>
-                        <span>{step.name}</span>
-                        <span>{step.count.toLocaleString()}</span>
-                        <span style={{ color: 'var(--pulse-text-secondary)' }}>{step.dropoffRate.toFixed(1)}% drop</span>
-                      </div>
-                    ))}
-                  </div>
-                </Card.Body>
-              </Card>
-            ))}
-          </div>
+          {funnelReports.length === 0 ? (
+            <div className="pulse-empty-state" style={{ marginTop: '1rem' }}>
+              Create a funnel with at least two goals to see conversion results.
+            </div>
+          ) : (
+            <div style={{ display: 'grid', gap: '1rem', marginTop: '1rem' }}>
+              {funnelReports.map((funnel) => (
+                <Card key={funnel.id} variant="shadow">
+                  <Card.Body>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap', marginBottom: '1rem' }}>
+                      <div><strong>{funnel.name}</strong> <Badge size="sm" variant="info">{funnel.mode}</Badge></div>
+                      <span>{funnel.conversionRate.toFixed(2)}% conversion</span>
+                    </div>
+                    <div style={{ display: 'grid', gap: '0.5rem', overflowX: 'auto' }}>
+                      {funnel.steps.map((step) => (
+                        <div key={step.goalId} style={{ display: 'grid', gridTemplateColumns: '2rem minmax(12rem, 1fr) auto auto', gap: '0.75rem', alignItems: 'center', minWidth: '32rem' }}>
+                          <span>{step.position}</span>
+                          <span style={{ overflowWrap: 'anywhere' }}>{step.name}</span>
+                          <span>{step.count.toLocaleString()}</span>
+                          <span style={{ color: 'var(--pulse-text-secondary)' }}>{step.dropoffRate.toFixed(1)}% drop</span>
+                        </div>
+                      ))}
+                    </div>
+                  </Card.Body>
+                </Card>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </PageTransition>

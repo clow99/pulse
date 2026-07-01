@@ -109,7 +109,25 @@ async function notifyRules(
   rules: AlertRuleWithChannel[],
   payload: NotificationPayload
 ) {
-  await Promise.allSettled(
-    rules.map((rule) => sendNotification(rule.notificationChannel, payload))
+  const results = await Promise.allSettled(
+    rules.map(async (rule) => {
+      await sendNotification(rule.notificationChannel, payload);
+      return {
+        channelId: rule.notificationChannel.id,
+        channelType: rule.notificationChannel.type,
+      };
+    })
   );
+
+  results.forEach((result, index) => {
+    if (result.status === 'fulfilled') return;
+
+    const channel = rules[index]?.notificationChannel;
+    console.error('Pulse notification failed', {
+      channelId: channel?.id,
+      channelType: channel?.type,
+      event: payload.event,
+      error: result.reason instanceof Error ? result.reason.message : 'Unknown error',
+    });
+  });
 }

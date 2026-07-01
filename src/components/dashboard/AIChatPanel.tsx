@@ -35,7 +35,7 @@ export function AIChatPanel({ siteId }: AIChatPanelProps) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
   const [isStreaming, setIsStreaming] = useState(false);
-  const [isOpen, setIsOpen] = useState(true);
+  const [isOpen, setIsOpen] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
   const [isDesktop, setIsDesktop] = useState(false);
   const [panelSize, setPanelSize] = useState({
@@ -261,6 +261,7 @@ export function AIChatPanel({ siteId }: AIChatPanelProps) {
           className="pulse-chat-toggle"
           onClick={openChat}
           aria-label="Open AI chat"
+          title="Open AI chat"
         >
           <span className="pulse-chat-toggle-icon">&#10024;</span>
           <span className="pulse-chat-toggle-label">Open Pulse AI</span>
