@@ -69,7 +69,17 @@ export function Sidebar({ orgName, siteName, orgId, sites }: SidebarProps) {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  const siteId = searchParams.get('siteId') || sites[0]?.id;
+  const requestedSiteId = searchParams.get('siteId');
+  const defaultSiteId = sites[0]?.id ?? '';
+  const siteId = requestedSiteId || defaultSiteId;
+
+  useEffect(() => {
+    if (requestedSiteId || !defaultSiteId) return;
+
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('siteId', defaultSiteId);
+    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+  }, [defaultSiteId, pathname, requestedSiteId, router, searchParams]);
 
   const handleSiteSelect = (newSiteId: string) => {
     if (!newSiteId || newSiteId === siteId) {

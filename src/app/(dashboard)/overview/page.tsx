@@ -68,7 +68,14 @@ export default function OverviewPage() {
   const [uptimeLoading, setUptimeLoading] = useState(true);
 
   const fetchData = useCallback(async () => {
-    if (!siteId) return;
+    if (!siteId) {
+      setData(null);
+      setEvents([]);
+      setRevenue(null);
+      setInsights([]);
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     try {
       const params = new URLSearchParams({ siteId, from, to });
@@ -139,7 +146,11 @@ export default function OverviewPage() {
   }, []);
 
   useEffect(() => {
-    if (!siteId) return;
+    if (!siteId) {
+      setUptimeSummary(null);
+      setUptimeLoading(false);
+      return;
+    }
     setUptimeLoading(true);
     fetch(`/api/reports/uptime/summary?siteId=${siteId}`)
       .then((res) => (res.ok ? res.json() : null))
