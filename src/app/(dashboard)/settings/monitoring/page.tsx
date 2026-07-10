@@ -36,6 +36,7 @@ interface NotificationStatus {
   smtpAuthConfigured: boolean;
   uptimeCheckSecretConfigured: boolean;
   insightsCronSecretConfigured: boolean;
+  scheduledReportSecretConfigured: boolean;
 }
 
 export default function MonitoringSettingsPage() {
@@ -55,6 +56,7 @@ export default function MonitoringSettingsPage() {
   const [statusName, setStatusName] = useState('');
   const [statusSlug, setStatusSlug] = useState('');
   const [saving, setSaving] = useState(false);
+  const [testStatus, setTestStatus] = useState<Record<string, string>>({});
 
   const selectedSite = useMemo(
     () => sites.find((site) => site.id === selectedSiteId) ?? sites[0],
@@ -156,6 +158,16 @@ export default function MonitoringSettingsPage() {
     }
   }
 
+  async function testChannel(channelId: string) {
+    setTestStatus((current) => ({ ...current, [channelId]: 'Sending...' }));
+    const res = await fetch(`/api/notification-channels/${channelId}/test`, { method: 'POST' });
+    const data = await res.json().catch(() => ({}));
+    setTestStatus((current) => ({
+      ...current,
+      [channelId]: res.ok ? 'Test sent' : data.error || 'Test failed',
+    }));
+  }
+
   return (
     <PageTransition>
       <div className="pulse-page">
@@ -195,6 +207,9 @@ export default function MonitoringSettingsPage() {
                         {!channel.enabled && <Badge size="sm" variant="default">Disabled</Badge>}
                       </span>
                       <span className="pulse-list-row-meta">{channel.target}</span>
+                      <Button variant="secondary" size="sm" onClick={() => testChannel(channel.id)}>
+                        {testStatus[channel.id] || 'Send Test'}
+                      </Button>
                     </div>
                   ))}
                 </div>
@@ -207,6 +222,9 @@ export default function MonitoringSettingsPage() {
               <Title level="h3" size="sm">Automation Readiness</Title>
             </Card.Header>
             <Card.Body>
+              <p className="pulse-page-subtitle" style={{ marginBottom: '1rem' }}>
+                Self-hosted installs can call the cron endpoints directly. Managed Pulse can use the same readiness checks to run hosted schedules.
+              </p>
               <div className="pulse-card-list">
                 <div className="pulse-list-row">
                   <span>Uptime check secret</span>
@@ -218,6 +236,12 @@ export default function MonitoringSettingsPage() {
                   <span>Insight cron secret</span>
                   <Badge size="sm" variant={notificationStatus?.insightsCronSecretConfigured ? 'success' : 'warning'}>
                     {notificationStatus?.insightsCronSecretConfigured ? 'Configured' : 'Missing'}
+                  </Badge>
+                </div>
+                <div className="pulse-list-row">
+                  <span>Scheduled report secret</span>
+                  <Badge size="sm" variant={notificationStatus?.scheduledReportSecretConfigured ? 'success' : 'warning'}>
+                    {notificationStatus?.scheduledReportSecretConfigured ? 'Configured' : 'Missing'}
                   </Badge>
                 </div>
                 <div className="pulse-list-row">

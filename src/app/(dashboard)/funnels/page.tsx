@@ -31,6 +31,13 @@ interface FunnelReport {
   steps: { goalId: string; name: string; position: number; count: number; dropoffRate: number }[];
 }
 
+interface GoalRecipe {
+  id: string;
+  name: string;
+  type: 'pageview' | 'event';
+  description: string;
+}
+
 export default function FunnelsPage() {
   const siteId = useSearchParams().get('siteId') || '';
   const [from, setFrom] = useState(() => format(startOfDay(subDays(new Date(), 30)), 'yyyy-MM-dd'));
@@ -46,6 +53,8 @@ export default function FunnelsPage() {
   const [stepA, setStepA] = useState('');
   const [stepB, setStepB] = useState('');
   const [stepC, setStepC] = useState('');
+  const [recipes, setRecipes] = useState<GoalRecipe[]>([]);
+  const [recipeStatus, setRecipeStatus] = useState<Record<string, string>>({});
 
   const loadData = useCallback(async () => {
     if (!siteId) return;
@@ -66,6 +75,13 @@ export default function FunnelsPage() {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     loadData();
   }, [loadData]);
+
+  useEffect(() => {
+    fetch('/api/goals/recipes')
+      .then((res) => (res.ok ? res.json() : []))
+      .then((data) => { if (Array.isArray(data)) setRecipes(data); })
+      .catch(() => {});
+  }, []);
 
   async function createGoal() {
     if (!siteId || !goalName || !goalTarget) return;
@@ -99,6 +115,24 @@ export default function FunnelsPage() {
       setStepB('');
       setStepC('');
       loadData();
+    }
+  }
+
+  async function applyRecipe(recipeId: string) {
+    if (!siteId) return;
+    setRecipeStatus((current) => ({ ...current, [recipeId]: 'Adding...' }));
+    const res = await fetch('/api/goals/recipes', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ siteId, recipeIds: [recipeId] }),
+    });
+    if (res.ok) {
+      const data = await res.json();
+      const status = data.results?.[0]?.status === 'skipped' ? 'Already added' : 'Added';
+      setRecipeStatus((current) => ({ ...current, [recipeId]: status }));
+      loadData();
+    } else {
+      setRecipeStatus((current) => ({ ...current, [recipeId]: 'Failed' }));
     }
   }
 
@@ -145,6 +179,33 @@ export default function FunnelsPage() {
               </div>
             </Card.Body>
           </Card>
+        </div>
+
+        <div className="pulse-section">
+          <div className="pulse-section-header" style={{ marginBottom: '1rem' }}>
+            <div>
+              <Title level="h3" size="sm">Conversion Recipes</Title>
+              <p className="pulse-page-subtitle">
+                Add common goals in one click, then combine them into funnels.
+              </p>
+            </div>
+          </div>
+          <div className="pulse-recipe-grid">
+            {recipes.map((recipe) => (
+              <div key={recipe.id} className="pulse-recipe-card">
+                <div>
+                  <strong>{recipe.name}</strong>
+                  <p>{recipe.description}</p>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+                  <Badge size="sm" variant="default">{recipe.type}</Badge>
+                  <Button variant="secondary" size="sm" onClick={() => applyRecipe(recipe.id)}>
+                    {recipeStatus[recipe.id] || 'Add'}
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
 
         <div className="pulse-section">

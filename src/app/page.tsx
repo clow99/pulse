@@ -14,9 +14,9 @@ import {
 
 const features = [
   {
-    title: 'Privacy-First',
+    title: 'Web Analytics',
     description:
-      'No cookies, no IP tracking, no personal data collection. Fully GDPR, CCPA, and PECR compliant by design.',
+      'Understand visitors, pages, referrers, UTM campaigns, technology, and AI assistant traffic without cookies.',
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
         <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
@@ -25,9 +25,9 @@ const features = [
     color: '#0ea5e9',
   },
   {
-    title: 'Real-Time Dashboard',
+    title: 'Conversion Tracking',
     description:
-      'Watch traffic flow in as it happens. Pageviews, events, referrers, and geography update within seconds.',
+      'Create goals from recipes, analyze funnels, and attribute revenue by source, campaign, landing page, and AI assistant.',
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
         <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
@@ -36,9 +36,9 @@ const features = [
     color: '#22c55e',
   },
   {
-    title: 'Multi-Site Tracking',
+    title: 'Reliability Monitoring',
     description:
-      'Manage unlimited websites under one organization. Each site gets a unique token with isolated data.',
+      'Track uptime, incidents, response time, Core Web Vitals, alert channels, and public status pages in the same workspace.',
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
         <rect x="2" y="3" width="20" height="14" rx="2" ry="2" />
@@ -49,9 +49,9 @@ const features = [
     color: '#f59e0b',
   },
   {
-    title: 'Self-Hosted & Yours',
+    title: 'Agent-Ready Reports',
     description:
-      'Deploy on your own infrastructure with Docker in under 5 minutes. Your data never leaves your servers.',
+      'Give AI agents scoped MCP or REST access to overview, AI-source, revenue, funnel, performance, uptime, and insight reports.',
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
         <rect x="2" y="2" width="20" height="8" rx="2" ry="2" />
@@ -61,29 +61,6 @@ const features = [
       </svg>
     ),
     color: '#ec4899',
-  },
-  {
-    title: 'Featherweight Script',
-    description:
-      'Under 2KB tracking script that loads asynchronously. Zero impact on your Core Web Vitals scores.',
-    icon: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
-      </svg>
-    ),
-    color: '#06b6d4',
-  },
-  {
-    title: 'Custom Events',
-    description:
-      'Track clicks, form submissions, purchases, and any custom interaction with flexible event properties.',
-    icon: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M12 20h9" />
-        <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
-      </svg>
-    ),
-    color: '#1d4ed8',
   },
 ];
 
@@ -113,6 +90,8 @@ const navLinks = [
   { label: 'Features', href: '#features' },
   { label: 'Why Pulse', href: '#why-pulse' },
   { label: 'How it works', href: '#how-it-works' },
+  { label: 'Pricing', href: '/pricing' },
+  { label: 'Demo', href: '/demo' },
 ];
 
 const heroHighlights = [
@@ -126,14 +105,14 @@ const heroHighlights = [
   },
   {
     title: 'See the full picture',
-    description: 'Pages, acquisition, technology, custom events, and uptime live in one focused dashboard.',
+    description: 'Analytics, conversions, revenue, AI sources, uptime, and agent reports live in one focused dashboard.',
   },
 ];
 
 const trustSignals = [
   { label: 'Deployment', value: 'Docker + Postgres' },
   { label: 'Privacy model', value: 'No cookies by default' },
-  { label: 'Coverage', value: 'Analytics + events + uptime' },
+  { label: 'Coverage', value: 'Analytics + conversions + uptime + agents' },
 ];
 
 const whyPulseCards = [
@@ -147,13 +126,13 @@ const whyPulseCards = [
     kicker: 'Useful on day one',
     title: 'Start with clean defaults, then layer on custom events',
     description:
-      'Pulse gives you pages, referrers, technology, and real-time reporting out of the box, then grows with your product instrumentation.',
+      'Pulse gives you pages, referrers, AI sources, and real-time reporting out of the box, then grows with recipes, goals, funnels, and revenue events.',
   },
   {
     kicker: 'Built for product teams',
     title: 'Understand growth, reliability, and behavior from one workspace',
     description:
-      'Use one dashboard to answer what people saw, how they found you, what they clicked, and whether your site stayed up.',
+      'Use one dashboard to answer what people saw, how they found you, what converted, which AI assistants sent traffic, and whether your site stayed up.',
   },
 ];
 
@@ -175,7 +154,7 @@ const comparisonRows = [
   },
   {
     label: 'What you can monitor',
-    pulse: 'Traffic, events, acquisition, uptime',
+    pulse: 'Traffic, conversions, revenue, AI sources, uptime',
     typical: 'Often split across multiple tools',
   },
 ];
@@ -188,6 +167,8 @@ const footerSections = [
       { label: 'Why Pulse', href: '#why-pulse' },
       { label: 'How it works', href: '#how-it-works' },
       { label: 'Dashboard preview', href: '#dashboard-preview' },
+      { label: 'Pricing', href: '/pricing' },
+      { label: 'Demo', href: '/demo' },
     ],
   },
   {
@@ -291,7 +272,7 @@ export default function LandingPage() {
           <FadeIn direction="up" delay={0.1}>
             <div className="landing-badge">
               <span className="landing-badge-dot" />
-              Analytics, events, and uptime for self-hosted teams
+              Analytics, conversions, uptime, and agent reports
             </div>
           </FadeIn>
 
@@ -306,8 +287,9 @@ export default function LandingPage() {
           <FadeIn direction="up" delay={0.35}>
             <p className="landing-hero-subtitle">
               Pulse gives your team real-time traffic, acquisition, technology,
-              custom event, and uptime reporting from infrastructure you control.
-              Keep the data, skip the cookies, and stay fast.
+              conversion, revenue, AI-source, and uptime reporting from
+              infrastructure you control. Keep the data, skip the cookies, and
+              make the next action obvious.
             </p>
           </FadeIn>
 
@@ -316,12 +298,12 @@ export default function LandingPage() {
               <Link href="/register">
                 <Button variant="primary" size="lg">Get Started Free</Button>
               </Link>
-              <Link href="#how-it-works">
-                <Button variant="outline" size="lg">See setup</Button>
+              <Link href="/demo">
+                <Button variant="outline" size="lg">View Demo</Button>
               </Link>
             </div>
             <p className="landing-hero-note">
-              Free to self-host &middot; No credit card &middot; First data in minutes
+              Free to self-host &middot; Hosted plans ready &middot; First data in minutes
             </p>
             <div className="landing-hero-highlights">
               {heroHighlights.map((highlight) => (
@@ -450,8 +432,8 @@ export default function LandingPage() {
               {[
                 { value: 0, label: 'Cookies Required', suffix: '' },
                 { value: 5, label: 'Minutes to First Data', suffix: ' min' },
-                { value: 100, label: 'Data Ownership', suffix: '%' },
-                { value: 2, label: 'Script Size', suffix: 'KB', prefix: '<' },
+                { value: 11, label: 'Report Surfaces', suffix: '' },
+                { value: 7, label: 'Agent Report Tools', suffix: '' },
               ].map((stat) => (
                 <StaggerItem key={stat.label}>
                   <div className="landing-stat-card">
@@ -467,7 +449,6 @@ export default function LandingPage() {
                         backgroundClip: 'text',
                       }}
                     >
-                      {stat.prefix ?? ''}
                       <AnimatedCounter
                         value={stat.value}
                         formatFn={(v) => Math.round(v).toLocaleString()}
@@ -821,14 +802,19 @@ export default function LandingPage() {
                   <span style={{ color: '#82aaff' }}>defer</span>
                 </div>
                 <div style={{ paddingLeft: '1.5rem' }}>
-                  <span style={{ color: '#82aaff' }}>data-domain</span>
+                  <span style={{ color: '#82aaff' }}>data-token</span>
                   <span style={{ color: '#89ddff' }}>=</span>
-                  <span style={{ color: '#c3e88d' }}>&quot;yourdomain.com&quot;</span>
+                  <span style={{ color: '#c3e88d' }}>&quot;SITE_TOKEN&quot;</span>
+                </div>
+                <div style={{ paddingLeft: '1.5rem' }}>
+                  <span style={{ color: '#82aaff' }}>data-web-vitals</span>
+                  <span style={{ color: '#89ddff' }}>=</span>
+                  <span style={{ color: '#c3e88d' }}>&quot;true&quot;</span>
                 </div>
                 <div style={{ paddingLeft: '1.5rem' }}>
                   <span style={{ color: '#82aaff' }}>src</span>
                   <span style={{ color: '#89ddff' }}>=</span>
-                  <span style={{ color: '#c3e88d' }}>&quot;https://pulse.yourdomain.com/js/script.js&quot;</span>
+                  <span style={{ color: '#c3e88d' }}>&quot;https://pulse.yourdomain.com/t.js&quot;</span>
                 </div>
                 <div>
                   <span style={{ color: '#c792ea' }}>&gt;&lt;/script&gt;</span>
@@ -885,6 +871,12 @@ export default function LandingPage() {
             <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
               <Link href="/register">
                 <Button variant="primary" size="lg">Get Started Free</Button>
+              </Link>
+              <Link href="/pricing">
+                <Button variant="secondary" size="lg">See Offers</Button>
+              </Link>
+              <Link href="/demo">
+                <Button variant="outline" size="lg">View Demo</Button>
               </Link>
               <Link
                 href={repositoryUrl}

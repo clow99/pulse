@@ -67,6 +67,11 @@ export default async function PublicStatusPage({ params }: StatusPageProps) {
       .filter((incident) => incident.status === 'open')
       .map((incident) => ({ ...incident, componentName: component.name }))
   );
+  const recentIncidents = components.flatMap((component) =>
+    component.incidents
+      .filter((incident) => incident.status === 'resolved')
+      .map((incident) => ({ ...incident, componentName: component.name }))
+  ).sort((a, b) => b.startedAt.getTime() - a.startedAt.getTime()).slice(0, 8);
 
   return (
     <main style={{ minHeight: '100vh', background: '#0a0a0f', color: '#f8fafc', padding: '4rem 1.5rem' }}>
@@ -122,6 +127,24 @@ export default async function PublicStatusPage({ params }: StatusPageProps) {
               </article>
             );
           })}
+        </section>
+
+        <section style={{ marginTop: '1.5rem', border: '1px solid rgba(148,163,184,0.18)', background: 'rgba(15,23,42,0.5)', borderRadius: 8, padding: '1rem' }}>
+          <h2 style={{ fontSize: '1rem', margin: '0 0 0.75rem' }}>Incident history</h2>
+          {recentIncidents.length === 0 ? (
+            <p style={{ color: '#94a3b8', margin: 0 }}>No resolved incidents in the recent history.</p>
+          ) : (
+            <div style={{ display: 'grid', gap: '0.75rem' }}>
+              {recentIncidents.map((incident) => (
+                <article key={incident.id} style={{ display: 'grid', gap: '0.25rem' }}>
+                  <strong>{incident.componentName}: {incident.title}</strong>
+                  <span style={{ color: '#94a3b8', fontSize: '0.8125rem' }}>
+                    Resolved {incident.resolvedAt ? incident.resolvedAt.toLocaleString() : 'recently'} · Started {incident.startedAt.toLocaleString()}
+                  </span>
+                </article>
+              ))}
+            </div>
+          )}
         </section>
       </div>
     </main>

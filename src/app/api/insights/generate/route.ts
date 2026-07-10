@@ -18,6 +18,8 @@ interface InsightCandidate {
   title: string;
   body: string;
   evidence: Prisma.InputJsonValue;
+  impact?: string;
+  recommendation?: string;
 }
 
 export async function POST(request: Request) {
@@ -52,7 +54,13 @@ export async function POST(request: Request) {
       });
       if (recentDuplicate) continue;
 
-      await prisma.insight.create({ data: candidate });
+      await prisma.insight.create({
+        data: {
+          ...candidate,
+          impact: candidate.impact ?? defaultImpact(candidate.severity),
+          recommendation: candidate.recommendation ?? defaultRecommendation(candidate.type),
+        },
+      });
       created++;
     }
 
@@ -80,6 +88,9 @@ async function trafficInsights(siteId: string): Promise<InsightCandidate[]> {
     title: change < 0 ? 'Traffic dropped this week' : 'Traffic spiked this week',
     body: `Pageviews changed ${change.toFixed(1)}% compared with the previous 7 days.`,
     evidence: { current, previous, change },
+    recommendation: change < 0
+      ? 'Check acquisition sources and recent deploys for changes that could have reduced traffic.'
+      : 'Identify the pages and sources behind the spike and decide whether to double down.',
   }];
 }
 
@@ -103,6 +114,8 @@ async function revenueInsights(siteId: string): Promise<InsightCandidate[]> {
     title: 'Revenue dropped this week',
     body: `Tracked revenue is down ${Math.abs(change).toFixed(1)}% compared with the previous 7 days.`,
     evidence: { current, previous, change },
+    impact: 'Revenue-sensitive conversion paths may need immediate review.',
+    recommendation: 'Compare revenue by source and landing page, then verify checkout or purchase event instrumentation.',
   }];
 }
 
@@ -119,6 +132,8 @@ async function uptimeInsights(siteId: string): Promise<InsightCandidate[]> {
     title: 'Open uptime incident',
     body: openIncident.description || 'This site currently has an open uptime incident.',
     evidence: { incidentId: openIncident.id, startedAt: openIncident.startedAt.toISOString() },
+    impact: 'Visitors may be unable to reach the site or complete key actions.',
+    recommendation: 'Investigate the failing endpoint, then confirm recovery through the uptime monitor.',
   }];
 }
 
@@ -141,6 +156,7 @@ async function performanceInsights(siteId: string): Promise<InsightCandidate[]> 
     title: 'Poor web vitals detected',
     body: `${(poorRate * 100).toFixed(1)}% of recent web vital samples are rated poor.`,
     evidence: { samples: vitals.length, poorRate, lcpP75: lcpValues.length ? percentile(lcpValues, 75) : null },
+    recommendation: 'Open the Performance report, sort by poor samples, and prioritize the slowest high-traffic pages.',
   }];
 }
 
@@ -179,6 +195,8 @@ async function funnelInsights(siteId: string): Promise<InsightCandidate[]> {
         title: `${funnel.name} has no completions`,
         body: `${result.entrants} visits entered this funnel in the last 30 days, but none completed it.`,
         evidence: { funnelId: funnel.id, entrants: result.entrants },
+        impact: 'A tracked conversion path may be broken or missing its final event.',
+        recommendation: 'Verify each funnel step and test that the final conversion event fires in production.',
       }];
     }
     if (worstStep && worstStep.dropoffRate >= 70 && result.entrants >= 10) {
@@ -189,6 +207,7 @@ async function funnelInsights(siteId: string): Promise<InsightCandidate[]> {
         title: `${funnel.name} has a large drop-off`,
         body: `${worstStep.dropoffRate.toFixed(1)}% of visits drop before ${worstStep.name}.`,
         evidence: { funnelId: funnel.id, step: worstStep },
+        recommendation: 'Review the page or event before this step and add a conversion recipe if tracking is incomplete.',
       }];
     }
     return [];
@@ -225,9 +244,21 @@ async function campaignInsights(siteId: string): Promise<InsightCandidate[]> {
     title: 'Top campaign source changed',
     body: `${currentTop.utmSource} replaced ${previousTop.utmSource} as the leading UTM source this week.`,
     evidence: { currentTop, previousTop },
+    recommendation: 'Compare conversion quality for the new top source before shifting spend or content effort.',
   }];
 }
 
 function sumRevenue(events: { revenueValue: unknown }[]) {
   return events.reduce((sum, event) => sum + Number(event.revenueValue ?? 0), 0);
+}
+
+function defaultImpact(severity: InsightCandidate['severity']) {
+  if (severity === 'critical') return 'This issue can materially affect revenue, availability, or conversion.';
+  if (severity === 'warning') return 'This trend may affect growth or user experience if it continues.';
+  return 'This is an opportunity to improve how the site converts or performs.';
+}
+
+function defaultRecommendation(type: string) {
+  const readable = type.replace(/_/g, ' ');
+  return `Review the related ${readable} data and mark this item done once the next action is complete.`;
 }

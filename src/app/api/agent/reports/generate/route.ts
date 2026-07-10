@@ -49,7 +49,7 @@ export async function POST(request: Request) {
     }
 
     const reports = (parsed.data.reports?.map(normalizeReportKind).filter(Boolean) ??
-      ['overview', 'pages', 'events', 'acquisition', 'uptime_summary']) as ReportKind[];
+      ['overview', 'pages', 'events', 'acquisition', 'ai_sources', 'revenue', 'insights', 'uptime_summary']) as ReportKind[];
 
     if (reports.length === 0) {
       return NextResponse.json({ error: 'No valid reports requested' }, { status: 400 });

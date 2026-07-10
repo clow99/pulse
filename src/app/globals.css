@@ -233,9 +233,352 @@ a {
   color: var(--pulse-text-secondary);
 }
 
+.pulse-eyebrow {
+  color: var(--pulse-accent);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  margin-bottom: 0.75rem;
+  text-transform: uppercase;
+}
+
 .pulse-card-list {
   display: grid;
   gap: 0.75rem;
+}
+
+.pulse-public-page {
+  min-height: 100vh;
+  width: 100%;
+  padding: 7rem 2rem 4rem;
+  background:
+    linear-gradient(180deg, rgba(14, 165, 233, 0.08), transparent 26rem),
+    var(--pulse-bg-primary);
+}
+
+.pulse-public-hero {
+  max-width: 760px;
+  margin: 0 auto 3rem;
+  text-align: center;
+}
+
+.pulse-public-hero code,
+.pulse-demo-panel code {
+  color: var(--pulse-accent);
+}
+
+.pulse-public-title {
+  max-width: 760px;
+  margin: 0 auto;
+  color: var(--pulse-text-primary);
+  font-size: clamp(2.25rem, 6vw, 4.25rem);
+  line-height: 1;
+  letter-spacing: 0;
+}
+
+.pulse-public-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 1.5rem;
+}
+
+.pulse-public-button {
+  display: inline-flex;
+  min-height: 2.5rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  border: 1px solid var(--pulse-border);
+  padding: 0.65rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+.pulse-public-button.primary {
+  border-color: var(--pulse-accent);
+  background: var(--pulse-accent);
+  color: #fff;
+}
+
+.pulse-public-button.secondary {
+  background: var(--pulse-bg-secondary);
+  color: var(--pulse-text-primary);
+}
+
+.pulse-pricing-grid,
+.pulse-shared-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+  gap: 1rem;
+  max-width: 1120px;
+  margin: 0 auto;
+}
+
+.pulse-pricing-card,
+.pulse-shared-card,
+.pulse-demo-panel,
+.pulse-demo-workflows article,
+.pulse-recipe-card {
+  border: 1px solid var(--pulse-border);
+  border-radius: 8px;
+  background: var(--pulse-bg-card);
+}
+
+.pulse-pricing-card {
+  display: flex;
+  min-height: 24rem;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding: 1.25rem;
+}
+
+.pulse-pricing-card h2,
+.pulse-shared-card h2,
+.pulse-demo-panel h2 {
+  margin: 0 0 0.75rem;
+  font-size: 1.05rem;
+}
+
+.pulse-pricing-card strong {
+  display: block;
+  margin-bottom: 0.75rem;
+  font-size: 1.75rem;
+}
+
+.pulse-pricing-card p,
+.pulse-pricing-card li,
+.pulse-demo-workflows p,
+.pulse-recipe-card p {
+  color: var(--pulse-text-secondary);
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.pulse-pricing-card ul {
+  display: grid;
+  gap: 0.55rem;
+  padding-left: 1.1rem;
+}
+
+.pulse-demo-panel {
+  display: grid;
+  grid-template-columns: minmax(220px, 0.8fr) 1.2fr;
+  gap: 1.25rem;
+  max-width: 920px;
+  margin: 0 auto 1rem;
+  padding: 1.25rem;
+}
+
+.pulse-demo-workflows {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+  gap: 1rem;
+  max-width: 920px;
+  margin: 0 auto;
+}
+
+.pulse-demo-workflows article {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+  padding: 1rem;
+}
+
+.pulse-demo-workflows span,
+.pulse-onboarding-task > span {
+  display: inline-flex;
+  width: 1.75rem;
+  height: 1.75rem;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: rgba(14, 165, 233, 0.14);
+  color: var(--pulse-accent);
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.pulse-public-metric-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 0.75rem;
+}
+
+.pulse-public-metric-grid div {
+  padding: 0.875rem;
+  border: 1px solid var(--pulse-border);
+  border-radius: 8px;
+  background: var(--pulse-bg-primary);
+}
+
+.pulse-public-metric-grid span {
+  display: block;
+  color: var(--pulse-text-secondary);
+  font-size: 0.75rem;
+  margin-bottom: 0.25rem;
+}
+
+.pulse-public-metric-grid strong {
+  font-size: 1.15rem;
+}
+
+.pulse-shared-card {
+  padding: 1rem;
+}
+
+.pulse-public-json {
+  max-height: 22rem;
+  overflow: auto;
+  padding: 0.75rem;
+  border: 1px solid var(--pulse-border);
+  border-radius: 8px;
+  background: var(--pulse-bg-primary);
+  color: var(--pulse-text-secondary);
+  font-size: 0.75rem;
+}
+
+.pulse-onboarding-personas,
+.pulse-onboarding-checklist,
+.pulse-recipe-grid,
+.pulse-report-toggle-grid,
+.pulse-agent-guide,
+.pulse-agent-tools,
+.pulse-settings-grid {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.pulse-onboarding-personas {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr));
+  margin-bottom: 1.5rem;
+}
+
+.pulse-onboarding-persona,
+.pulse-report-toggle {
+  border: 1px solid var(--pulse-border);
+  border-radius: 8px;
+  background: var(--pulse-bg-card);
+  color: var(--pulse-text-primary);
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 0.15s, background-color 0.15s;
+}
+
+.pulse-onboarding-persona {
+  padding: 0.9rem;
+}
+
+.pulse-onboarding-persona.active,
+.pulse-report-toggle.active {
+  border-color: var(--pulse-accent);
+  background: rgba(14, 165, 233, 0.12);
+}
+
+.pulse-onboarding-persona span,
+.pulse-onboarding-task small {
+  display: block;
+  margin-top: 0.35rem;
+  color: var(--pulse-text-secondary);
+  font-size: 0.75rem;
+  line-height: 1.4;
+}
+
+.pulse-onboarding-checklist {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr));
+  margin-bottom: 1.5rem;
+}
+
+.pulse-onboarding-task {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.45rem 0.6rem;
+  align-items: start;
+  padding: 0.8rem;
+  border: 1px solid var(--pulse-border);
+  border-radius: 8px;
+  background: var(--pulse-bg-card);
+}
+
+.pulse-onboarding-task small {
+  grid-column: 2;
+  margin-top: 0;
+}
+
+.pulse-onboarding-task.done > span {
+  background: rgba(34, 197, 94, 0.14);
+  color: var(--pulse-success);
+}
+
+.pulse-recipe-grid {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
+}
+
+.pulse-recipe-card {
+  display: flex;
+  min-height: 9rem;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem;
+}
+
+.pulse-evidence-panel {
+  border: 1px solid var(--pulse-border);
+  border-radius: 8px;
+  background: var(--pulse-bg-primary);
+  color: var(--pulse-text-secondary);
+  font-size: 0.8125rem;
+}
+
+.pulse-evidence-panel summary {
+  cursor: pointer;
+  padding: 0.75rem;
+}
+
+.pulse-evidence-panel pre {
+  overflow: auto;
+  margin: 0;
+  padding: 0 0.75rem 0.75rem;
+  font-size: 0.75rem;
+}
+
+.pulse-settings-grid {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+  margin-bottom: 1.5rem;
+}
+
+.pulse-report-toggle-grid {
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+}
+
+.pulse-report-toggle {
+  padding: 0.65rem 0.75rem;
+  text-transform: capitalize;
+}
+
+.pulse-agent-guide {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+}
+
+.pulse-agent-guide p {
+  color: var(--pulse-text-secondary);
+  font-size: 0.875rem;
+  line-height: 1.45;
+  margin-top: 0.35rem;
+}
+
+.pulse-agent-guide code {
+  color: var(--pulse-accent);
+}
+
+.pulse-agent-tools {
+  display: flex;
+  flex-wrap: wrap;
+  margin-top: 1rem;
 }
 
 .pulse-list-row {

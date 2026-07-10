@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -23,6 +24,47 @@ const STEPS = [
   { label: 'Install Tracker' },
   { label: 'Verify Installation' },
 ];
+
+const PERSONAS = [
+  {
+    id: 'self-hosted',
+    label: 'Self-hosted team',
+    description: 'Prioritize tracker verification, web vitals, uptime, and agent-ready reports.',
+  },
+  {
+    id: 'agency',
+    label: 'Agency',
+    description: 'Prioritize shared reports, status pages, and repeatable client setup.',
+  },
+  {
+    id: 'saas',
+    label: 'SaaS/product',
+    description: 'Prioritize conversion goals, funnels, revenue events, and AI source attribution.',
+  },
+] as const;
+
+type PersonaId = (typeof PERSONAS)[number]['id'];
+
+const LAUNCH_TASKS: Record<PersonaId, { label: string; href: string; description: string }[]> = {
+  'self-hosted': [
+    { label: 'Install tracker', href: '/settings/sites', description: 'Copy the real /t.js snippet and confirm first data.' },
+    { label: 'Enable web vitals', href: '/settings/sites', description: 'Collect Core Web Vitals when performance matters.' },
+    { label: 'Configure uptime alerts', href: '/settings/monitoring', description: 'Add an email or webhook channel and test it.' },
+    { label: 'Create an agent token', href: '/settings/agent-tokens', description: 'Give agents scoped read-only report access.' },
+  ],
+  agency: [
+    { label: 'Create client sites', href: '/settings/sites', description: 'Add each client domain under the organization.' },
+    { label: 'Create a status page', href: '/settings/monitoring', description: 'Publish reliability status for tracked sites.' },
+    { label: 'Share dashboard links', href: '/settings/reports', description: 'Create client-safe read-only reports.' },
+    { label: 'Schedule summaries', href: '/settings/reports', description: 'Send weekly email or webhook reports.' },
+  ],
+  saas: [
+    { label: 'Add conversion recipes', href: '/funnels', description: 'Create signup, demo, checkout, and purchase goals.' },
+    { label: 'Build a funnel', href: '/funnels', description: 'Combine goals into conversion drop-off reports.' },
+    { label: 'Track revenue', href: '/revenue', description: 'Send purchase events with value, currency, and orderId.' },
+    { label: 'Review AI sources', href: '/acquisition', description: 'See ChatGPT, Claude, Gemini, Perplexity, and similar traffic.' },
+  ],
+};
 
 const PARTICLE_COUNT = 40;
 const PARTICLE_COLORS = ['#0ea5e9', '#1d4ed8', '#22d3ee', '#10b981', '#f59e0b', '#ef4444'];
@@ -117,6 +159,7 @@ export default function OnboardingPage() {
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [copied, setCopied] = useState(false);
   const [verified, setVerified] = useState(false);
+  const [persona, setPersona] = useState<PersonaId>('self-hosted');
 
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -254,7 +297,7 @@ export default function OnboardingPage() {
   const snippet = buildTrackingSnippet(siteToken);
 
   return (
-    <div style={{ maxWidth: 560, margin: '0 auto' }}>
+    <div style={{ maxWidth: 760, margin: '0 auto' }}>
       <div style={{ marginBottom: '2rem' }}>
         <Title level="h1" size="lg" style={{ marginBottom: '0.5rem', textAlign: 'center' }}>
           {session?.user?.name ? `Welcome, ${session.user.name}` : 'Welcome to Pulse'}
@@ -264,8 +307,36 @@ export default function OnboardingPage() {
         </p>
       </div>
 
+      <div className="pulse-onboarding-personas" aria-label="Choose onboarding path">
+        {PERSONAS.map((item) => (
+          <button
+            key={item.id}
+            type="button"
+            className={`pulse-onboarding-persona${persona === item.id ? ' active' : ''}`}
+            onClick={() => setPersona(item.id)}
+          >
+            <strong>{item.label}</strong>
+            <span>{item.description}</span>
+          </button>
+        ))}
+      </div>
+
       <div style={{ marginBottom: '2rem' }}>
         <Stepper steps={STEPS} currentStep={currentStep} orientation="horizontal" variant="default" />
+      </div>
+
+      <div className="pulse-onboarding-checklist">
+        {LAUNCH_TASKS[persona].map((task, index) => {
+          const done = index === 0 ? Boolean(siteToken) : index === 1 ? verified : false;
+          const href = siteId ? `${task.href}${task.href.includes('?') ? '&' : '?'}siteId=${siteId}` : task.href;
+          return (
+            <Link key={task.label} href={href} className={`pulse-onboarding-task${done ? ' done' : ''}`}>
+              <span>{done ? 'OK' : index + 1}</span>
+              <strong>{task.label}</strong>
+              <small>{task.description}</small>
+            </Link>
+          );
+        })}
       </div>
 
       <AnimatePresence mode="wait" custom={direction}>

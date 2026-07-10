@@ -15,6 +15,9 @@ interface AcquisitionItem {
   utmSource?: string;
   utmMedium?: string;
   utmCampaign?: string;
+  source?: string;
+  label?: string;
+  group?: string;
   count: number;
   percentage: number;
 }
@@ -24,6 +27,8 @@ interface AcquisitionData {
   utmSources: AcquisitionItem[];
   utmMediums: AcquisitionItem[];
   utmCampaigns: AcquisitionItem[];
+  sourceGroups: AcquisitionItem[];
+  aiSources: AcquisitionItem[];
 }
 
 const ACQUISITION_TABS = [
@@ -31,11 +36,13 @@ const ACQUISITION_TABS = [
   { value: 'utm_sources', label: 'UTM Sources', key: 'utmSource' as const },
   { value: 'utm_mediums', label: 'UTM Mediums', key: 'utmMedium' as const },
   { value: 'utm_campaigns', label: 'UTM Campaigns', key: 'utmCampaign' as const },
+  { value: 'source_groups', label: 'Source Groups', key: 'group' as const },
+  { value: 'ai_sources', label: 'AI Sources', key: 'label' as const },
 ] as const;
 
 function toChartData(
   items: AcquisitionItem[],
-  nameKey: 'referrer' | 'utmSource' | 'utmMedium' | 'utmCampaign'
+  nameKey: 'referrer' | 'utmSource' | 'utmMedium' | 'utmCampaign' | 'source' | 'label' | 'group'
 ) {
   return items.map((item) => ({
     name: String(item[nameKey] ?? ''),
@@ -46,7 +53,7 @@ function toChartData(
 
 function toTableData(
   items: AcquisitionItem[],
-  nameKey: 'referrer' | 'utmSource' | 'utmMedium' | 'utmCampaign'
+  nameKey: 'referrer' | 'utmSource' | 'utmMedium' | 'utmCampaign' | 'source' | 'label' | 'group'
 ) {
   return items.map((item) => ({
     name: String(item[nameKey] ?? ''),
@@ -107,7 +114,11 @@ export default function AcquisitionPage() {
               ? 'utmSources'
               : tab.value === 'utm_mediums'
                 ? 'utmMediums'
-                : 'utmCampaigns'] as AcquisitionItem[])
+                : tab.value === 'utm_campaigns'
+                  ? 'utmCampaigns'
+                  : tab.value === 'source_groups'
+                    ? 'sourceGroups'
+                    : 'aiSources'] as AcquisitionItem[])
         : [];
     const chart = toChartData(tabItems, cfg!.key);
     const table = toTableData(tabItems, cfg!.key);

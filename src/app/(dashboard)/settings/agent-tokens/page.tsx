@@ -228,6 +228,33 @@ export default function AgentTokensPage() {
           </Alert>
         )}
 
+        <Card variant="shadow" style={{ marginBottom: '1rem' }}>
+          <Card.Header>
+            <Title level="h3" size="sm">Agent Setup Guide</Title>
+          </Card.Header>
+          <Card.Body>
+            <div className="pulse-agent-guide">
+              <div>
+                <strong>1. Create a scoped token</strong>
+                <p>Use organization scope for reporting agents or site scope for client-specific automation.</p>
+              </div>
+              <div>
+                <strong>2. Connect to MCP</strong>
+                <p>Use <code>/api/mcp</code> with <code>Authorization: Bearer pulse_at_...</code>.</p>
+              </div>
+              <div>
+                <strong>3. Ask for decision-ready reports</strong>
+                <p>Try: “Summarize AI-source visitors, revenue, funnel drop-off, uptime, and active insights for the last 30 days.”</p>
+              </div>
+            </div>
+            <div className="pulse-agent-tools">
+              {['get_overview', 'get_ai_sources_report', 'get_revenue_report', 'get_funnels_report', 'get_performance_report', 'get_insights_report', 'generate_report_data'].map((tool) => (
+                <Badge key={tool} variant="default">{tool}</Badge>
+              ))}
+            </div>
+          </Card.Body>
+        </Card>
+
         <Card variant="shadow">
           <Card.Body>
             {loading ? (

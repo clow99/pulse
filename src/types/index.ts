@@ -99,6 +99,11 @@ export interface InsightSummary {
   title: string;
   body: string;
   evidence: Record<string, unknown>;
+  impact: string | null;
+  recommendation: string | null;
+  snoozedUntil: string | null;
+  completedAt: string | null;
+  dismissedAt: string | null;
   createdAt: string;
 }
 

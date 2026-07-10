@@ -18,6 +18,7 @@ export async function GET() {
       smtpAuthConfigured: Boolean(process.env.SMTP_USER && process.env.SMTP_PASS),
       uptimeCheckSecretConfigured: Boolean(process.env.UPTIME_CHECK_SECRET),
       insightsCronSecretConfigured: Boolean(process.env.INSIGHTS_CRON_SECRET),
+      scheduledReportSecretConfigured: Boolean(process.env.SCHEDULED_REPORT_SECRET || process.env.INSIGHTS_CRON_SECRET),
     });
   } catch {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

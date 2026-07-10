@@ -143,6 +143,22 @@ export default function SettingsPage() {
             <StaggerItem>
               <Card variant="shadow">
                 <Card.Header>
+                  <Title level="h3" size="sm">Report Sharing</Title>
+                </Card.Header>
+                <Card.Body>
+                  <p style={{ fontSize: '0.875rem', color: 'var(--pulse-text-secondary)', marginBottom: '1rem' }}>
+                    Create read-only dashboard links, exports, and scheduled report summaries.
+                  </p>
+                  <Link href="/settings/reports">
+                    <Button variant="secondary">Manage Reports</Button>
+                  </Link>
+                </Card.Body>
+              </Card>
+            </StaggerItem>
+
+            <StaggerItem>
+              <Card variant="shadow">
+                <Card.Header>
                   <Title level="h3" size="sm">Monitoring</Title>
                 </Card.Header>
                 <Card.Body>

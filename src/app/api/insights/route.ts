@@ -19,8 +19,14 @@ export async function GET(request: Request) {
     const access = await verifySiteAccess(session.user.id, parsed.data.siteId);
     if (!access) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
+    const now = new Date();
     const insights = await prisma.insight.findMany({
-      where: { siteId: parsed.data.siteId, dismissedAt: null },
+      where: {
+        siteId: parsed.data.siteId,
+        dismissedAt: null,
+        completedAt: null,
+        OR: [{ snoozedUntil: null }, { snoozedUntil: { lte: now } }],
+      },
       orderBy: [{ severity: 'desc' }, { createdAt: 'desc' }],
       take: 20,
     });

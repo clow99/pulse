@@ -1,10 +1,15 @@
 import type { AgentScope } from './agent-auth';
 import {
   getAcquisitionReport,
+  getAiSourcesReport,
   getEventsReport,
+  getFunnelsReport,
+  getInsightsReport,
   getOverviewReport,
   getPagesReport,
+  getPerformanceReport,
   getReportData,
+  getRevenueReport,
   getUptimeReport,
   getUptimeSummary,
   type ReportKind,
@@ -16,6 +21,11 @@ export const AGENT_REPORTS = [
   'pages',
   'events',
   'acquisition',
+  'ai_sources',
+  'revenue',
+  'funnels',
+  'performance',
+  'insights',
   'uptime',
   'uptime_summary',
 ] as const satisfies readonly ReportKind[];
@@ -30,14 +40,19 @@ export function normalizeReportKind(value: string): ReportKind | null {
 export function scopesForReport(report: ReportKind): AgentScope[] {
   switch (report) {
     case 'events':
+    case 'revenue':
+    case 'funnels':
       return ['events:read'];
+    case 'performance':
+    case 'insights':
+    case 'ai_sources':
+    case 'acquisition':
+    case 'overview':
+    case 'pages':
+      return ['analytics:read'];
     case 'uptime':
     case 'uptime_summary':
       return ['uptime:read'];
-    case 'overview':
-    case 'pages':
-    case 'acquisition':
-      return ['analytics:read'];
   }
 }
 
@@ -65,6 +80,16 @@ export async function runAgentReport(
       return getEventsReport(siteId, range, options.eventName);
     case 'acquisition':
       return getAcquisitionReport(siteId, range);
+    case 'ai_sources':
+      return getAiSourcesReport(siteId, range);
+    case 'revenue':
+      return getRevenueReport(siteId, range);
+    case 'funnels':
+      return getFunnelsReport(siteId, range);
+    case 'performance':
+      return getPerformanceReport(siteId, range);
+    case 'insights':
+      return getInsightsReport(siteId);
     case 'uptime':
       return getUptimeReport(siteId, range);
     case 'uptime_summary':

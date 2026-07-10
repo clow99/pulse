@@ -150,6 +150,66 @@ export function registerPulseMcpTools(server: McpServer) {
   );
 
   server.registerTool(
+    'get_ai_sources_report',
+    {
+      title: 'Get AI Sources Report',
+      description:
+        'Read AI assistant traffic attribution, including AI source visitors, landing pages, events, goals, and revenue.',
+      inputSchema: dateRangeShape,
+      annotations: { readOnlyHint: true },
+    },
+    async (args, extra) => runReportTool('ai_sources', extra.authInfo, args)
+  );
+
+  server.registerTool(
+    'get_revenue_report',
+    {
+      title: 'Get Revenue Report',
+      description:
+        'Read revenue attribution by source, campaign, referrer, landing page, device, country, and source group.',
+      inputSchema: dateRangeShape,
+      annotations: { readOnlyHint: true },
+    },
+    async (args, extra) => runReportTool('revenue', extra.authInfo, args)
+  );
+
+  server.registerTool(
+    'get_funnels_report',
+    {
+      title: 'Get Funnels Report',
+      description:
+        'Read configured funnel conversion and step drop-off reports for a site.',
+      inputSchema: dateRangeShape,
+      annotations: { readOnlyHint: true },
+    },
+    async (args, extra) => runReportTool('funnels', extra.authInfo, args)
+  );
+
+  server.registerTool(
+    'get_performance_report',
+    {
+      title: 'Get Performance Report',
+      description:
+        'Read Core Web Vitals summaries, slowest pages, and quality breakdowns.',
+      inputSchema: dateRangeShape,
+      annotations: { readOnlyHint: true },
+    },
+    async (args, extra) => runReportTool('performance', extra.authInfo, args)
+  );
+
+  server.registerTool(
+    'get_insights_report',
+    {
+      title: 'Get Insights Report',
+      description:
+        'Read active Pulse action-center insights for a site.',
+      inputSchema: dateRangeShape,
+      annotations: { readOnlyHint: true },
+    },
+    async (args, extra) => runReportTool('insights', extra.authInfo, args)
+  );
+
+  server.registerTool(
     'get_uptime_summary',
     {
       title: 'Get Uptime Summary',
@@ -193,6 +253,9 @@ export function registerPulseMcpTools(server: McpServer) {
         'pages',
         'events',
         'acquisition',
+        'ai_sources',
+        'revenue',
+        'insights',
         'uptime_summary',
       ]) as ReportKind[];
       const requiredScopes = scopesForGeneratedReports(reports);

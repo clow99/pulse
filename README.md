@@ -10,7 +10,9 @@ Privacy-first, self-hosted web analytics. Track pageviews, custom events, and up
 - **Goals, funnels & revenue** — conversion tracking, funnel drop-off, and ecommerce revenue attribution
 - **Uptime monitoring** — periodic HTTP health checks with incidents, alerts, and public status pages
 - **Performance monitoring** — optional Core Web Vitals collection for real-user page health
-- **AI assistant & insights** — ask natural-language questions and generate proactive findings
+- **AI assistant & action center** — ask natural-language questions and turn proactive findings into done / snoozed / dismissed work
+- **AI-source attribution** — classify ChatGPT, Claude, Gemini, Perplexity, Copilot, and similar traffic by source, landing page, events, goals, and revenue
+- **Shareable and scheduled reports** — create read-only report links, JSON/CSV exports, and email/webhook report schedules
 - **Auth** — email/password and Google OAuth via NextAuth v5
 - **Docker-ready** — standalone Next.js build with a multi-stage Dockerfile and Compose file
 - **Privacy by default** — no cookies, DNT respected, data stays on your server
@@ -71,6 +73,7 @@ Optional variables:
 | `REDIS_URL`           | Enables MCP SSE transport in addition to Streamable HTTP |
 | `UPTIME_CHECK_SECRET` | Bearer token for the uptime cron endpoint      |
 | `INSIGHTS_CRON_SECRET` | Bearer token for the insights cron endpoint   |
+| `SCHEDULED_REPORT_SECRET` | Bearer token for scheduled report delivery; falls back to `INSIGHTS_CRON_SECRET` |
 | `SMTP_HOST` / `SMTP_PORT` / `SMTP_USER` / `SMTP_PASS` / `SMTP_FROM` | Enables email alert channels |
 
 ### 3. Set up the database
@@ -157,6 +160,19 @@ curl -X POST https://your-pulse-host/api/insights/generate \
   -H "Authorization: Bearer $INSIGHTS_CRON_SECRET"
 ```
 
+Deliver due scheduled reports with a cron job or hosted scheduler:
+
+```bash
+curl -X POST https://your-pulse-host/api/scheduled-reports/run \
+  -H "Authorization: Bearer $SCHEDULED_REPORT_SECRET"
+```
+
+Export report bundles as JSON or CSV:
+
+```bash
+curl "https://your-pulse-host/api/reports/export?siteId=SITE_ID&from=2026-07-01T00:00:00.000Z&to=2026-07-10T00:00:00.000Z&reports=overview,ai_sources,revenue&format=json"
+```
+
 ## Agent and MCP Access
 
 Pulse exposes read-only analytics to external agents without giving them database access.
@@ -195,6 +211,11 @@ Registered MCP tools:
 - `get_pages_report`
 - `get_events_report`
 - `get_acquisition_report`
+- `get_ai_sources_report`
+- `get_revenue_report`
+- `get_funnels_report`
+- `get_performance_report`
+- `get_insights_report`
 - `get_uptime_summary`
 - `generate_report_data`
 
@@ -215,7 +236,7 @@ curl "https://your-pulse-host/api/agent/reports/overview?siteId=SITE_ID" \
   -H "Authorization: Bearer pulse_at_..."
 ```
 
-Available report names are `overview`, `pages`, `events`, `acquisition`, `uptime`, and `uptime_summary`.
+Available report names are `overview`, `pages`, `events`, `acquisition`, `ai_sources`, `revenue`, `funnels`, `performance`, `insights`, `uptime`, and `uptime_summary`.
 
 Generate a multi-report payload:
 
