@@ -16,10 +16,9 @@ RUN npm run build
 # One-shot migration image. This is intentionally separate from app startup.
 FROM node:20-alpine AS migrator
 WORKDIR /app
-COPY package.json package-lock.json ./
-RUN npm ci --no-audit --no-fund --legacy-peer-deps
+RUN npm install --global --no-audit --no-fund prisma@6.19.2
 COPY prisma ./prisma
-CMD ["npx", "prisma", "migrate", "deploy"]
+CMD ["prisma", "migrate", "deploy"]
 
 # Stage 2: Production
 FROM node:20-alpine
