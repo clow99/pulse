@@ -82,7 +82,7 @@ export default function RegisterPage() {
         return;
       }
 
-      router.push('/overview');
+      router.push('/portfolio');
       router.refresh();
     } catch {
       setError('Something went wrong. Please try again.');
@@ -94,7 +94,7 @@ export default function RegisterPage() {
   async function handleGoogleSignIn() {
     setGoogleLoading(true);
     setError(null);
-    await signIn('google', { callbackUrl: '/overview' });
+    await signIn('google', { callbackUrl: '/portfolio' });
   }
 
   const containerVariants = {
@@ -155,6 +155,7 @@ export default function RegisterPage() {
               <motion.div custom={0} variants={containerVariants} initial="hidden" animate="visible">
                 <Input
                   type="text"
+                  autoComplete="name"
                   label="Name"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
@@ -166,6 +167,7 @@ export default function RegisterPage() {
               <motion.div custom={1} variants={containerVariants} initial="hidden" animate="visible">
                 <Input
                   type="email"
+                  autoComplete="email"
                   label="Email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -177,6 +179,7 @@ export default function RegisterPage() {
               <motion.div custom={2} variants={containerVariants} initial="hidden" animate="visible">
                 <Input
                   type="password"
+                  autoComplete="new-password"
                   label="Password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -188,6 +191,7 @@ export default function RegisterPage() {
               <motion.div custom={3} variants={containerVariants} initial="hidden" animate="visible">
                 <Input
                   type="password"
+                  autoComplete="new-password"
                   label="Confirm password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}

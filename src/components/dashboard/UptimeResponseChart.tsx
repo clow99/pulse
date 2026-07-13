@@ -53,7 +53,7 @@ export function UptimeResponseChart({ data, height = 280 }: UptimeResponseChartP
               }}
               labelStyle={{ color: '#f0f0f5' }}
               itemStyle={{ color: '#8888a0' }}
-              formatter={(value: number) => [`${value}ms`, 'Avg Response']}
+              formatter={(value) => [`${Number(value ?? 0)}ms`, 'Avg Response']}
               labelFormatter={(label) => label}
             />
             <Area

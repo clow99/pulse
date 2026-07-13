@@ -5,10 +5,10 @@ import { analyzeFunnel, type Activity, type FunnelDefinition } from '@/lib/funne
 import { percentile } from '@/lib/tracking';
 
 function verifySecret(request: Request) {
-  const secret = process.env.INSIGHTS_CRON_SECRET;
-  if (!secret) return false;
+  const secrets = [process.env.INSIGHTS_CRON_SECRET, process.env.PULSE_JOBS_SECRET].filter(Boolean);
+  if (!secrets.length) return false;
   const token = request.headers.get('authorization')?.replace(/^Bearer\s+/i, '');
-  return token === secret;
+  return Boolean(token && secrets.includes(token));
 }
 
 interface InsightCandidate {
@@ -28,46 +28,48 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const sites = await prisma.site.findMany({ where: { active: true }, select: { id: true, name: true, domain: true } });
-    const candidates: InsightCandidate[] = [];
-
-    for (const site of sites) {
-      candidates.push(...await trafficInsights(site.id));
-      candidates.push(...await revenueInsights(site.id));
-      candidates.push(...await uptimeInsights(site.id));
-      candidates.push(...await performanceInsights(site.id));
-      candidates.push(...await funnelInsights(site.id));
-      candidates.push(...await campaignInsights(site.id));
-    }
-
-    let created = 0;
-    for (const candidate of candidates) {
-      const recentDuplicate = await prisma.insight.findFirst({
-        where: {
-          siteId: candidate.siteId,
-          type: candidate.type,
-          title: candidate.title,
-          dismissedAt: null,
-          createdAt: { gte: new Date(Date.now() - 24 * 60 * 60 * 1000) },
-        },
-        select: { id: true },
-      });
-      if (recentDuplicate) continue;
-
-      await prisma.insight.create({
-        data: {
-          ...candidate,
-          impact: candidate.impact ?? defaultImpact(candidate.severity),
-          recommendation: candidate.recommendation ?? defaultRecommendation(candidate.type),
-        },
-      });
-      created++;
-    }
-
-    return NextResponse.json({ evaluatedSites: sites.length, created });
+    return NextResponse.json(await generateInsights());
   } catch {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
+}
+
+export async function generateInsights() {
+  const sites = await prisma.site.findMany({ where: { active: true }, select: { id: true } });
+  const candidates: InsightCandidate[] = [];
+  for (const site of sites) {
+    candidates.push(...await trafficInsights(site.id));
+    candidates.push(...await revenueInsights(site.id));
+    candidates.push(...await uptimeInsights(site.id));
+    candidates.push(...await performanceInsights(site.id));
+    candidates.push(...await funnelInsights(site.id));
+    candidates.push(...await campaignInsights(site.id));
+  }
+
+  let created = 0;
+  for (const candidate of candidates) {
+    const recentDuplicate = await prisma.insight.findFirst({
+      where: {
+        siteId: candidate.siteId,
+        type: candidate.type,
+        title: candidate.title,
+        dismissedAt: null,
+        createdAt: { gte: new Date(Date.now() - 24 * 60 * 60 * 1000) },
+      },
+      select: { id: true },
+    });
+    if (recentDuplicate) continue;
+
+    await prisma.insight.create({
+      data: {
+        ...candidate,
+        impact: candidate.impact ?? defaultImpact(candidate.severity),
+        recommendation: candidate.recommendation ?? defaultRecommendation(candidate.type),
+      },
+    });
+    created++;
+  }
+  return { evaluatedSites: sites.length, created };
 }
 
 async function trafficInsights(siteId: string): Promise<InsightCandidate[]> {

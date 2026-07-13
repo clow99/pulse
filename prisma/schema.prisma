@@ -44,6 +44,41 @@ enum InsightSeverity {
   critical
 }
 
+enum EnvironmentKind {
+  production
+  staging
+  development
+  other
+}
+
+enum ServiceKind {
+  web
+  api
+  worker
+  database
+  job
+  other
+}
+
+enum MonitorType {
+  http
+  heartbeat
+  ssl_expiry
+  domain_expiry
+}
+
+enum DeploymentStatus {
+  started
+  succeeded
+  failed
+  rolled_back
+}
+
+enum BriefGenerator {
+  template
+  ai
+}
+
 model User {
   id               String            @id @default(uuid())
   email            String            @unique
@@ -94,6 +129,11 @@ model Organization {
   shareLinks           ShareLink[]
   scheduledReports     ScheduledReport[]
   invites              TeamInvite[]
+  projects             Project[]
+  dailyBriefs          DailyBrief[]
+  timezone             String                @default("UTC")
+  dailyBriefEnabled    Boolean               @default(true)
+  dailyBriefHour       Int                   @default(8)
 }
 
 model OrgMembership {
@@ -133,8 +173,11 @@ model Site {
   agentAuditLogs   AgentAuditLog[]
   shareLinks       ShareLink[]
   scheduledReports ScheduledReport[]
+  service          Service?              @relation(fields: [serviceId], references: [id], onDelete: SetNull)
+  serviceId        String?
 
   @@index([orgId])
+  @@index([serviceId])
 }
 
 model Pageview {
@@ -193,15 +236,19 @@ model Event {
 
 model UptimeCheck {
   id           String   @id @default(uuid())
-  site         Site     @relation(fields: [siteId], references: [id], onDelete: Cascade)
-  siteId       String
-  statusCode   Int
-  responseTime Int
+  site         Site?    @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  siteId       String?
+  monitor      Monitor? @relation(fields: [monitorId], references: [id], onDelete: Cascade)
+  monitorId    String?
+  statusCode   Int?
+  responseTime Int?
   isUp         Boolean
   error        String?
+  metadata     Json     @default("{}")
   checkedAt    DateTime @default(now())
 
   @@index([siteId, checkedAt])
+  @@index([monitorId, checkedAt])
 }
 
 model NotificationChannel {
@@ -221,8 +268,10 @@ model NotificationChannel {
 
 model AlertRule {
   id                    String              @id @default(uuid())
-  site                  Site                @relation(fields: [siteId], references: [id], onDelete: Cascade)
-  siteId                String
+  site                  Site?               @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  siteId                String?
+  monitor               Monitor?            @relation(fields: [monitorId], references: [id], onDelete: Cascade)
+  monitorId             String?
   notificationChannel   NotificationChannel @relation(fields: [notificationChannelId], references: [id], onDelete: Cascade)
   notificationChannelId String
   enabled               Boolean             @default(true)
@@ -232,13 +281,16 @@ model AlertRule {
   updatedAt             DateTime            @updatedAt
 
   @@index([siteId])
+  @@index([monitorId])
   @@index([notificationChannelId])
 }
 
 model Incident {
   id             String         @id @default(uuid())
-  site           Site           @relation(fields: [siteId], references: [id], onDelete: Cascade)
-  siteId         String
+  site           Site?          @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  siteId         String?
+  monitor        Monitor?       @relation(fields: [monitorId], references: [id], onDelete: Cascade)
+  monitorId      String?
   status         IncidentStatus @default(open)
   title          String
   description    String?
@@ -248,6 +300,8 @@ model Incident {
 
   @@index([siteId, status])
   @@index([siteId, startedAt])
+  @@index([monitorId, status])
+  @@index([monitorId, startedAt])
 }
 
 model StatusPage {
@@ -269,13 +323,17 @@ model StatusPageComponent {
   id           String     @id @default(uuid())
   statusPage   StatusPage @relation(fields: [statusPageId], references: [id], onDelete: Cascade)
   statusPageId String
-  site         Site       @relation(fields: [siteId], references: [id], onDelete: Cascade)
-  siteId       String
+  site         Site?      @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  siteId       String?
+  service      Service?   @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  serviceId    String?
   name         String
   sortOrder    Int        @default(0)
 
   @@unique([statusPageId, siteId])
+  @@unique([statusPageId, serviceId])
   @@index([siteId])
+  @@index([serviceId])
 }
 
 model Goal {
@@ -364,6 +422,124 @@ model Insight {
   @@index([siteId, snoozedUntil])
 }
 
+model Project {
+  id             String          @id @default(uuid())
+  org            Organization    @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  orgId          String
+  name           String
+  slug           String
+  description    String?
+  active         Boolean         @default(true)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  environments   Environment[]
+  deployments    Deployment[]
+  agentTokens    AgentToken[]
+  agentAuditLogs AgentAuditLog[]
+
+  @@unique([orgId, slug])
+  @@index([orgId, active])
+}
+
+model Environment {
+  id          String          @id @default(uuid())
+  project     Project         @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId   String
+  name        String
+  slug        String
+  kind        EnvironmentKind @default(production)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  services    Service[]
+  deployments Deployment[]
+
+  @@unique([projectId, slug])
+  @@index([projectId, kind])
+}
+
+model Service {
+  id               String                @id @default(uuid())
+  environment      Environment           @relation(fields: [environmentId], references: [id], onDelete: Cascade)
+  environmentId    String
+  name             String
+  slug             String
+  kind             ServiceKind           @default(web)
+  createdAt        DateTime              @default(now())
+  updatedAt        DateTime              @updatedAt
+  sites            Site[]
+  monitors         Monitor[]
+  deployments      Deployment[]
+  statusComponents StatusPageComponent[]
+
+  @@unique([environmentId, slug])
+  @@index([environmentId, kind])
+}
+
+model Monitor {
+  id              String        @id @default(uuid())
+  service         Service       @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  serviceId       String
+  name            String
+  type            MonitorType
+  enabled         Boolean       @default(true)
+  intervalSeconds Int           @default(300)
+  graceSeconds    Int           @default(60)
+  timeoutMs       Int           @default(10000)
+  config          Json          @default("{}")
+  secretHash      String?       @unique
+  secretPrefix    String?
+  lastSeenAt      DateTime?
+  nextRunAt       DateTime?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  checks          UptimeCheck[]
+  incidents       Incident[]
+  alertRules      AlertRule[]
+
+  @@index([serviceId, enabled])
+  @@index([enabled, nextRunAt])
+  @@index([type, lastSeenAt])
+}
+
+model Deployment {
+  id            String           @id @default(uuid())
+  project       Project          @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId     String
+  environment   Environment      @relation(fields: [environmentId], references: [id], onDelete: Cascade)
+  environmentId String
+  service       Service?         @relation(fields: [serviceId], references: [id], onDelete: SetNull)
+  serviceId     String?
+  commitSha     String?
+  version       String?
+  status        DeploymentStatus @default(succeeded)
+  source        String           @default("manual")
+  url           String?
+  metadata      Json             @default("{}")
+  deployedAt    DateTime         @default(now())
+  createdAt     DateTime         @default(now())
+
+  @@index([projectId, deployedAt])
+  @@index([environmentId, deployedAt])
+  @@index([serviceId, deployedAt])
+}
+
+model DailyBrief {
+  id          String         @id @default(uuid())
+  org         Organization   @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  orgId       String
+  localDate   DateTime       @db.Date
+  periodStart DateTime
+  periodEnd   DateTime
+  summary     String
+  evidence    Json           @default("{}")
+  generator   BriefGenerator @default(template)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  @@unique([orgId, localDate])
+  @@index([orgId, periodEnd])
+}
+
 model ShareLink {
   id          String       @id @default(uuid())
   org         Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
@@ -436,6 +612,8 @@ model AgentToken {
   orgId       String
   site        Site?           @relation(fields: [siteId], references: [id], onDelete: Cascade)
   siteId      String?
+  project     Project?        @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  projectId   String?
   name        String
   tokenHash   String          @unique
   tokenPrefix String
@@ -452,6 +630,7 @@ model AgentToken {
 
   @@index([orgId])
   @@index([siteId])
+  @@index([projectId])
   @@index([tokenPrefix])
   @@index([revokedAt])
   @@index([expiresAt])
@@ -463,6 +642,8 @@ model AgentAuditLog {
   orgId     String?
   site      Site?         @relation(fields: [siteId], references: [id], onDelete: SetNull)
   siteId    String?
+  project   Project?      @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  projectId String?
   token     AgentToken?   @relation(fields: [tokenId], references: [id], onDelete: SetNull)
   tokenId   String?
   action    String
@@ -476,6 +657,7 @@ model AgentAuditLog {
 
   @@index([orgId, createdAt])
   @@index([siteId, createdAt])
+  @@index([projectId, createdAt])
   @@index([tokenId, createdAt])
   @@index([action, createdAt])
 }

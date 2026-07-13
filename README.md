@@ -9,6 +9,8 @@ Privacy-first, self-hosted web analytics. Track pageviews, custom events, and up
 - **Dashboard** — overview, pages, events, acquisition, and technology breakdowns with interactive charts
 - **Goals, funnels & revenue** — conversion tracking, funnel drop-off, and ecommerce revenue attribution
 - **Uptime monitoring** — periodic HTTP health checks with incidents, alerts, and public status pages
+- **Project intelligence** — organize sites into projects, environments, and services with release history and a daily portfolio brief
+- **Operational monitoring** — HTTP assertions, cron heartbeats, TLS expiry, domain expiry, incidents, and safe outbound URL enforcement
 - **Performance monitoring** — optional Core Web Vitals collection for real-user page health
 - **AI assistant & action center** — ask natural-language questions and turn proactive findings into done / snoozed / dismissed work
 - **AI-source attribution** — classify ChatGPT, Claude, Gemini, Perplexity, Copilot, and similar traffic by source, landing page, events, goals, and revenue
@@ -73,6 +75,8 @@ Optional variables:
 | `REDIS_URL`           | Enables MCP SSE transport in addition to Streamable HTTP |
 | `UPTIME_CHECK_SECRET` | Bearer token for the uptime cron endpoint      |
 | `INSIGHTS_CRON_SECRET` | Bearer token for the insights cron endpoint   |
+| `PULSE_JOBS_SECRET` | Bearer token for the unified idempotent `/api/jobs/run` scheduler endpoint |
+| `PULSE_TRUSTED_COUNTRY_HEADER` | Optional trusted proxy header containing a two-letter country code |
 | `SCHEDULED_REPORT_SECRET` | Bearer token for scheduled report delivery; falls back to `INSIGHTS_CRON_SECRET` |
 | `SMTP_HOST` / `SMTP_PORT` / `SMTP_USER` / `SMTP_PASS` / `SMTP_FROM` | Enables email alert channels |
 
@@ -115,6 +119,16 @@ The app is served on port **3010** by default (mapped from container port 3000).
 
 > **Note:** The Compose file only runs the app. You need to provide your own PostgreSQL instance and run `prisma migrate deploy` against the production database before starting.
 
+For controlled releases, run the dedicated migrator before replacing the application image:
+
+```bash
+docker compose --profile tools build migrate
+docker compose --profile tools run --rm migrate
+docker compose up -d app
+```
+
+The application never migrates the database during startup.
+
 ## Tracker Script
 
 Add the following snippet to any site you want to track:
@@ -140,6 +154,15 @@ Custom events can include revenue metadata:
 ```
 
 ## Uptime Monitoring
+
+Call the idempotent scheduler every minute. It runs due monitors, evaluates heartbeats, creates insights, and generates each organization’s daily brief at its configured local hour:
+
+```bash
+curl -X POST https://your-pulse-host/api/jobs/run \
+  -H "Authorization: Bearer $PULSE_JOBS_SECRET"
+```
+
+PostgreSQL advisory locking prevents overlapping runs. Legacy uptime and insights endpoints remain available for compatibility. Heartbeat secrets are shown only once; send success to `/api/heartbeats/TOKEN` or failure to `/api/heartbeats/TOKEN/fail`.
 
 Trigger uptime checks via a cron job or external scheduler:
 
@@ -217,6 +240,8 @@ Registered MCP tools:
 - `get_performance_report`
 - `get_insights_report`
 - `get_uptime_summary`
+- `get_daily_brief`
+- `get_project_status`
 - `generate_report_data`
 
 OAuth protected-resource metadata is available at:

@@ -64,7 +64,7 @@ export function AreaChart({ data, height = 320 }: AreaChartProps) {
               }}
               labelStyle={{ color: '#f0f0f5' }}
               itemStyle={{ color: '#8888a0' }}
-              formatter={(value: number | string, name: string) => [defaultFormat(Number(value)), name]}
+              formatter={(value, name) => [defaultFormat(Number(value ?? 0)), String(name)]}
               labelFormatter={(label) => label}
             />
             <Area
@@ -78,7 +78,7 @@ export function AreaChart({ data, height = 320 }: AreaChartProps) {
             <Area
               type="monotone"
               dataKey="visitors"
-              name="Estimated visitors"
+              name="Visitors"
               stroke="#22c55e"
               fill="url(#areaGradientVisitors)"
               strokeWidth={2}

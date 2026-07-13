@@ -696,6 +696,31 @@ a {
   }
 }
 
+.pulse-panel {
+  background: var(--pulse-bg-card);
+  border: 1px solid var(--pulse-border);
+  border-radius: 14px;
+  box-shadow: 0 12px 36px rgba(2, 8, 23, 0.16);
+}
+
+.pulse-panel input,
+.pulse-panel select,
+.pulse-panel button {
+  min-height: 40px;
+  border-radius: 8px;
+  border: 1px solid var(--pulse-border);
+  background: var(--pulse-bg-secondary);
+  color: var(--pulse-text-primary);
+  padding: 0 12px;
+}
+
+.pulse-panel button {
+  background: var(--pulse-accent);
+  color: white;
+  cursor: pointer;
+  font-weight: 600;
+}
+
 /* Card overrides for dark theme */
 .pulse-stat-card {
   background: var(--pulse-bg-card);

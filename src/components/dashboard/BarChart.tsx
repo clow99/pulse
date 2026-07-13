@@ -59,9 +59,10 @@ export function BarChart({
               }}
               labelStyle={{ color: '#f0f0f5' }}
               itemStyle={{ color: '#8888a0' }}
-              formatter={(value: number, _name: string, props: { payload?: BarChartDataPoint }) => {
-                const pct = props.payload?.percentage ?? 0;
-                return [`${defaultFormat(value)} (${pct.toFixed(1)}%)`, undefined];
+              formatter={(value, _name, item) => {
+                const payload = item.payload as BarChartDataPoint | undefined;
+                const pct = payload?.percentage ?? 0;
+                return [`${defaultFormat(Number(value ?? 0))} (${pct.toFixed(1)}%)`, ''];
               }}
               labelFormatter={(label) => label}
             />

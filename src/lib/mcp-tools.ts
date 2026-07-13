@@ -3,9 +3,12 @@ import type { AuthInfo } from '@modelcontextprotocol/sdk/server/auth/types.js';
 import { z } from 'zod';
 import {
   getAgentContextFromAuthInfo,
+  hasAgentScopes,
+  requireAgentProjectAccess,
   requireAgentSiteAccess,
   writeAgentAuditLog,
 } from './agent-auth';
+import { prisma } from './prisma';
 import {
   AGENT_REPORTS,
   runAgentReport,
@@ -278,6 +281,62 @@ export function registerPulseMcpTools(server: McpServer) {
       });
 
       return jsonToolResult({ reports, siteId: args.siteId, range, data });
+    }
+  );
+
+  server.registerTool(
+    'get_daily_brief',
+    {
+      title: 'Get Daily Portfolio Brief',
+      description: 'Read the latest persisted Pulse project-intelligence brief for the authenticated organization.',
+      inputSchema: {
+        projectId: z.string().uuid().optional().describe('Optional project filter.'),
+        date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional().describe('Optional local date in YYYY-MM-DD format.'),
+      },
+      annotations: { readOnlyHint: true },
+    },
+    async (args, extra) => {
+      const context = authContext(extra.authInfo);
+      if (!hasAgentScopes(context.scopes, ['portfolio:read'])) throw new Error('Insufficient agent token scope');
+      const projectId = args.projectId ?? context.projectId ?? undefined;
+      if (projectId) await requireAgentProjectAccess(context, projectId, ['portfolio:read']);
+      const brief = await prisma.dailyBrief.findFirst({
+        where: {
+          orgId: context.orgId,
+          ...(args.date ? { localDate: new Date(`${args.date}T00:00:00.000Z`) } : {}),
+        },
+        orderBy: { localDate: 'desc' },
+      });
+      if (!brief) return jsonToolResult({ brief: null });
+      const evidence = brief.evidence as { projects?: Array<{ projectId?: string }> };
+      const filteredEvidence = projectId && evidence.projects
+        ? { ...evidence, projects: evidence.projects.filter((project) => project.projectId === projectId) }
+        : evidence;
+      await writeAgentAuditLog({ context, projectId: projectId ?? null, action: 'mcp.tool', outcome: 'success', toolName: 'get_daily_brief', scopes: ['portfolio:read'], metadata: { briefId: brief.id } });
+      return jsonToolResult({ ...brief, evidence: filteredEvidence });
+    }
+  );
+
+  server.registerTool(
+    'get_project_status',
+    {
+      title: 'Get Project Status',
+      description: 'Read environments, services, latest monitor checks, open incidents, and recent deployments for one project.',
+      inputSchema: { projectId: z.string().uuid() },
+      annotations: { readOnlyHint: true },
+    },
+    async (args, extra) => {
+      const context = authContext(extra.authInfo);
+      await requireAgentProjectAccess(context, args.projectId, ['portfolio:read']);
+      const project = await prisma.project.findUnique({
+        where: { id: args.projectId },
+        include: {
+          environments: { include: { services: { include: { sites: { select: { id: true, name: true, domain: true } }, monitors: { include: { checks: { orderBy: { checkedAt: 'desc' }, take: 1 }, incidents: { where: { status: 'open' } } } } } } } },
+          deployments: { orderBy: { deployedAt: 'desc' }, take: 10 },
+        },
+      });
+      await writeAgentAuditLog({ context, projectId: args.projectId, action: 'mcp.tool', outcome: 'success', toolName: 'get_project_status', scopes: ['portfolio:read'] });
+      return jsonToolResult(project);
     }
   );
 }

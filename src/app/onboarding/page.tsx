@@ -141,7 +141,7 @@ const slideVariants = {
 
 export default function OnboardingPage() {
   const router = useRouter();
-  const { data: session } = useSession();
+  const { data: session, update: updateSession } = useSession();
   const [currentStep, setCurrentStep] = useState(0);
   const [direction, setDirection] = useState(1);
 
@@ -196,27 +196,7 @@ export default function OnboardingPage() {
       return;
     }
 
-    setLoading(true);
-    try {
-      const res = await fetch('/api/orgs', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: orgName, slug: orgSlug }),
-      });
-      const data = await res.json();
-
-      if (!res.ok) {
-        setError(data.error || 'Failed to create organization');
-        return;
-      }
-
-      setOrgId(data.id);
-      goForward();
-    } catch {
-      setError('Something went wrong');
-    } finally {
-      setLoading(false);
-    }
+    goForward();
   }
 
   async function handleCreateSite() {
@@ -236,10 +216,13 @@ export default function OnboardingPage() {
 
     setLoading(true);
     try {
-      const res = await fetch('/api/sites', {
+      const res = await fetch('/api/onboarding', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: siteName, domain: siteDomain, orgId }),
+        body: JSON.stringify({
+          org: { name: orgName, slug: orgSlug },
+          site: { name: siteName, domain: siteDomain },
+        }),
       });
       const data = await res.json();
 
@@ -248,8 +231,10 @@ export default function OnboardingPage() {
         return;
       }
 
-      setSiteId(data.id);
-      setSiteToken(data.token);
+      setOrgId(data.organization.id);
+      setSiteId(data.site.id);
+      setSiteToken(data.site.token);
+      await updateSession();
       goForward();
     } catch {
       setError('Something went wrong');
@@ -288,7 +273,7 @@ export default function OnboardingPage() {
   useEffect(() => {
     if (!verified) return;
     const timeout = setTimeout(() => {
-      router.push('/overview');
+      router.push('/portfolio');
       router.refresh();
     }, 2000);
     return () => clearTimeout(timeout);
@@ -581,7 +566,7 @@ export default function OnboardingPage() {
                     <Button
                       variant="ghost"
                       onClick={() => {
-                        router.push('/overview');
+                        router.push('/portfolio');
                         router.refresh();
                       }}
                     >

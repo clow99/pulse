@@ -1,5 +1,6 @@
 import nodemailer from 'nodemailer';
 import type { NotificationChannel } from '@prisma/client';
+import { safeFetch } from './safe-fetch';
 
 export interface NotificationPayload {
   event: 'incident.opened' | 'incident.resolved';
@@ -17,8 +18,8 @@ export interface NotificationPayload {
     resolvedAt: string | null;
   };
   check?: {
-    statusCode: number;
-    responseTime: number;
+    statusCode: number | null;
+    responseTime: number | null;
     error: string | null;
   };
 }
@@ -30,7 +31,7 @@ export async function sendNotification(
   if (!channel.enabled) return;
 
   if (channel.type === 'webhook') {
-    const res = await fetch(channel.target, {
+    const res = await safeFetch(channel.target, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
@@ -76,7 +77,7 @@ export async function sendNotification(
         '',
         `Site: ${payload.site.name} (${payload.site.domain})`,
         `Status: ${payload.incident.status}`,
-        payload.check ? `Last check: ${payload.check.statusCode || 'N/A'} in ${payload.check.responseTime}ms` : '',
+        payload.check ? `Last check: ${payload.check.statusCode || 'N/A'} in ${payload.check.responseTime ?? 'N/A'}ms` : '',
         payload.check?.error ? `Error: ${payload.check.error}` : '',
       ].filter(Boolean).join('\n'),
     });

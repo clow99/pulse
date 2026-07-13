@@ -60,7 +60,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          npm ci --no-audit --no-fund --prefer-offline --cache "${NPM_CACHE_DIR}"
+          npm ci --no-audit --no-fund --prefer-offline --legacy-peer-deps --cache "${NPM_CACHE_DIR}"
 
       - name: Guard Prisma schema changes include migrations
         run: |
@@ -106,6 +106,18 @@ jobs:
       - name: Apply database migrations
         run: npx prisma migrate deploy
 
+      - name: Validate Prisma schema
+        run: npx prisma validate
+
+      - name: Generate Prisma client
+        run: npm run db:generate
+
+      - name: Run tests
+        run: npm test
+
+      - name: Audit production dependencies
+        run: npm audit --omit=dev --audit-level=high
+
       - name: Run lint
         run: npm run lint
 
@@ -113,15 +125,28 @@ jobs:
         run: npm run build
 
       - name: Build web Docker image
-        run: docker build -f Dockerfile -t pulse:latest .
+        run: docker build -f Dockerfile --build-arg PULSE_RELEASE_SHA=${{ github.sha }} --build-arg PULSE_SCHEMA_VERSION=20260713010000_project_intelligence_v1 -t pulse:latest .
+
+      - name: Build migration Docker image
+        run: docker build -f Dockerfile --target migrator -t pulse-migrate:latest .
 
       - name: Verify web image exists
-        run: docker image inspect pulse:latest > /dev/null
+        run: |
+          docker image inspect pulse:latest > /dev/null
+          docker image inspect pulse-migrate:latest > /dev/null
 
       - name: Tag web image (live)
         if: success() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: docker tag pulse:latest localhost:5000/pulse:live
 
+      - name: Tag migration image (live)
+        if: success() && github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: docker tag pulse-migrate:latest localhost:5000/pulse-migrate:live
+
       - name: Push web image (live)
         if: success() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: docker push localhost:5000/pulse:live
+
+      - name: Push migration image (live)
+        if: success() && github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: docker push localhost:5000/pulse-migrate:live

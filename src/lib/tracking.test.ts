@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { domainMatches, getWebVitalRating, parseRevenueProperties, percentile } from './tracking';
+import { calculateBounceRate, domainMatches, getWebVitalRating, parseRevenueProperties, percentile } from './tracking';
 
 describe('parseRevenueProperties', () => {
   it('extracts revenue metadata from event properties', () => {
@@ -33,6 +33,14 @@ describe('domainMatches', () => {
     expect(domainMatches('example.com', 'www.example.com')).toBe(true);
     expect(domainMatches('example.com', 'docs.example.com')).toBe(true);
     expect(domainMatches('example.com', 'example.org')).toBe(false);
+  });
+});
+
+describe('calculateBounceRate', () => {
+  it('uses only sessionized visits supplied by the report query', () => {
+    expect(calculateBounceRate(4, 1)).toBe(25);
+    expect(calculateBounceRate(3, 2)).toBe(66.67);
+    expect(calculateBounceRate(0, 0)).toBe(0);
   });
 });
 

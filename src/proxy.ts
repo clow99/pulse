@@ -3,6 +3,8 @@ import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
 const protectedPaths = [
+  '/portfolio',
+  '/projects',
   '/overview',
   '/pages',
   '/events',
@@ -37,7 +39,7 @@ export default async function proxy(req: NextRequest) {
 
   const isAuthPage = authPaths.some((p) => pathname.startsWith(p));
   if (isAuthPage && isAuthenticated) {
-    return NextResponse.redirect(new URL('/overview', req.nextUrl.origin));
+    return NextResponse.redirect(new URL('/portfolio', req.nextUrl.origin));
   }
 
   return NextResponse.next();

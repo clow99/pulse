@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { verifySiteAccess } from '@/lib/site-access';
+import { verifyMonitorAccess } from '@/lib/project-access';
 
 interface RouteContext {
   params: Promise<{ id: string }>;
@@ -10,7 +11,11 @@ interface RouteContext {
 async function getRuleForWrite(userId: string, id: string) {
   const rule = await prisma.alertRule.findUnique({ where: { id } });
   if (!rule) return null;
-  const access = await verifySiteAccess(userId, rule.siteId, ['owner', 'admin']);
+  const access = rule.monitorId
+    ? await verifyMonitorAccess(userId, rule.monitorId, ['owner', 'admin'])
+    : rule.siteId
+      ? await verifySiteAccess(userId, rule.siteId, ['owner', 'admin'])
+      : null;
   return access ? rule : null;
 }
 

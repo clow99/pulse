@@ -1,0 +1,14 @@
+.git
+.next
+node_modules
+coverage
+playwright-report
+.playwright-cli
+test-results
+*.log
+.env
+.env.*
+!.env.example
+Dockerfile*
+docker-compose*.yml
+README.md

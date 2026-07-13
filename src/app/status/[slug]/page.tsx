@@ -26,6 +26,16 @@ export default async function PublicStatusPage({ params }: StatusPageProps) {
               incidents: { orderBy: { startedAt: 'desc' }, take: 10 },
             },
           },
+          service: {
+            include: {
+              monitors: {
+                include: {
+                  checks: { orderBy: { checkedAt: 'desc' }, take: 30 },
+                  incidents: { orderBy: { startedAt: 'desc' }, take: 10 },
+                },
+              },
+            },
+          },
         },
         orderBy: { sortOrder: 'asc' },
       },
@@ -35,14 +45,21 @@ export default async function PublicStatusPage({ params }: StatusPageProps) {
   if (!page || !page.enabled) notFound();
 
   const components = page.components.map((component) => {
-    const lastCheck = component.site.uptimeChecks[0] ?? null;
-    const openIncident = component.site.incidents.find((incident) => incident.status === 'open') ?? null;
+    const checks = component.service
+      ? component.service.monitors.flatMap((monitor) => monitor.checks).sort((a, b) => b.checkedAt.getTime() - a.checkedAt.getTime()).slice(0, 30)
+      : component.site?.uptimeChecks ?? [];
+    const incidents = component.service
+      ? component.service.monitors.flatMap((monitor) => monitor.incidents).sort((a, b) => b.startedAt.getTime() - a.startedAt.getTime()).slice(0, 10)
+      : component.site?.incidents ?? [];
+    const lastCheck = checks[0] ?? null;
+    const openIncident = incidents.find((incident) => incident.status === 'open') ?? null;
     const status: ComponentStatus = openIncident ? 'down' : lastCheck ? lastCheck.isUp ? 'up' : 'down' : 'unknown';
-    const totalChecks = component.site.uptimeChecks.length;
-    const upChecks = component.site.uptimeChecks.filter((check) => check.isUp).length;
+    const totalChecks = checks.length;
+    const upChecks = checks.filter((check) => check.isUp).length;
     const uptime = totalChecks > 0 ? Math.round((upChecks / totalChecks) * 10000) / 100 : null;
-    const avgResponse = totalChecks > 0
-      ? Math.round(component.site.uptimeChecks.reduce((sum, check) => sum + check.responseTime, 0) / totalChecks)
+    const responseChecks = checks.filter((check) => check.responseTime !== null);
+    const avgResponse = responseChecks.length > 0
+      ? Math.round(responseChecks.reduce((sum, check) => sum + (check.responseTime ?? 0), 0) / responseChecks.length)
       : null;
 
     return {
@@ -52,7 +69,7 @@ export default async function PublicStatusPage({ params }: StatusPageProps) {
       lastCheck,
       uptime,
       avgResponse,
-      incidents: component.site.incidents,
+      incidents,
     };
   });
 

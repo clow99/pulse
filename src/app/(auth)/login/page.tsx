@@ -17,7 +17,7 @@ import { loginSchema } from '@/lib/validation';
 export default function LoginPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const callbackUrl = searchParams.get('callbackUrl') || '/overview';
+  const callbackUrl = searchParams.get('callbackUrl') || '/portfolio';
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -117,8 +117,9 @@ export default function LoginPage() {
               <div style={{ flex: 1, height: '1px', background: 'var(--pulse-border)' }} />
             </div>
             <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              <Input
-                type="email"
+                <Input
+                  type="email"
+                  autoComplete="email"
                 label="Email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -126,8 +127,9 @@ export default function LoginPage() {
                 required
                 error={fieldErrors.email}
               />
-              <Input
-                type="password"
+                <Input
+                  type="password"
+                  autoComplete="current-password"
                 label="Password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}

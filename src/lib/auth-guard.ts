@@ -21,7 +21,7 @@ export async function requireOrgAccess(orgId: string) {
   });
 
   if (!membership) {
-    redirect('/overview');
+    redirect('/portfolio');
   }
 
   return { session, membership };

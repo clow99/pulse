@@ -10,9 +10,18 @@ export const AGENT_SCOPES = [
   'events:read',
   'uptime:read',
   'reports:generate',
+  'portfolio:read',
+  'deployments:write',
 ] as const;
 
 export type AgentScope = (typeof AGENT_SCOPES)[number];
+export const DEFAULT_AGENT_SCOPES: AgentScope[] = [
+  'analytics:read',
+  'events:read',
+  'uptime:read',
+  'reports:generate',
+  'portfolio:read',
+];
 
 export const agentScopeSchema = z.enum(AGENT_SCOPES);
 export const agentScopesSchema = z
@@ -27,6 +36,7 @@ export interface AgentAuthContext {
   tokenId: string;
   orgId: string;
   siteId: string | null;
+  projectId: string | null;
   role: 'owner' | 'admin' | 'viewer';
   scopes: AgentScope[];
 }
@@ -37,6 +47,7 @@ export interface AgentAuditInput {
   action: string;
   outcome: 'success' | 'failure';
   siteId?: string | null;
+  projectId?: string | null;
   toolName?: string | null;
   scopes?: string[];
   metadata?: Prisma.InputJsonValue;
@@ -91,6 +102,7 @@ export async function writeAgentAuditLog(input: AgentAuditInput) {
     data: {
       orgId: input.orgId ?? context?.orgId ?? null,
       siteId: input.siteId ?? context?.siteId ?? null,
+      projectId: input.projectId ?? context?.projectId ?? null,
       tokenId: context?.tokenId ?? null,
       action: input.action,
       outcome: input.outcome,
@@ -129,6 +141,7 @@ export async function validateAgentBearerToken(
     tokenId: token.id,
     orgId: token.orgId,
     siteId: token.siteId,
+    projectId: token.projectId,
     role: token.role,
     scopes: token.scopes as AgentScope[],
   };
@@ -201,6 +214,7 @@ export function getAgentContextFromAuthInfo(
     tokenId: extra.tokenId,
     orgId: extra.orgId,
     siteId: typeof extra.siteId === 'string' ? extra.siteId : null,
+    projectId: typeof extra.projectId === 'string' ? extra.projectId : null,
     role,
     scopes: extra.scopes as AgentScope[],
   };
@@ -255,6 +269,32 @@ export async function requireAgentSiteAccess(
   }
 
   return site;
+}
+
+export async function requireAgentProjectAccess(
+  context: AgentAuthContext,
+  projectId: string,
+  requiredScopes: AgentScope[],
+  request?: Request
+) {
+  if (!hasAgentScopes(context.scopes, requiredScopes)) {
+    await writeAgentAuditLog({ context, projectId, action: 'agent.scope_denied', outcome: 'failure', scopes: requiredScopes, request });
+    throw new Error('Insufficient agent token scope');
+  }
+  if (context.projectId && context.projectId !== projectId) {
+    await writeAgentAuditLog({ context, projectId, action: 'agent.project_denied', outcome: 'failure', metadata: { allowedProjectId: context.projectId }, request });
+    throw new Error('Agent token is not allowed to access this project');
+  }
+  const project = await prisma.project.findUnique({ where: { id: projectId }, select: { id: true, orgId: true, name: true } });
+  if (!project || project.orgId !== context.orgId) {
+    await writeAgentAuditLog({ context, projectId, action: 'agent.project_denied', outcome: 'failure', metadata: { reason: 'project_not_in_org' }, request });
+    throw new Error('Agent token is not allowed to access this project');
+  }
+  if (context.siteId) {
+    const site = await prisma.site.findUnique({ where: { id: context.siteId }, select: { service: { select: { environment: { select: { projectId: true } } } } } });
+    if (site?.service?.environment.projectId !== projectId) throw new Error('Site-scoped token cannot access this project');
+  }
+  return project;
 }
 
 export async function authenticateAgentRequest(

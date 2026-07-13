@@ -6,9 +6,9 @@ export const collectPayloadSchema = z.object({
   visitId: z.string().max(100).optional(),
   name: z.string().max(200).optional(),
   properties: z.record(
-    z.string(),
-    z.union([z.string(), z.number(), z.boolean(), z.null()])
-  ).optional(),
+    z.string().max(100),
+    z.union([z.string().max(500), z.number(), z.boolean(), z.null()])
+  ).refine((properties) => Object.keys(properties).length <= 25, 'Events support at most 25 properties').optional(),
   url: z.string().url().max(2000),
   referrer: z.string().max(2000).optional().default(''),
   utm_source: z.string().max(200).optional().default(''),
@@ -125,4 +125,89 @@ export const funnelSchema = z.object({
   name: z.string().min(1).max(100),
   mode: z.enum(['sequential', 'strict']).optional().default('sequential'),
   goalIds: z.array(z.string().uuid()).min(2).max(8),
+});
+
+const slugSchema = z
+  .string()
+  .min(1)
+  .max(80)
+  .regex(/^[a-z0-9-]+$/, 'Use lowercase letters, numbers, and dashes');
+
+export const projectSchema = z.object({
+  orgId: z.string().uuid(),
+  name: z.string().min(1).max(120),
+  slug: slugSchema,
+  description: z.string().max(500).nullable().optional(),
+  active: z.boolean().optional().default(true),
+});
+
+export const projectUpdateSchema = projectSchema.omit({ orgId: true }).partial();
+
+export const environmentSchema = z.object({
+  projectId: z.string().uuid(),
+  name: z.string().min(1).max(100),
+  slug: slugSchema,
+  kind: z.enum(['production', 'staging', 'development', 'other']).default('production'),
+});
+
+export const serviceSchema = z.object({
+  environmentId: z.string().uuid(),
+  name: z.string().min(1).max(100),
+  slug: slugSchema,
+  kind: z.enum(['web', 'api', 'worker', 'database', 'job', 'other']).default('web'),
+});
+
+export const monitorSchema = z.object({
+  serviceId: z.string().uuid(),
+  name: z.string().min(1).max(120),
+  type: z.enum(['http', 'heartbeat', 'ssl_expiry', 'domain_expiry']),
+  enabled: z.boolean().optional().default(true),
+  intervalSeconds: z.coerce.number().int().min(60).max(86400).optional().default(300),
+  graceSeconds: z.coerce.number().int().min(0).max(86400).optional().default(60),
+  timeoutMs: z.coerce.number().int().min(1000).max(30000).optional().default(10000),
+  url: z.string().url().max(2000).optional(),
+  method: z.enum(['GET', 'HEAD']).optional().default('HEAD'),
+  expectedStatusMin: z.coerce.number().int().min(100).max(599).optional().default(200),
+  expectedStatusMax: z.coerce.number().int().min(100).max(599).optional().default(399),
+  bodyContains: z.string().max(500).nullable().optional(),
+  warningDays: z.coerce.number().int().min(1).max(365).optional().default(30),
+}).superRefine((data, ctx) => {
+  if (data.type !== 'heartbeat' && !data.url) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['url'], message: 'URL is required for this monitor type' });
+  }
+  if (data.expectedStatusMin > data.expectedStatusMax) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['expectedStatusMax'], message: 'Maximum status must be at least the minimum status' });
+  }
+});
+
+export const monitorUpdateSchema = z.object({
+  name: z.string().min(1).max(120).optional(),
+  enabled: z.boolean().optional(),
+  intervalSeconds: z.coerce.number().int().min(60).max(86400).optional(),
+  graceSeconds: z.coerce.number().int().min(0).max(86400).optional(),
+  timeoutMs: z.coerce.number().int().min(1000).max(30000).optional(),
+  url: z.string().url().max(2000).optional(),
+  method: z.enum(['GET', 'HEAD']).optional(),
+  expectedStatusMin: z.coerce.number().int().min(100).max(599).optional(),
+  expectedStatusMax: z.coerce.number().int().min(100).max(599).optional(),
+  bodyContains: z.string().max(500).nullable().optional(),
+  warningDays: z.coerce.number().int().min(1).max(365).optional(),
+});
+
+export const deploymentSchema = z.object({
+  environmentId: z.string().uuid(),
+  serviceId: z.string().uuid().nullable().optional(),
+  commitSha: z.string().min(7).max(64).nullable().optional(),
+  version: z.string().max(120).nullable().optional(),
+  status: z.enum(['started', 'succeeded', 'failed', 'rolled_back']).optional().default('succeeded'),
+  source: z.string().min(1).max(80).optional().default('manual'),
+  url: z.string().url().max(2000).nullable().optional(),
+  deployedAt: z.string().datetime().optional(),
+  metadata: z.record(z.string(), z.unknown()).optional().default({}),
+});
+
+export const organizationIntelligenceSchema = z.object({
+  timezone: z.string().min(1).max(100),
+  dailyBriefEnabled: z.boolean(),
+  dailyBriefHour: z.coerce.number().int().min(0).max(23),
 });

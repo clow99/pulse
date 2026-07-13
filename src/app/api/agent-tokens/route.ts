@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import {
-  AGENT_SCOPES,
+  DEFAULT_AGENT_SCOPES,
   agentScopesSchema,
   generateAgentTokenSecret,
   getAgentTokenPrefix,
@@ -15,8 +15,9 @@ import { z } from 'zod';
 const createAgentTokenSchema = z.object({
   orgId: z.string().uuid(),
   siteId: z.string().uuid().nullable().optional(),
+  projectId: z.string().uuid().nullable().optional(),
   name: z.string().min(2).max(120),
-  scopes: agentScopesSchema.optional().default([...AGENT_SCOPES]),
+  scopes: agentScopesSchema.optional().default([...DEFAULT_AGENT_SCOPES]),
   expiresAt: z.string().datetime().nullable().optional(),
 });
 
@@ -45,6 +46,7 @@ export async function GET(request: Request) {
       orderBy: { createdAt: 'desc' },
       include: {
         site: { select: { id: true, name: true, domain: true } },
+        project: { select: { id: true, name: true, slug: true } },
         createdBy: { select: { id: true, name: true, email: true } },
       },
     });
@@ -54,6 +56,7 @@ export async function GET(request: Request) {
         id: token.id,
         orgId: token.orgId,
         site: token.site,
+        project: token.project,
         name: token.name,
         tokenPrefix: token.tokenPrefix,
         scopes: token.scopes,
@@ -86,7 +89,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const { orgId, siteId, name, scopes, expiresAt } = parsed.data;
+    const { orgId, siteId, projectId, name, scopes, expiresAt } = parsed.data;
     const membership = await verifyOrgAccess(session.user.id, orgId, ['owner', 'admin']);
     if (!membership) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
@@ -105,11 +108,26 @@ export async function POST(request: Request) {
       }
     }
 
+    if (projectId) {
+      const project = await prisma.project.findUnique({ where: { id: projectId }, select: { orgId: true } });
+      if (!project || project.orgId !== orgId) {
+        return NextResponse.json({ error: 'Project does not belong to this organization' }, { status: 400 });
+      }
+    }
+
+    if (siteId && projectId) {
+      const site = await prisma.site.findUnique({ where: { id: siteId }, select: { service: { select: { environment: { select: { projectId: true } } } } } });
+      if (site?.service?.environment.projectId !== projectId) {
+        return NextResponse.json({ error: 'Site does not belong to this project' }, { status: 400 });
+      }
+    }
+
     const rawToken = generateAgentTokenSecret();
     const token = await prisma.agentToken.create({
       data: {
         orgId,
         siteId: siteId ?? null,
+        projectId: projectId ?? null,
         name,
         tokenHash: hashAgentToken(rawToken),
         tokenPrefix: getAgentTokenPrefix(rawToken),
@@ -120,6 +138,7 @@ export async function POST(request: Request) {
       },
       include: {
         site: { select: { id: true, name: true, domain: true } },
+        project: { select: { id: true, name: true, slug: true } },
       },
     });
 
@@ -128,6 +147,7 @@ export async function POST(request: Request) {
       action: 'agent_token.create',
       outcome: 'success',
       siteId: siteId ?? null,
+      projectId: projectId ?? null,
       scopes,
       metadata: { tokenId: token.id, tokenPrefix: token.tokenPrefix },
       request,
@@ -138,6 +158,7 @@ export async function POST(request: Request) {
         id: token.id,
         orgId: token.orgId,
         site: token.site,
+        project: token.project,
         name: token.name,
         tokenPrefix: token.tokenPrefix,
         scopes: token.scopes,

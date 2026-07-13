@@ -24,6 +24,8 @@ export interface StatsOverview {
   visitors: number;
   pageviews: number;
   avgPagesPerVisit: number;
+  bounceRate: number;
+  avgSessionDuration: number;
   visitorsChange: number;
   pageviewsChange: number;
 }
@@ -81,6 +83,7 @@ export interface AgentTokenView {
   id: string;
   orgId: string;
   site: { id: string; name: string; domain: string } | null;
+  project: { id: string; name: string; slug: string } | null;
   name: string;
   tokenPrefix: string;
   scopes: string[];

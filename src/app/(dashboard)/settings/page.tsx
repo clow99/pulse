@@ -23,6 +23,9 @@ interface OrgData {
   id: string;
   name: string;
   slug: string;
+  timezone: string;
+  dailyBriefEnabled: boolean;
+  dailyBriefHour: number;
 }
 
 export default function SettingsPage() {
@@ -34,23 +37,32 @@ export default function SettingsPage() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [savingBrief, setSavingBrief] = useState(false);
 
   useEffect(() => {
-    if (!user?.activeOrgId) return;
-
     async function loadOrg() {
       try {
-        const res = await fetch(`/api/orgs/${user!.activeOrgId}`);
+        let orgId = user?.activeOrgId;
+        if (!orgId) {
+          const organizationsResponse = await fetch('/api/orgs');
+          if (!organizationsResponse.ok) throw new Error('Could not load organizations');
+          const organizations = await organizationsResponse.json() as OrgData[];
+          orgId = organizations[0]?.id;
+        }
+        if (!orgId) return;
+        const res = await fetch(`/api/orgs/${orgId}`);
         if (res.ok) {
           setOrg(await res.json());
+        } else {
+          throw new Error('Could not load organization settings');
         }
       } catch {
-        // silently fail
+        setError('Could not load organization settings');
       }
     }
 
     loadOrg();
-  }, [user?.activeOrgId, user]);
+  }, [user?.activeOrgId]);
 
   async function handleDeleteOrg() {
     if (!org) return;
@@ -74,6 +86,20 @@ export default function SettingsPage() {
     }
   }
 
+  async function saveBriefSettings() {
+    if (!org) return;
+    setSavingBrief(true);
+    setError(null);
+    const response = await fetch(`/api/orgs/${org.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ timezone: org.timezone, dailyBriefEnabled: org.dailyBriefEnabled, dailyBriefHour: org.dailyBriefHour }),
+    });
+    const body = await response.json();
+    if (response.ok) setOrg(body); else setError(body.error || 'Could not save brief settings');
+    setSavingBrief(false);
+  }
+
   return (
     <PageTransition>
       <div className="pulse-page">
@@ -83,6 +109,20 @@ export default function SettingsPage() {
 
         <StaggerContainer>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+            <StaggerItem>
+              <Card variant="shadow">
+                <Card.Header><Title level="h3" size="sm">Daily Project Brief</Title></Card.Header>
+                <Card.Body>
+                  <div style={{ display: 'grid', gap: 12, maxWidth: 420 }}>
+                    <label><input type="checkbox" checked={org?.dailyBriefEnabled ?? true} onChange={(event) => org && setOrg({ ...org, dailyBriefEnabled: event.target.checked })} /> Generate a daily portfolio brief</label>
+                    <label>Time zone<select value={org?.timezone ?? 'UTC'} onChange={(event) => org && setOrg({ ...org, timezone: event.target.value })} style={{ display: 'block', width: '100%', marginTop: 4 }}><option value="America/Toronto">America/Toronto</option><option value="UTC">UTC</option><option value="America/New_York">America/New_York</option><option value="America/Los_Angeles">America/Los_Angeles</option><option value="Europe/London">Europe/London</option></select></label>
+                    <label>Generate after local hour<input type="number" min={0} max={23} value={org?.dailyBriefHour ?? 8} onChange={(event) => org && setOrg({ ...org, dailyBriefHour: Number(event.target.value) })} style={{ display: 'block', width: '100%', marginTop: 4 }} /></label>
+                    <Button variant="secondary" onClick={saveBriefSettings} loading={savingBrief}>Save Brief Settings</Button>
+                  </div>
+                </Card.Body>
+              </Card>
+            </StaggerItem>
+
             <StaggerItem>
               <Card variant="shadow">
                 <Card.Header>

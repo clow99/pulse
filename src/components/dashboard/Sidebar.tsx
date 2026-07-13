@@ -27,6 +27,12 @@ interface NavSection {
 
 const NAV_SECTIONS: NavSection[] = [
   {
+    label: 'PROJECTS',
+    items: [
+      { href: '/portfolio', label: 'Portfolio', icon: '\u25A6' },
+    ],
+  },
+  {
     label: 'ANALYTICS',
     items: [
       { href: '/overview', label: 'Overview', icon: '\u25C9' },
@@ -275,7 +281,8 @@ export function Sidebar({ orgName, siteName, orgId, sites }: SidebarProps) {
               {section.label}
             </div>
             {section.items.map((item) => {
-              const href = `${item.href}${siteId ? `?siteId=${siteId}` : ''}`;
+              const keepSite = !item.href.startsWith('/portfolio') && !item.href.startsWith('/projects');
+              const href = `${item.href}${siteId && keepSite ? `?siteId=${siteId}` : ''}`;
               const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
 
               return (

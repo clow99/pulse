@@ -17,7 +17,7 @@ export async function GET(request: Request) {
 
     const pages = await prisma.statusPage.findMany({
       where: { orgId },
-      include: { components: { include: { site: true }, orderBy: { sortOrder: 'asc' } } },
+      include: { components: { include: { site: true, service: true }, orderBy: { sortOrder: 'asc' } } },
       orderBy: { createdAt: 'desc' },
     });
     return NextResponse.json(pages);
@@ -42,7 +42,7 @@ export async function POST(request: Request) {
     const componentSiteIds = parsed.data.components.map((component) => component.siteId);
     const sites = await prisma.site.findMany({
       where: { orgId: parsed.data.orgId, id: { in: componentSiteIds } },
-      select: { id: true },
+      select: { id: true, serviceId: true },
     });
     if (sites.length !== componentSiteIds.length) {
       return NextResponse.json({ error: 'One or more component sites are invalid' }, { status: 400 });
@@ -58,6 +58,7 @@ export async function POST(request: Request) {
         components: {
           create: parsed.data.components.map((component, index) => ({
             siteId: component.siteId,
+            serviceId: sites.find((site) => site.id === component.siteId)?.serviceId ?? null,
             name: component.name,
             sortOrder: index,
           })),

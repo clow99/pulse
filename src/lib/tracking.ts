@@ -64,3 +64,8 @@ export function percentile(values: number[], p: number) {
   const index = Math.ceil((p / 100) * sorted.length) - 1;
   return sorted[Math.max(0, Math.min(index, sorted.length - 1))];
 }
+
+export function calculateBounceRate(sessions: number, bounces: number) {
+  if (sessions <= 0) return 0;
+  return Math.round((Math.max(0, bounces) / sessions) * 10_000) / 100;
+}

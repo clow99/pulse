@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Script from 'next/script';
 import '@velocityuikit/velocityui/dist/style.css';
 import './globals.css';
 import { Providers } from './providers';
@@ -28,7 +29,7 @@ export default function RootLayout({
         <Providers>
           {children}
         </Providers>
-        <script defer src="/self-analytics.js" />
+        <Script src="/self-analytics.js" strategy="afterInteractive" />
       </body>
     </html>
   );

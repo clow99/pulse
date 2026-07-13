@@ -1,5 +1,6 @@
 import { subDays } from 'date-fns';
 import { prisma } from './prisma';
+import { calculateBounceRate } from './tracking';
 import { analyzeFunnel, activityMatchesGoal, type Activity, type FunnelDefinition, type GoalDefinition } from './funnel-analysis';
 import { classifyTrafficSource } from './source-attribution';
 import { percentile } from './tracking';
@@ -49,7 +50,7 @@ export async function countUniquePageviewVisitors(
   toDate: Date,
 ) {
   const result = await prisma.$queryRaw<[{ count: bigint }]>`
-    SELECT COUNT(DISTINCT COALESCE("visitId", CONCAT(browser, '|', os, '|', device, '|', country, '|', language))) as count
+    SELECT COUNT(DISTINCT "visitId") as count
     FROM "Pageview"
     WHERE "siteId" = ${siteId}
       AND "timestamp" >= ${fromDate}
@@ -69,10 +70,10 @@ export async function getOverviewReport(siteId: string, range: ReportRange) {
     timestamp: { gte: fromDate, lte: toDate },
   };
 
-  const [visitorsResult, pageviewsCount, prevVisitorsResult, prevPageviewsCount] =
+  const [visitorsResult, pageviewsCount, prevVisitorsResult, prevPageviewsCount, sessionMetrics] =
     await Promise.all([
       prisma.$queryRaw<[{ count: bigint }]>`
-        SELECT COUNT(DISTINCT COALESCE("visitId", CONCAT(browser, '|', os, '|', device, '|', country, '|', language))) as count
+        SELECT COUNT(DISTINCT "visitId") as count
         FROM "Pageview"
         WHERE "siteId" = ${siteId}
           AND "timestamp" >= ${fromDate}
@@ -80,7 +81,7 @@ export async function getOverviewReport(siteId: string, range: ReportRange) {
       `,
       prisma.pageview.count({ where: baseWhere }),
       prisma.$queryRaw<[{ count: bigint }]>`
-        SELECT COUNT(DISTINCT COALESCE("visitId", CONCAT(browser, '|', os, '|', device, '|', country, '|', language))) as count
+        SELECT COUNT(DISTINCT "visitId") as count
         FROM "Pageview"
         WHERE "siteId" = ${siteId}
           AND "timestamp" >= ${prevFromDate}
@@ -92,6 +93,24 @@ export async function getOverviewReport(siteId: string, range: ReportRange) {
           timestamp: { gte: prevFromDate, lte: prevToDate },
         },
       }),
+      prisma.$queryRaw<Array<{ sessions: bigint; bounces: bigint; avg_duration: number | null }>>`
+        SELECT
+          COUNT(*)::bigint AS sessions,
+          COUNT(*) FILTER (WHERE pageviews = 1)::bigint AS bounces,
+          AVG(duration_seconds)::float AS avg_duration
+        FROM (
+          SELECT
+            "visitId",
+            COUNT(*)::int AS pageviews,
+            EXTRACT(EPOCH FROM (MAX("timestamp") - MIN("timestamp")))::float AS duration_seconds
+          FROM "Pageview"
+          WHERE "siteId" = ${siteId}
+            AND "visitId" IS NOT NULL
+            AND "timestamp" >= ${fromDate}
+            AND "timestamp" <= ${toDate}
+          GROUP BY "visitId"
+        ) sessions
+      `,
     ]);
 
   const visitors = Number(visitorsResult[0]?.count ?? 0);
@@ -107,6 +126,10 @@ export async function getOverviewReport(siteId: string, range: ReportRange) {
       : 0;
 
   const avgPagesPerVisit = visitors > 0 ? pageviews / visitors : 0;
+  const sessions = Number(sessionMetrics[0]?.sessions ?? 0);
+  const bounces = Number(sessionMetrics[0]?.bounces ?? 0);
+  const bounceRate = calculateBounceRate(sessions, bounces);
+  const avgSessionDuration = Number(sessionMetrics[0]?.avg_duration ?? 0);
   const groupByHour = durationMs <= 2 * 24 * 60 * 60 * 1000;
 
   const timeseriesData = groupByHour
@@ -115,7 +138,7 @@ export async function getOverviewReport(siteId: string, range: ReportRange) {
       >`
         SELECT
           date_trunc('hour', "timestamp") as date_trunc,
-          COUNT(DISTINCT COALESCE("visitId", CONCAT(browser, '|', os, '|', device, '|', country, '|', language)))::bigint as visitors,
+          COUNT(DISTINCT "visitId")::bigint as visitors,
           COUNT(*)::bigint as pageviews
         FROM "Pageview"
         WHERE "siteId" = ${siteId}
@@ -129,7 +152,7 @@ export async function getOverviewReport(siteId: string, range: ReportRange) {
       >`
         SELECT
           date_trunc('day', "timestamp") as date_trunc,
-          COUNT(DISTINCT COALESCE("visitId", CONCAT(browser, '|', os, '|', device, '|', country, '|', language)))::bigint as visitors,
+          COUNT(DISTINCT "visitId")::bigint as visitors,
           COUNT(*)::bigint as pageviews
         FROM "Pageview"
         WHERE "siteId" = ${siteId}
@@ -162,7 +185,7 @@ export async function getOverviewReport(siteId: string, range: ReportRange) {
   const topPages = await Promise.all(
     topPagesRaw.map(async (row) => {
       const visitorCount = await prisma.$queryRaw<[{ count: bigint }]>`
-        SELECT COUNT(DISTINCT COALESCE("visitId", CONCAT(browser, '|', os, '|', device, '|', country, '|', language))) as count
+        SELECT COUNT(DISTINCT "visitId") as count
         FROM "Pageview"
         WHERE "siteId" = ${siteId}
           AND "pathname" = ${row.pathname}
@@ -195,7 +218,7 @@ export async function getOverviewReport(siteId: string, range: ReportRange) {
   const topReferrers = await Promise.all(
     topReferrersRaw.map(async (row) => {
       const visitorCount = await prisma.$queryRaw<[{ count: bigint }]>`
-        SELECT COUNT(DISTINCT COALESCE("visitId", CONCAT(browser, '|', os, '|', device, '|', country, '|', language))) as count
+        SELECT COUNT(DISTINCT "visitId") as count
         FROM "Pageview"
         WHERE "siteId" = ${siteId}
           AND "referrer" = ${row.referrer}
@@ -217,6 +240,8 @@ export async function getOverviewReport(siteId: string, range: ReportRange) {
       visitors,
       pageviews,
       avgPagesPerVisit: Math.round(avgPagesPerVisit * 100) / 100,
+      bounceRate,
+      avgSessionDuration: Math.round(avgSessionDuration),
       visitorsChange: Math.round(visitorsChange * 100) / 100,
       pageviewsChange: Math.round(pageviewsChange * 100) / 100,
     },
@@ -274,7 +299,7 @@ export async function getPagesReport(
   const data = await Promise.all(
     grouped.map(async (row) => {
       const visitorCount = await prisma.$queryRaw<[{ count: bigint }]>`
-        SELECT COUNT(DISTINCT COALESCE("visitId", CONCAT(browser, '|', os, '|', device, '|', country, '|', language))) as count
+        SELECT COUNT(DISTINCT "visitId") as count
         FROM "Pageview"
         WHERE "siteId" = ${siteId}
           AND "pathname" = ${row.pathname}
@@ -331,7 +356,7 @@ export async function getEventsReport(
         select: { properties: true },
       }),
       prisma.$queryRaw<[{ count: bigint }]>`
-        SELECT COUNT(DISTINCT COALESCE("visitId", CONCAT(browser, '|', os, '|', device, '|', country, '|', language))) as count
+        SELECT COUNT(DISTINCT "visitId") as count
         FROM "Event"
         WHERE "siteId" = ${siteId}
           AND "name" = ${name}
@@ -357,7 +382,7 @@ export async function getEventsReport(
   return Promise.all(
     grouped.map(async (row) => {
       const uniqueResult = await prisma.$queryRaw<[{ count: bigint }]>`
-        SELECT COUNT(DISTINCT COALESCE("visitId", CONCAT(browser, '|', os, '|', device, '|', country, '|', language))) as count
+        SELECT COUNT(DISTINCT "visitId") as count
         FROM "Event"
         WHERE "siteId" = ${siteId}
           AND "name" = ${row.name}
@@ -860,9 +885,10 @@ export async function getUptimeReport(siteId: string, range: ReportRange) {
   const upChecks = checks.filter((c) => c.isUp).length;
   const uptimePercentage =
     totalChecks > 0 ? Math.round((upChecks / totalChecks) * 10000) / 100 : 0;
+  const responseChecks = checks.filter((check) => check.responseTime !== null);
   const avgResponseTime =
-    totalChecks > 0
-      ? Math.round(checks.reduce((sum, c) => sum + c.responseTime, 0) / totalChecks)
+    responseChecks.length > 0
+      ? Math.round(responseChecks.reduce((sum, c) => sum + (c.responseTime ?? 0), 0) / responseChecks.length)
       : 0;
 
   const lastCheck = checks[0] ?? null;
@@ -901,7 +927,7 @@ export async function getUptimeReport(siteId: string, range: ReportRange) {
 
     const bucket = buckets.get(key) ?? { up: 0, total: 0, totalResponseTime: 0 };
     bucket.total++;
-    bucket.totalResponseTime += check.responseTime;
+    bucket.totalResponseTime += check.responseTime ?? 0;
     if (check.isUp) bucket.up++;
     buckets.set(key, bucket);
   }

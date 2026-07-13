@@ -20,7 +20,11 @@ const SCOPES = [
   'events:read',
   'uptime:read',
   'reports:generate',
+  'portfolio:read',
+  'deployments:write',
 ];
+const DEFAULT_SCOPES = SCOPES.filter((scope) => scope !== 'deployments:write');
+interface ProjectOption { id: string; name: string; slug: string }
 
 export default function AgentTokensPage() {
   const { data: session } = useSession();
@@ -29,12 +33,14 @@ export default function AgentTokensPage() {
 
   const [tokens, setTokens] = useState<AgentTokenView[]>([]);
   const [sites, setSites] = useState<SiteWithStats[]>([]);
+  const [projects, setProjects] = useState<ProjectOption[]>([]);
   const [loading, setLoading] = useState(true);
   const [createOpen, setCreateOpen] = useState(false);
   const [name, setName] = useState('');
   const [siteId, setSiteId] = useState('');
+  const [projectId, setProjectId] = useState('');
   const [expiresAt, setExpiresAt] = useState('');
-  const [scopes, setScopes] = useState<string[]>(SCOPES);
+  const [scopes, setScopes] = useState<string[]>(DEFAULT_SCOPES);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [secret, setSecret] = useState<string | null>(null);
@@ -44,12 +50,14 @@ export default function AgentTokensPage() {
     if (!orgId) return;
     setLoading(true);
     try {
-      const [tokensRes, sitesRes] = await Promise.all([
+      const [tokensRes, sitesRes, projectsRes] = await Promise.all([
         fetch(`/api/agent-tokens?orgId=${orgId}`),
         fetch('/api/sites'),
+        fetch(`/api/projects?orgId=${orgId}`),
       ]);
       if (tokensRes.ok) setTokens(await tokensRes.json());
       if (sitesRes.ok) setSites(await sitesRes.json());
+      if (projectsRes.ok) setProjects(await projectsRes.json());
     } finally {
       setLoading(false);
     }
@@ -62,8 +70,9 @@ export default function AgentTokensPage() {
   function resetCreateForm() {
     setName('');
     setSiteId('');
+    setProjectId('');
     setExpiresAt('');
-    setScopes(SCOPES);
+    setScopes(DEFAULT_SCOPES);
     setError(null);
   }
 
@@ -86,6 +95,7 @@ export default function AgentTokensPage() {
         body: JSON.stringify({
           orgId,
           siteId: siteId || null,
+          projectId: projectId || null,
           name,
           scopes,
           expiresAt: expiresAt ? new Date(expiresAt).toISOString() : null,
@@ -145,7 +155,7 @@ export default function AgentTokensPage() {
       key: 'site' as const,
       header: 'Scope',
       render: (_value: unknown, row: AgentTokenView) =>
-        row.site ? `${row.site.name} (${row.site.domain})` : 'Organization',
+        row.site ? `${row.site.name} (${row.site.domain})` : row.project ? `Project: ${row.project.name}` : 'Organization',
     },
     {
       key: 'tokenPrefix' as const,
@@ -248,7 +258,7 @@ export default function AgentTokensPage() {
               </div>
             </div>
             <div className="pulse-agent-tools">
-              {['get_overview', 'get_ai_sources_report', 'get_revenue_report', 'get_funnels_report', 'get_performance_report', 'get_insights_report', 'generate_report_data'].map((tool) => (
+              {['get_overview', 'get_ai_sources_report', 'get_revenue_report', 'get_funnels_report', 'get_performance_report', 'get_insights_report', 'get_daily_brief', 'get_project_status', 'generate_report_data'].map((tool) => (
                 <Badge key={tool} variant="default">{tool}</Badge>
               ))}
             </div>
@@ -289,7 +299,7 @@ export default function AgentTokensPage() {
                 <select
                   className="pulse-select"
                   value={siteId}
-                  onChange={(event) => setSiteId(event.target.value)}
+                  onChange={(event) => { setSiteId(event.target.value); if (event.target.value) setProjectId(''); }}
                 >
                   <option value="">All organization sites</option>
                   {sites.map((site) => (
@@ -297,6 +307,13 @@ export default function AgentTokensPage() {
                       {site.name} ({site.domain})
                     </option>
                   ))}
+                </select>
+              </label>
+              <label className="pulse-label">
+                <span>Project</span>
+                <select className="pulse-select" value={projectId} onChange={(event) => { setProjectId(event.target.value); if (event.target.value) setSiteId(''); }}>
+                  <option value="">All organization projects</option>
+                  {projects.map((project) => <option key={project.id} value={project.id}>{project.name}</option>)}
                 </select>
               </label>
               <label className="pulse-label">

@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { createOrgSchema } from '@/lib/validation';
+import { organizationIntelligenceSchema } from '@/lib/validation';
 
 interface RouteContext {
   params: Promise<{ id: string }>;
@@ -28,7 +29,7 @@ export async function GET(_request: Request, context: RouteContext) {
 
     const org = await prisma.organization.findUnique({
       where: { id },
-      select: { id: true, name: true, slug: true },
+      select: { id: true, name: true, slug: true, timezone: true, dailyBriefEnabled: true, dailyBriefHour: true },
     });
     if (!org) {
       return NextResponse.json({ error: 'Organization not found' }, { status: 404 });
@@ -38,6 +39,20 @@ export async function GET(_request: Request, context: RouteContext) {
   } catch {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
+}
+
+export async function PATCH(request: Request, context: RouteContext) {
+  const session = await auth();
+  if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  const { id } = await context.params;
+  const membership = await getMembership(session.user.id, id);
+  if (!membership || !['owner', 'admin'].includes(membership.role)) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  const parsed = organizationIntelligenceSchema.safeParse(await request.json());
+  if (!parsed.success) return NextResponse.json({ error: parsed.error.issues[0]?.message ?? 'Invalid settings' }, { status: 400 });
+  try { new Intl.DateTimeFormat('en', { timeZone: parsed.data.timezone }).format(); } catch {
+    return NextResponse.json({ error: 'Invalid IANA time zone' }, { status: 400 });
+  }
+  return NextResponse.json(await prisma.organization.update({ where: { id }, data: parsed.data, select: { id: true, name: true, slug: true, timezone: true, dailyBriefEnabled: true, dailyBriefHour: true } }));
 }
 
 export async function PUT(request: Request, context: RouteContext) {

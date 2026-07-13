@@ -166,7 +166,7 @@ export default function OverviewPage() {
 
   const stats = data?.stats
     ? [
-        { label: 'Estimated Visitors', value: data.stats.visitors, change: data.stats.visitorsChange },
+        { label: 'Visitors', value: data.stats.visitors, change: data.stats.visitorsChange },
         { label: 'Pageviews', value: data.stats.pageviews, change: data.stats.pageviewsChange },
         {
           label: 'Tracked Events',
@@ -175,11 +175,25 @@ export default function OverviewPage() {
           hideChange: true,
         },
         {
-          label: 'Views / Est. Visitor',
+          label: 'Views / Visit',
           value: data.stats.avgPagesPerVisit,
           change: 0,
           hideChange: true,
           formatFn: (n: number) => n.toFixed(1),
+        },
+        {
+          label: 'Bounce Rate',
+          value: data.stats.bounceRate,
+          change: 0,
+          hideChange: true,
+          formatFn: (n: number) => `${n.toFixed(1)}%`,
+        },
+        {
+          label: 'Avg. Session',
+          value: data.stats.avgSessionDuration,
+          change: 0,
+          hideChange: true,
+          formatFn: (n: number) => `${Math.floor(n / 60)}m ${Math.round(n % 60)}s`,
         },
         ...(revenue && revenue.totalRevenue > 0 ? [{
           label: 'Revenue',

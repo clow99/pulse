@@ -12,6 +12,11 @@ const buckets = new Map<string, RateLimitState>();
 
 export function checkRateLimit(key: string, options: RateLimitOptions) {
   const now = Date.now();
+  if (buckets.size > 10_000) {
+    for (const [bucketKey, state] of buckets) {
+      if (state.resetAt <= now) buckets.delete(bucketKey);
+    }
+  }
   const existing = buckets.get(key);
 
   if (!existing || existing.resetAt <= now) {

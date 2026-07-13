@@ -1,9 +1,11 @@
 import { NextResponse } from 'next/server';
+import { createHash } from 'crypto';
 import { prisma } from '@/lib/prisma';
 import { collectPayloadSchema } from '@/lib/validation';
 import { parseUserAgent } from '@/lib/ua-parser';
 import { deriveCountry, deriveLanguage } from '@/lib/geo';
-import { getWebVitalRating, parseRevenueProperties } from '@/lib/tracking';
+import { domainMatches, getWebVitalRating, parseRevenueProperties } from '@/lib/tracking';
+import { checkRateLimit } from '@/lib/rate-limit';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -17,7 +19,18 @@ export async function OPTIONS() {
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json();
+    const declaredLength = Number(request.headers.get('content-length') || 0);
+    if (declaredLength > 32_768) {
+      return NextResponse.json({ error: 'Payload too large' }, { status: 413, headers: corsHeaders });
+    }
+    const rawBody = await request.text();
+    if (rawBody.length > 32_768) {
+      return NextResponse.json({ error: 'Payload too large' }, { status: 413, headers: corsHeaders });
+    }
+    let body: unknown;
+    try { body = JSON.parse(rawBody); } catch {
+      return NextResponse.json({ error: 'Invalid JSON' }, { status: 400, headers: corsHeaders });
+    }
     const parsed = collectPayloadSchema.safeParse(body);
 
     if (!parsed.success) {
@@ -32,7 +45,7 @@ export async function POST(request: Request) {
 
     const site = await prisma.site.findUnique({
       where: { token },
-      select: { id: true, active: true, collectWebVitals: true },
+      select: { id: true, domain: true, active: true, collectWebVitals: true },
     });
 
     if (!site || !site.active) {
@@ -44,7 +57,7 @@ export async function POST(request: Request) {
 
     const ua = parseUserAgent(request.headers.get('user-agent'));
     const acceptLanguage = request.headers.get('accept-language');
-    const country = deriveCountry(acceptLanguage);
+    const country = deriveCountry(request.headers);
     const language = deriveLanguage(acceptLanguage);
 
     let hostname = '';
@@ -55,6 +68,21 @@ export async function POST(request: Request) {
       pathname = parsedUrl.pathname;
     } catch {
       pathname = url;
+    }
+
+    if (!domainMatches(site.domain, hostname)) {
+      return NextResponse.json(
+        { error: 'Tracked URL does not match this site' },
+        { status: 403, headers: corsHeaders }
+      );
+    }
+
+    const source = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
+      || request.headers.get('x-real-ip')
+      || 'unknown';
+    const sourceHash = createHash('sha256').update(`${site.id}:${source}`).digest('hex').slice(0, 24);
+    if (!checkRateLimit(`collect:${site.id}:${sourceHash}`, { limit: 600, windowMs: 60_000 }).allowed) {
+      return NextResponse.json({ error: 'Rate limit exceeded' }, { status: 429, headers: corsHeaders });
     }
 
     if (type === 'pageview') {

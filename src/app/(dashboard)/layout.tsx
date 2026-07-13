@@ -1,8 +1,7 @@
 import { redirect } from 'next/navigation';
 import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
-import { Sidebar } from '@/components/dashboard/Sidebar';
-import { AIChatPanel } from '@/components/dashboard/AIChatPanel';
+import { DashboardShell } from '@/components/dashboard/DashboardShell';
 import type { SessionUser } from '@/types';
 
 export default async function DashboardLayout({
@@ -33,20 +32,13 @@ export default async function DashboardLayout({
   const membership = memberships.find((m) => m.orgId === activeOrgId) ?? memberships[0];
   const org = membership.org;
   const sites = org.sites;
-  const defaultSite = sites[0];
-
   return (
-    <div className="pulse-dashboard-layout">
-      <Sidebar
-        orgName={org.name}
-        siteName={defaultSite?.name ?? defaultSite?.domain ?? ''}
-        orgId={org.id}
-        sites={sites.map((s) => ({ id: s.id, name: s.name, domain: s.domain }))}
-      />
-      <main className="dashboard-main">
-        {children}
-      </main>
-      <AIChatPanel siteId={defaultSite?.id ?? ''} />
-    </div>
+    <DashboardShell
+      orgName={org.name}
+      orgId={org.id}
+      sites={sites.map((s) => ({ id: s.id, name: s.name, domain: s.domain }))}
+    >
+      {children}
+    </DashboardShell>
   );
 }

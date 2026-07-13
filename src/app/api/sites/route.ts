@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma';
 import { createSiteSchema } from '@/lib/validation';
 import { generateSiteToken } from '@/lib/tokens';
 import type { SessionUser } from '@/types';
+import { generateSlug } from '@/lib/slugify';
 
 export async function GET() {
   try {
@@ -100,14 +101,33 @@ export async function POST(request: Request) {
 
     const token = generateSiteToken();
 
-    const site = await prisma.site.create({
-      data: {
-        name: parsed.data.name,
-        domain: parsed.data.domain,
-        collectWebVitals: parsed.data.collectWebVitals ?? false,
-        token,
-        orgId,
-      },
+    const site = await prisma.$transaction(async (tx) => {
+      const baseSlug = generateSlug(parsed.data.name) || 'project';
+      const existing = await tx.project.findUnique({ where: { orgId_slug: { orgId, slug: baseSlug } }, select: { id: true } });
+      const slug = existing ? `${baseSlug}-${token.slice(-8).toLowerCase()}` : baseSlug;
+      const project = await tx.project.create({ data: { orgId, name: parsed.data.name, slug, description: `Project intelligence for ${parsed.data.domain}` } });
+      const environment = await tx.environment.create({ data: { projectId: project.id, name: 'Production', slug: 'production', kind: 'production' } });
+      const service = await tx.service.create({ data: { environmentId: environment.id, name: 'Web', slug: 'web', kind: 'web' } });
+      const createdSite = await tx.site.create({
+        data: {
+          name: parsed.data.name,
+          domain: parsed.data.domain,
+          collectWebVitals: parsed.data.collectWebVitals ?? false,
+          token,
+          orgId,
+          serviceId: service.id,
+        },
+      });
+      await tx.monitor.create({
+        data: {
+          serviceId: service.id,
+          name: `${parsed.data.name} HTTP`,
+          type: 'http',
+          config: { url: `https://${parsed.data.domain}`, method: 'HEAD', expectedStatusMin: 200, expectedStatusMax: 399 },
+          nextRunAt: new Date(),
+        },
+      });
+      return createdSite;
     });
 
     return NextResponse.json(site, { status: 201 });
