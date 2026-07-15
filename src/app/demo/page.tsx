@@ -1,63 +1,42 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 
-const demoSignals = [
-  ['Visitors', '12,847'],
-  ['AI-source visits', '436'],
-  ['Tracked revenue', '$18,420'],
-  ['Uptime', '99.98%'],
-  ['Active insights', '6'],
-  ['Funnels', '3'],
-];
-
-const demoWorkflows = [
-  'Review traffic, acquisition, and AI assistant sources.',
-  'Inspect conversion recipes, goals, funnels, and revenue attribution.',
-  'Check uptime incidents, web vitals, alert channels, and status pages.',
-  'Create an agent token and request multi-report MCP data.',
-];
+export const metadata: Metadata = {
+  title: 'Private Preview | Pulse',
+  description: 'Pulse access is currently coordinated through a private preview.',
+  robots: {
+    index: false,
+    follow: false,
+    nocache: true,
+  },
+};
 
 export default function DemoPage() {
   return (
     <main className="pulse-public-page">
       <section className="pulse-public-hero">
-        <p className="pulse-eyebrow">Live product demo</p>
-        <h1 className="pulse-public-title">Evaluate Pulse before installing it.</h1>
+        <p className="pulse-eyebrow">Private preview</p>
+        <h1 className="pulse-public-title">Pulse does not publish a reusable demo account.</h1>
         <p className="pulse-page-subtitle">
-          Seeded demo data is available locally with <code>npm run db:seed</code>. Use the demo account to inspect analytics, funnels, revenue, uptime, insights, and agent reports.
+          Dashboard previews on the public site use illustrative data. Self-managed and hosted evaluation access is coordinated privately with invited participants.
         </p>
         <div className="pulse-public-actions">
-          <Link href="/login">
-            <span className="pulse-public-button primary">Open Demo Login</span>
+          <Link href="/">
+            <span className="pulse-public-button primary">Return to Pulse</span>
           </Link>
-          <Link href="/pricing">
-            <span className="pulse-public-button secondary">Compare Offers</span>
+          <Link href="/login">
+            <span className="pulse-public-button secondary">Invited? Sign In</span>
           </Link>
         </div>
       </section>
 
       <section className="pulse-demo-panel">
         <div>
-          <h2>Demo credentials</h2>
-          <p>Email: <code>demo@pulse.dev</code></p>
-          <p>Password: <code>password123</code></p>
+          <h2>Access remains invitation-only</h2>
+          <p>
+            Public registration, fixed hosted plans, and purchase flows are not available. No public preview-request contact is published until the registered support mailbox passes an outside-in delivery test.
+          </p>
         </div>
-        <div className="pulse-public-metric-grid">
-          {demoSignals.map(([label, value]) => (
-            <div key={label}>
-              <span>{label}</span>
-              <strong>{value}</strong>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      <section className="pulse-demo-workflows">
-        {demoWorkflows.map((workflow, index) => (
-          <article key={workflow}>
-            <span>{index + 1}</span>
-            <p>{workflow}</p>
-          </article>
-        ))}
       </section>
     </main>
   );

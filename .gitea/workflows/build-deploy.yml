@@ -124,11 +124,26 @@ jobs:
       - name: Run Next.js build
         run: npm run build
 
+      - name: Set image metadata
+        run: echo "OCI_CREATED=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$GITHUB_ENV"
+
       - name: Build web Docker image
-        run: docker build -f Dockerfile --build-arg PULSE_RELEASE_SHA=${{ github.sha }} --build-arg PULSE_SCHEMA_VERSION=20260713010000_project_intelligence_v1 -t pulse:latest .
+        run: >-
+          docker build -f Dockerfile
+          --build-arg PULSE_RELEASE_SHA=${{ github.sha }}
+          --build-arg PULSE_SCHEMA_VERSION=20260713010000_project_intelligence_v1
+          --build-arg OCI_SOURCE=https://git.cameronlow.com/cam/pulse
+          --build-arg OCI_REVISION=${{ github.sha }}
+          --build-arg OCI_CREATED=${OCI_CREATED}
+          -t pulse:latest .
 
       - name: Build migration Docker image
-        run: docker build -f Dockerfile --target migrator -t pulse-migrate:latest .
+        run: >-
+          docker build -f Dockerfile --target migrator
+          --build-arg OCI_SOURCE=https://git.cameronlow.com/cam/pulse
+          --build-arg OCI_REVISION=${{ github.sha }}
+          --build-arg OCI_CREATED=${OCI_CREATED}
+          -t pulse-migrate:latest .
 
       - name: Verify web image exists
         run: |
@@ -139,13 +154,29 @@ jobs:
         if: success() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: docker tag pulse:latest localhost:5000/pulse:live
 
+      - name: Tag web image (immutable)
+        if: success() && github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: docker tag pulse:latest localhost:5000/pulse:sha-${{ github.sha }}
+
       - name: Tag migration image (live)
         if: success() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: docker tag pulse-migrate:latest localhost:5000/pulse-migrate:live
 
+      - name: Tag migration image (immutable)
+        if: success() && github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: docker tag pulse-migrate:latest localhost:5000/pulse-migrate:sha-${{ github.sha }}
+
+      - name: Push web image (immutable)
+        if: success() && github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: docker push localhost:5000/pulse:sha-${{ github.sha }}
+
       - name: Push web image (live)
         if: success() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: docker push localhost:5000/pulse:live
+
+      - name: Push migration image (immutable)
+        if: success() && github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: docker push localhost:5000/pulse-migrate:sha-${{ github.sha }}
 
       - name: Push migration image (live)
         if: success() && github.event_name == 'push' && github.ref == 'refs/heads/main'

@@ -86,7 +86,7 @@ Optional variables:
 npx prisma migrate dev
 ```
 
-Optionally seed demo data (creates `demo@pulse.dev` / `password123` with sample pageviews and events):
+Optionally seed local demo data with sample pageviews and events. The command rotates a generated local-only password on every run and prints it once; no reusable demo credential is stored in source:
 
 ```bash
 npm run db:seed

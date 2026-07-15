@@ -84,14 +84,12 @@ const steps = [
 
 const barHeights = [35, 55, 42, 70, 58, 85, 65, 92, 78, 60, 88, 95, 72, 80, 68, 90, 75, 82];
 
-const repositoryUrl = 'https://git.cameronlow.com/cam/pulse';
-
 const navLinks = [
   { label: 'Features', href: '#features' },
   { label: 'Why Pulse', href: '#why-pulse' },
   { label: 'How it works', href: '#how-it-works' },
   { label: 'Pricing', href: '/pricing' },
-  { label: 'Demo', href: '/demo' },
+  { label: 'Private preview', href: '/demo' },
 ];
 
 const heroHighlights = [
@@ -168,21 +166,20 @@ const footerSections = [
       { label: 'How it works', href: '#how-it-works' },
       { label: 'Dashboard preview', href: '#dashboard-preview' },
       { label: 'Pricing', href: '/pricing' },
-      { label: 'Demo', href: '/demo' },
+      { label: 'Private preview', href: '/demo' },
     ],
   },
   {
     title: 'Get started',
     links: [
-      { label: 'Create account', href: '/register' },
+      { label: 'Private preview', href: '/demo' },
       { label: 'Sign in', href: '/login' },
-      { label: 'Onboarding', href: '/onboarding' },
     ],
   },
   {
     title: 'Resources',
     links: [
-      { label: 'Source code', href: repositoryUrl, external: true },
+      { label: 'Product tour', href: '#dashboard-preview' },
       { label: 'Deployment workflow', href: '#how-it-works' },
       { label: 'Overview section', href: '#features' },
     ],
@@ -256,8 +253,8 @@ export default function LandingPage() {
           <Link href="/login">
             <Button variant="ghost" size="sm">Sign in</Button>
           </Link>
-          <Link href="/register">
-            <Button variant="primary" size="sm">Get Started</Button>
+          <Link href="/demo">
+            <Button variant="primary" size="sm">Private Preview</Button>
           </Link>
         </motion.div>
       </nav>
@@ -295,15 +292,15 @@ export default function LandingPage() {
 
           <FadeIn direction="up" delay={0.5}>
             <div className="landing-hero-actions">
-              <Link href="/register">
-                <Button variant="primary" size="lg">Get Started Free</Button>
-              </Link>
               <Link href="/demo">
-                <Button variant="outline" size="lg">View Demo</Button>
+                <Button variant="primary" size="lg">Private Preview</Button>
+              </Link>
+              <Link href="/login">
+                <Button variant="outline" size="lg">Sign In</Button>
               </Link>
             </div>
             <p className="landing-hero-note">
-              Free to self-host &middot; Hosted plans ready &middot; First data in minutes
+              Self-managed and hosted access are available only through private preview
             </p>
             <div className="landing-hero-highlights">
               {heroHighlights.map((highlight) => (
@@ -865,25 +862,18 @@ export default function LandingPage() {
                 marginBottom: '2.5rem',
               }}
             >
-              Launch a privacy-first analytics stack your team can inspect,
-              control, and extend without adding another hosted dependency.
+              Private-preview participants can evaluate a privacy-first analytics
+              stack without relying on public plan or source availability.
             </p>
             <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
-              <Link href="/register">
-                <Button variant="primary" size="lg">Get Started Free</Button>
+              <Link href="/demo">
+                <Button variant="primary" size="lg">Private Preview</Button>
               </Link>
               <Link href="/pricing">
-                <Button variant="secondary" size="lg">See Offers</Button>
+                <Button variant="secondary" size="lg">Preview Options</Button>
               </Link>
-              <Link href="/demo">
-                <Button variant="outline" size="lg">View Demo</Button>
-              </Link>
-              <Link
-                href={repositoryUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <Button variant="outline" size="lg">View source</Button>
+              <Link href="/login">
+                <Button variant="outline" size="lg">Sign In</Button>
               </Link>
             </div>
           </div>
@@ -911,7 +901,7 @@ export default function LandingPage() {
               </Link>
             </div>
             <p style={{ fontSize: '0.8125rem', color: 'var(--pulse-text-secondary)', lineHeight: 1.6, maxWidth: 280 }}>
-              Open-source, self-hosted web analytics. Built for developers who value privacy.
+              Privacy-first analytics and reliability monitoring for private-preview operators.
             </p>
           </div>
           <div>
@@ -944,21 +934,9 @@ export default function LandingPage() {
             </h4>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
               {footerSections[2].links.map((item) => (
-                item.external ? (
-                  <a
-                    key={item.label}
-                    href={item.href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{ fontSize: '0.8125rem', color: 'var(--pulse-text-secondary)' }}
-                  >
-                    {item.label}
-                  </a>
-                ) : (
-                  <Link key={item.label} href={item.href} style={{ fontSize: '0.8125rem', color: 'var(--pulse-text-secondary)' }}>
-                    {item.label}
-                  </Link>
-                )
+                <Link key={item.label} href={item.href} style={{ fontSize: '0.8125rem', color: 'var(--pulse-text-secondary)' }}>
+                  {item.label}
+                </Link>
               ))}
             </div>
           </div>
@@ -974,7 +952,7 @@ export default function LandingPage() {
             margin: '0 auto',
           }}
         >
-          Pulse Analytics &mdash; Open Source, Self-Hosted Web Analytics
+          Pulse Analytics &mdash; Privacy-First Analytics and Reliability Monitoring
         </div>
       </footer>
     </div>

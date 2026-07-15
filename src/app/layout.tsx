@@ -5,8 +5,8 @@ import './globals.css';
 import { Providers } from './providers';
 
 export const metadata: Metadata = {
-  title: 'Pulse - Self-Hosted Analytics',
-  description: 'Privacy-first, self-hosted web analytics platform',
+  title: 'Pulse - Privacy-First Analytics',
+  description: 'Privacy-first product analytics and reliability monitoring',
   icons: {
     icon: [
       { url: '/favicon.ico', sizes: 'any' },

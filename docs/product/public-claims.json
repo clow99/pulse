@@ -1,0 +1,46 @@
+[
+  {
+    "id": "PULSE-CLAIM-001",
+    "surface": "/",
+    "category": "capability",
+    "statement": "Pulse combines traffic, conversion, revenue, AI-source, uptime, and agent-report views in one analytics product.",
+    "status": "verified",
+    "evidence": "Implemented dashboard and report routes plus repository tests for analytics, funnels, uptime, AI providers, daily briefs, and agent access.",
+    "owner": "Cameron Low",
+    "reviewedAt": "2026-07-15T00:30:00Z",
+    "reviewBy": "2026-08-15T00:30:00Z"
+  },
+  {
+    "id": "PULSE-CLAIM-002",
+    "surface": "/",
+    "category": "privacy",
+    "statement": "The first-party Pulse tracker does not set visitor cookies by default and respects Do Not Track.",
+    "status": "verified",
+    "evidence": "public/t.js implements cookie-free visit identifiers and Do Not Track handling; tracking tests cover ingestion behavior.",
+    "owner": "Cameron Low",
+    "reviewedAt": "2026-07-15T00:30:00Z",
+    "reviewBy": "2026-08-15T00:30:00Z"
+  },
+  {
+    "id": "PULSE-CLAIM-003",
+    "surface": "/pricing",
+    "category": "availability",
+    "statement": "Self-managed and hosted Pulse access are private-preview options with no public purchase or fixed-price offer.",
+    "status": "qualified",
+    "evidence": "The pricing surface presents invitation-only evaluation options and no checkout, fixed price, public source, or registration call to action.",
+    "owner": "Cameron Low",
+    "reviewedAt": "2026-07-15T00:30:00Z",
+    "reviewBy": "2026-08-15T00:30:00Z"
+  },
+  {
+    "id": "PULSE-CLAIM-004",
+    "surface": "/demo",
+    "category": "access",
+    "statement": "Pulse does not publish a reusable demo account; evaluation access is invitation-only.",
+    "status": "verified",
+    "evidence": "The noindex preview notice contains no credentials, registration link, purchase link, or public preview-request contact.",
+    "owner": "Cameron Low",
+    "reviewedAt": "2026-07-15T00:30:00Z",
+    "reviewBy": "2026-08-15T00:30:00Z"
+  }
+]

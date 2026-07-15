@@ -5,13 +5,15 @@ import { randomBytes } from 'crypto';
 const prisma = new PrismaClient();
 
 async function main() {
-  const passwordHash = await hash('password123', 12);
+  const demoEmail = 'demo@pulse.local';
+  const demoPassword = randomBytes(18).toString('base64url');
+  const passwordHash = await hash(demoPassword, 12);
 
   const user = await prisma.user.upsert({
-    where: { email: 'demo@pulse.dev' },
-    update: {},
+    where: { email: demoEmail },
+    update: { passwordHash },
     create: {
-      email: 'demo@pulse.dev',
+      email: demoEmail,
       name: 'Demo User',
       passwordHash,
     },
@@ -306,7 +308,9 @@ async function main() {
     },
   });
 
-  console.log(`Seeded: user=${user.email}, org=${org.slug}, site=${site.domain} (token: ${site.token})`);
+  console.log(`Seeded local demo user: ${user.email}`);
+  console.log(`One-time local demo password (rotated on every seed): ${demoPassword}`);
+  console.log(`Seeded org=${org.slug}, site=${site.domain} (token: ${site.token})`);
   console.log(`Created ${pageviewData.length + funnelPageviews.length} pageviews and ${eventData.length + funnelEvents.length + revenueEvents.length} events`);
 }
 
