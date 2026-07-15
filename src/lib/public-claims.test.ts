@@ -51,4 +51,11 @@ describe('public claims', () => {
     expect(preview).toContain('follow: false');
     expect(preview).not.toMatch(/mailto:|Request Preview|Request Access/i);
   });
+
+  it('uses the IPv4 loopback address for container health checks', async () => {
+    const dockerfile = await readFile(path.join(root, 'Dockerfile'), 'utf8');
+
+    expect(dockerfile).toContain('http://127.0.0.1:3000/api/health/ready');
+    expect(dockerfile).not.toContain('http://localhost:3000/api/health/ready');
+  });
 });
