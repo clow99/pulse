@@ -746,6 +746,12 @@ a {
   margin-top: 0.25rem;
 }
 
+.pulse-stat-detail {
+  margin-top: 0.45rem;
+  color: var(--pulse-text-secondary);
+  font-size: 0.75rem;
+}
+
 .pulse-stat-change.positive {
   color: var(--pulse-success);
 }

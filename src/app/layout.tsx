@@ -2,11 +2,38 @@ import type { Metadata } from 'next';
 import Script from 'next/script';
 import '@velocityuikit/velocityui/dist/style.css';
 import './globals.css';
-import { Providers } from './providers';
 
 export const metadata: Metadata = {
-  title: 'Pulse - Self-Hosted Analytics',
-  description: 'Privacy-first, self-hosted web analytics platform',
+  metadataBase: new URL('https://pulsewebanalytics.com'),
+  title: {
+    default: 'Pulse — Analytics, uptime, and AI signals',
+    template: '%s | Pulse',
+  },
+  description:
+    'Privacy-first analytics, uptime monitoring, and scoped AI reports for teams that want clear operational signals.',
+  applicationName: 'Pulse',
+  openGraph: {
+    type: 'website',
+    siteName: 'Pulse',
+    title: 'Pulse — Analytics, uptime, and AI signals',
+    description:
+      'Understand acquisition, reliability, and agent-ready reports from one privacy-first signal stack.',
+    images: [
+      {
+        url: '/opengraph-image',
+        width: 1200,
+        height: 630,
+        alt: 'Pulse analytics overview on a dark telemetry background',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Pulse — Analytics, uptime, and AI signals',
+    description:
+      'Understand acquisition, reliability, and agent-ready reports from one privacy-first signal stack.',
+    images: ['/opengraph-image'],
+  },
   icons: {
     icon: [
       { url: '/favicon.ico', sizes: 'any' },
@@ -26,9 +53,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="vui-theme-midnight">
       <body>
-        <Providers>
-          {children}
-        </Providers>
+        {children}
         <Script src="/self-analytics.js" strategy="afterInteractive" />
       </body>
     </html>

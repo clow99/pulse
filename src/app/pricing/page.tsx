@@ -1,13 +1,48 @@
+import type { Metadata } from 'next';
+import Image from 'next/image';
 import Link from 'next/link';
+import styles from './pricing.module.css';
+
+export const metadata: Metadata = {
+  title: 'Pricing',
+  description:
+    'Compare managed Pulse plans and preview the upcoming self-hosted deployment option.',
+  alternates: {
+    canonical: '/pricing',
+  },
+  openGraph: {
+    type: 'website',
+    url: '/pricing',
+    siteName: 'Pulse',
+    title: 'Pulse pricing',
+    description:
+      'Compare managed Pulse plans and preview the upcoming self-hosted deployment option.',
+    images: [
+      {
+        url: '/opengraph-image',
+        width: 1200,
+        height: 630,
+        alt: 'Pulse analytics overview on a dark telemetry background',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Pulse pricing',
+    description:
+      'Compare managed Pulse plans and preview the upcoming self-hosted deployment option.',
+    images: ['/opengraph-image'],
+  },
+};
 
 const plans = [
   {
-    name: 'Self-hosted OSS',
-    price: 'Free',
+    name: 'Self-hosted',
+    price: 'Coming soon',
     audience: 'Developers and teams that want full control.',
     features: ['Docker + Postgres deployment', 'Cookie-free web analytics', 'Goals, funnels, revenue, uptime', 'Community updates'],
-    cta: 'Self-host Pulse',
-    href: 'https://git.cameronlow.com/cam/pulse',
+    cta: 'Explore self-hosting',
+    href: '/self-host',
   },
   {
     name: 'Managed Starter',
@@ -37,32 +72,79 @@ const plans = [
 
 export default function PricingPage() {
   return (
-    <main className="pulse-public-page">
-      <section className="pulse-public-hero">
-        <p className="pulse-eyebrow">Pulse offers</p>
-        <h1 className="pulse-public-title">Open-source control with hosted convenience.</h1>
-        <p className="pulse-page-subtitle">
-          Start self-hosted, move to managed when setup friction costs more than hosting, and keep the same privacy-first product model.
-        </p>
-      </section>
+    <div className={styles.page}>
+      <a className={styles.skipLink} href="#pricing">
+        Skip to pricing
+      </a>
 
-      <section className="pulse-pricing-grid">
-        {plans.map((plan) => (
-          <article key={plan.name} className="pulse-pricing-card">
-            <div>
-              <h2>{plan.name}</h2>
-              <strong>{plan.price}</strong>
-              <p>{plan.audience}</p>
-            </div>
-            <ul>
-              {plan.features.map((feature) => <li key={feature}>{feature}</li>)}
-            </ul>
-            <Link href={plan.href}>
-              <span className={`pulse-public-button ${plan.name === 'Managed Team' ? 'primary' : 'secondary'}`}>{plan.cta}</span>
+      <header className={styles.header}>
+        <nav className={styles.nav} aria-label="Primary navigation">
+          <Link className={styles.brand} href="/" aria-label="Pulse home">
+            <Image src="/logo.png" alt="Pulse" width={144} height={56} priority />
+          </Link>
+          <div className={styles.navLinks}>
+            <Link href="/demo">Live demo</Link>
+            <Link href="/self-host">Self-hosting</Link>
+            <Link className={styles.navAction} href="/register">
+              Get started
             </Link>
-          </article>
-        ))}
-      </section>
-    </main>
+          </div>
+        </nav>
+      </header>
+
+      <main id="pricing">
+        <section className={styles.hero}>
+          <p className={styles.eyebrow}>Pulse offers</p>
+          <h1>Infrastructure control or managed convenience.</h1>
+          <p className={styles.subtitle}>
+            Choose a managed plan today, or preview the deployment model for the
+            upcoming self-hosted edition.
+          </p>
+        </section>
+
+        <section className={styles.grid} aria-label="Pulse pricing plans">
+          {plans.map((plan) => {
+            const isFeatured = plan.name === 'Managed Team';
+            const isComingSoon = plan.name === 'Self-hosted';
+
+            return (
+              <article
+                key={plan.name}
+                className={`${styles.card} ${isFeatured ? styles.featured : ''}`}
+              >
+                {isFeatured ? <p className={styles.planBadge}>Most capable</p> : null}
+                {isComingSoon ? <p className={styles.planBadge}>In development</p> : null}
+                <div>
+                  <h2>{plan.name}</h2>
+                  <strong>{plan.price}</strong>
+                  <p className={styles.audience}>{plan.audience}</p>
+                </div>
+                <ul>
+                  {plan.features.map((feature) => (
+                    <li key={feature}>{feature}</li>
+                  ))}
+                </ul>
+                <Link
+                  className={`${styles.cta} ${isFeatured ? styles.primary : styles.secondary}`}
+                  href={plan.href}
+                >
+                  {plan.cta}
+                </Link>
+              </article>
+            );
+          })}
+        </section>
+
+        <p className={styles.note}>
+          Self-hosted release timing and distribution details will be published
+          when the deployment path is ready.
+        </p>
+      </main>
+
+      <footer className={styles.footer}>
+        <Link href="/">Pulse</Link>
+        <span>Privacy-first operational signals.</span>
+      </footer>
+    </div>
   );
 }

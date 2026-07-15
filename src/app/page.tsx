@@ -1,980 +1,392 @@
-'use client';
-
-import { motion, useScroll, useTransform } from 'framer-motion';
-import Image from 'next/image';
+import type { Metadata } from 'next';
 import Link from 'next/link';
-import { useRef } from 'react';
-import { Button, Title } from '@velocityuikit/velocityui';
-import {
-  FadeIn,
-  AnimatedCounter,
-  StaggerContainer,
-  StaggerItem,
-} from '@/components/motion';
+import { LandingHeader } from '@/components/landing/LandingHeader';
+import { ProductScreenshot } from '@/components/landing/ProductScreenshot';
+import styles from '@/components/landing/landing.module.css';
 
-const features = [
-  {
-    title: 'Web Analytics',
+export const metadata: Metadata = {
+  alternates: {
+    canonical: '/',
+  },
+  openGraph: {
+    type: 'website',
+    url: '/',
+    siteName: 'Pulse',
+    title: 'Pulse — Analytics, uptime, and AI signals',
     description:
-      'Understand visitors, pages, referrers, UTM campaigns, technology, and AI assistant traffic without cookies.',
-    icon: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-      </svg>
-    ),
-    color: '#0ea5e9',
-  },
-  {
-    title: 'Conversion Tracking',
-    description:
-      'Create goals from recipes, analyze funnels, and attribute revenue by source, campaign, landing page, and AI assistant.',
-    icon: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
-      </svg>
-    ),
-    color: '#22c55e',
-  },
-  {
-    title: 'Reliability Monitoring',
-    description:
-      'Track uptime, incidents, response time, Core Web Vitals, alert channels, and public status pages in the same workspace.',
-    icon: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-        <rect x="2" y="3" width="20" height="14" rx="2" ry="2" />
-        <line x1="8" y1="21" x2="16" y2="21" />
-        <line x1="12" y1="17" x2="12" y2="21" />
-      </svg>
-    ),
-    color: '#f59e0b',
-  },
-  {
-    title: 'Agent-Ready Reports',
-    description:
-      'Give AI agents scoped MCP or REST access to overview, AI-source, revenue, funnel, performance, uptime, and insight reports.',
-    icon: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-        <rect x="2" y="2" width="20" height="8" rx="2" ry="2" />
-        <rect x="2" y="14" width="20" height="8" rx="2" ry="2" />
-        <line x1="6" y1="6" x2="6.01" y2="6" />
-        <line x1="6" y1="18" x2="6.01" y2="18" />
-      </svg>
-    ),
-    color: '#ec4899',
-  },
-];
-
-const steps = [
-  {
-    number: '1',
-    title: 'Deploy with Docker',
-    description: 'One command to spin up your entire analytics stack.',
-  },
-  {
-    number: '2',
-    title: 'Add the script',
-    description: 'Drop a single line of code into your site.',
-  },
-  {
-    number: '3',
-    title: 'See your data',
-    description: 'Traffic appears in your dashboard within seconds.',
-  },
-];
-
-const barHeights = [35, 55, 42, 70, 58, 85, 65, 92, 78, 60, 88, 95, 72, 80, 68, 90, 75, 82];
-
-const repositoryUrl = 'https://git.cameronlow.com/cam/pulse';
-
-const navLinks = [
-  { label: 'Features', href: '#features' },
-  { label: 'Why Pulse', href: '#why-pulse' },
-  { label: 'How it works', href: '#how-it-works' },
-  { label: 'Pricing', href: '/pricing' },
-  { label: 'Demo', href: '/demo' },
-];
-
-const heroHighlights = [
-  {
-    title: 'Own the stack',
-    description: 'Run analytics on infrastructure your team already trusts with a simple Docker setup.',
-  },
-  {
-    title: 'Skip the cookie banner',
-    description: 'Privacy-first tracking keeps compliance simpler without sacrificing useful reporting.',
-  },
-  {
-    title: 'See the full picture',
-    description: 'Analytics, conversions, revenue, AI sources, uptime, and agent reports live in one focused dashboard.',
-  },
-];
-
-const trustSignals = [
-  { label: 'Deployment', value: 'Docker + Postgres' },
-  { label: 'Privacy model', value: 'No cookies by default' },
-  { label: 'Coverage', value: 'Analytics + conversions + uptime + agents' },
-];
-
-const whyPulseCards = [
-  {
-    kicker: 'Own your data',
-    title: 'Keep visitor analytics on infrastructure you control',
-    description:
-      'No third-party black box, no rerouting sensitive traffic through another vendor, and no tradeoff between privacy and visibility.',
-  },
-  {
-    kicker: 'Useful on day one',
-    title: 'Start with clean defaults, then layer on custom events',
-    description:
-      'Pulse gives you pages, referrers, AI sources, and real-time reporting out of the box, then grows with recipes, goals, funnels, and revenue events.',
-  },
-  {
-    kicker: 'Built for product teams',
-    title: 'Understand growth, reliability, and behavior from one workspace',
-    description:
-      'Use one dashboard to answer what people saw, how they found you, what converted, which AI assistants sent traffic, and whether your site stayed up.',
-  },
-];
-
-const comparisonRows = [
-  {
-    label: 'Data ownership',
-    pulse: 'Stored on your infrastructure',
-    typical: 'Shared with a hosted vendor',
-  },
-  {
-    label: 'Consent complexity',
-    pulse: 'Cookie-free defaults reduce friction',
-    typical: 'Often requires a banner and extra setup',
-  },
-  {
-    label: 'Time to first signal',
-    pulse: 'Deploy and add one script',
-    typical: 'Create account, configure project, wire exports',
-  },
-  {
-    label: 'What you can monitor',
-    pulse: 'Traffic, conversions, revenue, AI sources, uptime',
-    typical: 'Often split across multiple tools',
-  },
-];
-
-const footerSections = [
-  {
-    title: 'Product',
-    links: [
-      { label: 'Features', href: '#features' },
-      { label: 'Why Pulse', href: '#why-pulse' },
-      { label: 'How it works', href: '#how-it-works' },
-      { label: 'Dashboard preview', href: '#dashboard-preview' },
-      { label: 'Pricing', href: '/pricing' },
-      { label: 'Demo', href: '/demo' },
+      'Understand acquisition, reliability, and agent-ready reports from one privacy-first signal stack.',
+    images: [
+      {
+        url: '/opengraph-image',
+        width: 1200,
+        height: 630,
+        alt: 'Pulse analytics overview on a dark telemetry background',
+      },
     ],
   },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Pulse — Analytics, uptime, and AI signals',
+    description:
+      'Understand acquisition, reliability, and agent-ready reports from one privacy-first signal stack.',
+    images: ['/opengraph-image'],
+  },
+};
+
+const proofPoints = [
   {
-    title: 'Get started',
-    links: [
-      { label: 'Create account', href: '/register' },
-      { label: 'Sign in', href: '/login' },
-      { label: 'Onboarding', href: '/onboarding' },
-    ],
+    index: '01',
+    title: 'Cookie-free by default',
+    description: 'Useful first-party analytics without placing tracking cookies on visitors.',
   },
   {
-    title: 'Resources',
-    links: [
-      { label: 'Source code', href: repositoryUrl, external: true },
-      { label: 'Deployment workflow', href: '#how-it-works' },
-      { label: 'Overview section', href: '#features' },
-    ],
+    index: '02',
+    title: 'Docker + PostgreSQL',
+    description: 'A familiar deployment model built around infrastructure your team can inspect.',
+  },
+  {
+    index: '03',
+    title: 'One operational view',
+    description: 'Analytics, acquisition, uptime, and scoped agent reports in one focused product.',
   },
 ];
+
+const acquisitionDetails = [
+  'Referrers and campaign sources in one report',
+  'AI-assistant traffic alongside traditional source groups',
+  'Conversion and attributed-revenue context for each channel',
+];
+
+const uptimeDetails = [
+  'Current availability and uptime history at a glance',
+  'Response-time history beside analytics and Web Vitals',
+  'Incidents, alert channels, and public status surfaces',
+];
+
+function CheckIcon() {
+  return (
+    <svg viewBox="0 0 20 20" aria-hidden="true">
+      <path d="m4.5 10.2 3.3 3.3 7.7-7.7" />
+    </svg>
+  );
+}
+
+function ArrowIcon() {
+  return (
+    <svg viewBox="0 0 20 20" aria-hidden="true">
+      <path d="M4 10h11M11 6l4 4-4 4" />
+    </svg>
+  );
+}
 
 export default function LandingPage() {
-  const heroRef = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({
-    target: heroRef,
-    offset: ['start start', 'end start'],
-  });
-  const heroY = useTransform(scrollYProgress, [0, 1], [0, 80]);
-
   return (
-    <div style={{ minHeight: '100vh', overflow: 'hidden', background: 'var(--pulse-bg-primary)' }}>
-      {/* Navbar */}
-      <nav
-        style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          zIndex: 50,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          padding: '0.875rem 2rem',
-          backdropFilter: 'blur(16px)',
-          background: 'rgba(10, 10, 15, 0.75)',
-          borderBottom: '1px solid rgba(35, 35, 47, 0.6)',
-        }}
-      >
-        <motion.div
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.5 }}
-          style={{ display: 'flex', alignItems: 'center', gap: '0.625rem' }}
-        >
-          <Link href="/" aria-label="Pulse home" style={{ display: 'flex', alignItems: 'center' }}>
-            <Image
-              src="/logo.png"
-              alt="Pulse"
-              width={120}
-              height={32}
-              priority
-              style={{ height: 32, width: 'auto', objectFit: 'contain' }}
-            />
-          </Link>
-        </motion.div>
+    <div className={styles.landingShell}>
+      <a href="#main-content" className={styles.skipLink}>
+        Skip to main content
+      </a>
+      <LandingHeader />
 
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.1 }}
-          className="landing-nav-links"
-        >
-          {navLinks.map((item) => (
-            <Link key={item.href} href={item.href} className="landing-nav-link">
-              {item.label}
-            </Link>
-          ))}
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.5 }}
-          style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
-        >
-          <Link href="/login">
-            <Button variant="ghost" size="sm">Sign in</Button>
-          </Link>
-          <Link href="/register">
-            <Button variant="primary" size="sm">Get Started</Button>
-          </Link>
-        </motion.div>
-      </nav>
-
-      {/* Hero Section */}
-      <section ref={heroRef} className="landing-hero">
-        <div className="landing-hero-bg">
-          <div className="landing-grid-bg" />
-        </div>
-
-        <motion.div className="landing-hero-content" style={{ y: heroY }}>
-          <FadeIn direction="up" delay={0.1}>
-            <div className="landing-badge">
-              <span className="landing-badge-dot" />
-              Analytics, conversions, uptime, and agent reports
-            </div>
-          </FadeIn>
-
-          <FadeIn direction="up" delay={0.2}>
-            <h1 className="landing-hero-title">
-              Self-hosted analytics
-              <br />
-              <span className="landing-hero-title-accent">without the black box.</span>
-            </h1>
-          </FadeIn>
-
-          <FadeIn direction="up" delay={0.35}>
-            <p className="landing-hero-subtitle">
-              Pulse gives your team real-time traffic, acquisition, technology,
-              conversion, revenue, AI-source, and uptime reporting from
-              infrastructure you control. Keep the data, skip the cookies, and
-              make the next action obvious.
-            </p>
-          </FadeIn>
-
-          <FadeIn direction="up" delay={0.5}>
-            <div className="landing-hero-actions">
-              <Link href="/register">
-                <Button variant="primary" size="lg">Get Started Free</Button>
-              </Link>
-              <Link href="/demo">
-                <Button variant="outline" size="lg">View Demo</Button>
-              </Link>
-            </div>
-            <p className="landing-hero-note">
-              Free to self-host &middot; Hosted plans ready &middot; First data in minutes
-            </p>
-            <div className="landing-hero-highlights">
-              {heroHighlights.map((highlight) => (
-                <div key={highlight.title} className="landing-hero-highlight">
-                  <div className="landing-hero-highlight-title">{highlight.title}</div>
-                  <p className="landing-hero-highlight-description">{highlight.description}</p>
-                </div>
-              ))}
-            </div>
-          </FadeIn>
-        </motion.div>
-
-        <FadeIn direction="up" delay={0.65}>
-          <div className="landing-hero-preview">
-            <div className="landing-hero-preview-window">
-              <div className="landing-mockup-titlebar">
-                <div className="landing-mockup-dot" style={{ background: '#ff5f57' }} />
-                <div className="landing-mockup-dot" style={{ background: '#febc2e' }} />
-                <div className="landing-mockup-dot" style={{ background: '#28c840' }} />
-                <span style={{ marginLeft: '0.75rem', fontSize: '0.75rem', color: 'var(--pulse-text-secondary)' }}>
-                  analytics.acme.io/overview
-                </span>
-              </div>
-              <div className="landing-hero-dashboard">
-                <div className="landing-hero-stats-row">
-                  {[
-                    { label: 'Visitors', value: '12,847', change: '+14.2%', positive: true },
-                    { label: 'Pageviews', value: '38,291', change: '+8.7%', positive: true },
-                    { label: 'Bounce Rate', value: '34.1%', change: '-2.3%', positive: true },
-                    { label: 'Avg Duration', value: '2m 41s', change: '+6.1%', positive: true },
-                  ].map((stat) => (
-                    <div key={stat.label} className="landing-hero-stat">
-                      <div className="landing-hero-stat-label">{stat.label}</div>
-                      <div className="landing-hero-stat-value">{stat.value}</div>
-                      <div
-                        className="landing-hero-stat-change"
-                        style={{ color: stat.positive ? 'var(--pulse-success)' : 'var(--pulse-danger)' }}
-                      >
-                        {stat.change}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                <div className="landing-hero-chart">
-                  <div className="landing-hero-chart-header">
-                    <span>Traffic Overview</span>
-                    <span style={{ color: 'var(--pulse-text-secondary)' }}>Last 30 days</span>
-                  </div>
-                  <svg className="landing-hero-chart-svg" viewBox="0 0 800 200" preserveAspectRatio="none">
-                    <defs>
-                      <linearGradient id="heroChartFill1" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="#0ea5e9" stopOpacity="0.3" />
-                        <stop offset="100%" stopColor="#0ea5e9" stopOpacity="0" />
-                      </linearGradient>
-                      <linearGradient id="heroChartFill2" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="#22c55e" stopOpacity="0.2" />
-                        <stop offset="100%" stopColor="#22c55e" stopOpacity="0" />
-                      </linearGradient>
-                    </defs>
-                    <path
-                      d="M0,160 C40,155 80,140 120,130 C160,120 200,100 240,95 C280,90 320,105 360,90 C400,75 440,55 480,50 C520,45 560,60 600,45 C640,30 680,25 720,30 C760,35 800,20 800,20 L800,200 L0,200 Z"
-                      fill="url(#heroChartFill1)"
-                    />
-                    <path
-                      d="M0,160 C40,155 80,140 120,130 C160,120 200,100 240,95 C280,90 320,105 360,90 C400,75 440,55 480,50 C520,45 560,60 600,45 C640,30 680,25 720,30 C760,35 800,20 800,20"
-                      fill="none"
-                      stroke="#0ea5e9"
-                      strokeWidth="2"
-                    />
-                    <path
-                      d="M0,175 C40,170 80,165 120,158 C160,150 200,140 240,135 C280,130 320,138 360,125 C400,112 440,100 480,95 C520,90 560,98 600,88 C640,78 680,72 720,75 C760,78 800,65 800,65 L800,200 L0,200 Z"
-                      fill="url(#heroChartFill2)"
-                    />
-                    <path
-                      d="M0,175 C40,170 80,165 120,158 C160,150 200,140 240,135 C280,130 320,138 360,125 C400,112 440,100 480,95 C520,90 560,98 600,88 C640,78 680,72 720,75 C760,78 800,65 800,65"
-                      fill="none"
-                      stroke="#22c55e"
-                      strokeWidth="2"
-                    />
-                  </svg>
-                </div>
-              </div>
-            </div>
-          </div>
-        </FadeIn>
-
-        <FadeIn direction="up" delay={0.9}>
-          <div className="landing-hero-social">
-            <div className="landing-hero-social-copy">
-              <span style={{ fontSize: '0.75rem', color: 'var(--pulse-text-secondary)', opacity: 0.8 }}>
-                Built for teams that want trustworthy product signals
-              </span>
-              <p className="landing-hero-social-text">
-                Replace vague vendor promises with a setup you can inspect, host, and adapt.
+      <main id="main-content" tabIndex={-1}>
+        <section className={styles.hero} aria-labelledby="hero-title">
+          <div className={styles.heroInner}>
+            <div className={styles.heroCopy}>
+              <p className={styles.eyebrow}>
+                <span aria-hidden="true">Pulse / 01</span>
+                Private product telemetry
               </p>
+              <h1 id="hero-title" className={styles.heroTitle}>
+                Analytics, uptime, and AI signals—on infrastructure you control.
+              </h1>
+              <p className={styles.heroDescription}>
+                See how people discover, use, and experience your product without
+                sending the story of your business to another analytics black box.
+              </p>
+              <div className={styles.heroActions}>
+                <Link href="/self-host" className={styles.primaryButton}>
+                  Explore self-hosting
+                  <ArrowIcon />
+                </Link>
+                <Link href="/demo" className={styles.secondaryButton}>
+                  Try the live demo
+                </Link>
+              </div>
+              <div className={styles.heroFootnote}>
+                <span className={styles.liveMark} aria-hidden="true" />
+                Demo data only. No account or production connection required.
+              </div>
             </div>
-            <div className="landing-trust-grid">
-              {trustSignals.map((signal) => (
-                <div key={signal.label} className="landing-trust-card">
-                  <span className="landing-trust-card-label">{signal.label}</span>
-                  <span className="landing-trust-card-value">{signal.value}</span>
-                </div>
-              ))}
+
+            <div className={styles.heroVisual}>
+              <ProductScreenshot
+                src="/landing/pulse-overview.webp"
+                alt="Pulse Demo Site overview showing visitors, pageviews, tracked events, bounce rate, traffic trends, and an AI referral insight."
+                view="Overview"
+                variant="hero"
+                priority
+              />
+              <div className={styles.heroAnnotation} aria-hidden="true">
+                <span>Product signal</span>
+                <i />
+                <strong>Live + private</strong>
+              </div>
             </div>
           </div>
-        </FadeIn>
-      </section>
-
-      {/* Stats Bar */}
-      <section
-        style={{
-          padding: '4rem 2rem',
-          borderTop: '1px solid var(--pulse-border)',
-          borderBottom: '1px solid var(--pulse-border)',
-        }}
-      >
-        <div style={{ maxWidth: 1000, margin: '0 auto' }}>
-          <StaggerContainer>
-            <div
-              style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-                gap: '1.5rem',
-              }}
-            >
-              {[
-                { value: 0, label: 'Cookies Required', suffix: '' },
-                { value: 5, label: 'Minutes to First Data', suffix: ' min' },
-                { value: 11, label: 'Report Surfaces', suffix: '' },
-                { value: 7, label: 'Agent Report Tools', suffix: '' },
-              ].map((stat) => (
-                <StaggerItem key={stat.label}>
-                  <div className="landing-stat-card">
-                    <div
-                      style={{
-                        fontSize: 'clamp(1.75rem, 3vw, 2.25rem)',
-                        fontWeight: 800,
-                        letterSpacing: '-0.03em',
-                        marginBottom: '0.25rem',
-                        background: 'linear-gradient(135deg, var(--pulse-text-primary), var(--pulse-accent))',
-                        WebkitBackgroundClip: 'text',
-                        WebkitTextFillColor: 'transparent',
-                        backgroundClip: 'text',
-                      }}
-                    >
-                      <AnimatedCounter
-                        value={stat.value}
-                        formatFn={(v) => Math.round(v).toLocaleString()}
-                        duration={2}
-                      />
-                      {stat.suffix}
-                    </div>
-                    <div style={{ fontSize: '0.875rem', color: 'var(--pulse-text-secondary)' }}>
-                      {stat.label}
-                    </div>
-                  </div>
-                </StaggerItem>
-              ))}
-            </div>
-          </StaggerContainer>
-        </div>
-      </section>
-
-      {/* Features Section */}
-      <section id="features" style={{ padding: '6rem 2rem', maxWidth: 1200, margin: '0 auto', scrollMarginTop: '6rem' }}>
-        <FadeIn direction="up">
-          <div style={{ textAlign: 'center', marginBottom: '4rem' }}>
-            <Title level="h2" size="lg">
-              Everything you need. Nothing you don&apos;t.
-            </Title>
-            <p
-              style={{
-                color: 'var(--pulse-text-secondary)',
-                marginTop: '1rem',
-                fontSize: '1.0625rem',
-                maxWidth: 520,
-                margin: '1rem auto 0',
-                lineHeight: 1.6,
-              }}
-            >
-              Built for teams that care about privacy and performance. Every feature designed with intention.
-            </p>
+          <div className={styles.heroIndex} aria-hidden="true">
+            <span>WEB ANALYTICS</span>
+            <span>RELIABILITY</span>
+            <span>AGENT REPORTS</span>
           </div>
-        </FadeIn>
+        </section>
 
-        <StaggerContainer>
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))',
-              gap: '1.25rem',
-            }}
-          >
-            {features.map((feature) => (
-              <StaggerItem key={feature.title}>
-                <div className="landing-feature-card">
-                  <div
-                    className="landing-feature-icon"
-                    style={{
-                      background: `${feature.color}12`,
-                      borderColor: `${feature.color}25`,
-                    }}
-                  >
-                    <div style={{ color: feature.color, width: 24, height: 24, display: 'flex' }}>
-                      {feature.icon}
-                    </div>
-                  </div>
-                  <h3
-                    style={{
-                      fontSize: '1.0625rem',
-                      fontWeight: 600,
-                      marginBottom: '0.5rem',
-                      color: 'var(--pulse-text-primary)',
-                    }}
-                  >
-                    {feature.title}
-                  </h3>
-                  <p
-                    style={{
-                      color: 'var(--pulse-text-secondary)',
-                      fontSize: '0.875rem',
-                      lineHeight: 1.65,
-                    }}
-                  >
-                    {feature.description}
-                  </p>
+        <section className={styles.proofSection} aria-label="Pulse foundations">
+          <div className={styles.proofGrid}>
+            {proofPoints.map((point) => (
+              <article key={point.index} className={styles.proofItem}>
+                <span className={styles.proofIndex}>{point.index}</span>
+                <div>
+                  <h2>{point.title}</h2>
+                  <p>{point.description}</p>
                 </div>
-              </StaggerItem>
+              </article>
             ))}
           </div>
-        </StaggerContainer>
-      </section>
+        </section>
 
-      {/* Dashboard Preview Section */}
-      <section id="dashboard-preview" style={{ padding: '4rem 2rem 6rem', maxWidth: 1100, margin: '0 auto', scrollMarginTop: '6rem' }}>
-        <FadeIn direction="up">
-          <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
-            <Title level="h2" size="lg">
-              A dashboard you&apos;ll actually enjoy using
-            </Title>
-            <p
-              style={{
-                color: 'var(--pulse-text-secondary)',
-                marginTop: '1rem',
-                fontSize: '1.0625rem',
-                maxWidth: 500,
-                margin: '1rem auto 0',
-                lineHeight: 1.6,
-              }}
-            >
-              Clean, fast, and focused. No clutter, no learning curve.
+        <section id="product" className={styles.productSection} aria-labelledby="product-title">
+          <div className={styles.sectionIntro}>
+            <p className={styles.eyebrow}>
+              <span aria-hidden="true">Pulse / 02</span>
+              The operating picture
+            </p>
+            <h2 id="product-title">Follow the signal from discovery to reliability.</h2>
+            <p>
+              Pulse connects the reports product teams check every day, so a spike in
+              traffic, a change in acquisition, and a slow endpoint are part of the
+              same investigation.
             </p>
           </div>
-        </FadeIn>
 
-        <FadeIn direction="up" delay={0.2}>
-          <div className="landing-dashboard-mockup">
-            <div className="landing-mockup-titlebar">
-              <div className="landing-mockup-dot" style={{ background: '#ff5f57' }} />
-              <div className="landing-mockup-dot" style={{ background: '#febc2e' }} />
-              <div className="landing-mockup-dot" style={{ background: '#28c840' }} />
-              <span
-                style={{
-                  marginLeft: '0.75rem',
-                  fontSize: '0.75rem',
-                  color: 'var(--pulse-text-secondary)',
-                }}
-              >
-                analytics.acme.io/overview
-              </span>
+          <article className={styles.productStory}>
+            <div className={styles.storyVisual}>
+              <ProductScreenshot
+                src="/landing/pulse-acquisition.webp"
+                alt="Pulse Demo Site acquisition report showing source groups, AI-assistant traffic, conversions, revenue, and top referrers."
+                view="Acquisition"
+              />
             </div>
-            <div className="landing-mockup-content">
-              <div className="landing-mockup-sidebar">
-                <div style={{ padding: '0.5rem 0.75rem', marginBottom: '0.5rem' }}>
-                  <span style={{ fontWeight: 700, fontSize: '0.8125rem', color: 'var(--pulse-accent)' }}>
-                    Pulse
-                  </span>
-                </div>
-                {['Overview', 'Pages', 'Events', 'Acquisition', 'Technology'].map(
-                  (item, i) => (
-                    <div
-                      key={item}
-                      className={`landing-mockup-nav-item${i === 0 ? ' active' : ''}`}
-                    >
-                      <div
-                        style={{
-                          width: 4,
-                          height: 4,
-                          borderRadius: '50%',
-                          background: i === 0 ? 'var(--pulse-accent)' : 'var(--pulse-text-secondary)',
-                          opacity: i === 0 ? 1 : 0.4,
-                        }}
-                      />
-                      {item}
-                    </div>
-                  )
-                )}
-              </div>
-              <div className="landing-mockup-main">
-                <div className="landing-mockup-stats">
-                  {[
-                    { label: 'Visitors', value: '12,847', change: '+14.2%', positive: true },
-                    { label: 'Pageviews', value: '38,291', change: '+8.7%', positive: true },
-                    { label: 'Bounce Rate', value: '34.1%', change: '-2.3%', positive: true },
-                  ].map((stat) => (
-                    <div key={stat.label} className="landing-mockup-stat">
-                      <div
-                        style={{
-                          fontSize: '0.6875rem',
-                          color: 'var(--pulse-text-secondary)',
-                          marginBottom: '0.25rem',
-                        }}
-                      >
-                        {stat.label}
-                      </div>
-                      <div style={{ fontSize: '1.125rem', fontWeight: 700, letterSpacing: '-0.02em' }}>
-                        {stat.value}
-                      </div>
-                      <div
-                        style={{
-                          fontSize: '0.6875rem',
-                          color: stat.positive ? 'var(--pulse-success)' : 'var(--pulse-danger)',
-                          marginTop: '0.125rem',
-                        }}
-                      >
-                        {stat.change}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                <div className="landing-mockup-chart">
-                  {barHeights.map((h, i) => (
-                    <motion.div
-                      key={i}
-                      className="landing-mockup-bar"
-                      initial={{ height: 0 }}
-                      whileInView={{ height: `${h}%` }}
-                      viewport={{ once: true }}
-                      transition={{ duration: 0.6, delay: i * 0.04, ease: 'easeOut' }}
-                    />
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-        </FadeIn>
-      </section>
-
-      {/* Why Pulse Section */}
-      <section
-        id="why-pulse"
-        style={{
-          padding: '0 2rem 6rem',
-          maxWidth: 1100,
-          margin: '0 auto',
-          scrollMarginTop: '6rem',
-        }}
-      >
-        <FadeIn direction="up">
-          <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
-            <Title level="h2" size="lg">
-              Built for teams that need signal, not surveillance
-            </Title>
-            <p
-              style={{
-                color: 'var(--pulse-text-secondary)',
-                marginTop: '1rem',
-                fontSize: '1.0625rem',
-                maxWidth: 620,
-                margin: '1rem auto 0',
-                lineHeight: 1.6,
-              }}
-            >
-              Pulse keeps your analytics stack simple: privacy-safe by default,
-              self-hosted by design, and practical enough for engineers,
-              marketers, and product teams to use together.
-            </p>
-          </div>
-        </FadeIn>
-
-        <div className="landing-why-grid">
-          <FadeIn direction="up" delay={0.1}>
-            <div className="landing-why-stack">
-              {whyPulseCards.map((card) => (
-                <div key={card.title} className="landing-why-card">
-                  <span className="landing-why-card-kicker">{card.kicker}</span>
-                  <h3 className="landing-why-card-title">{card.title}</h3>
-                  <p className="landing-why-card-description">{card.description}</p>
-                </div>
-              ))}
-            </div>
-          </FadeIn>
-
-          <FadeIn direction="up" delay={0.2}>
-            <div className="landing-comparison-card">
-              <div className="landing-comparison-title">
-                Pulse vs typical hosted analytics
-              </div>
-              <div className="landing-comparison-table">
-                <div className="landing-comparison-row landing-comparison-row--head">
-                  <span className="landing-comparison-cell">Category</span>
-                  <span className="landing-comparison-cell">Pulse</span>
-                  <span className="landing-comparison-cell">Typical hosted tool</span>
-                </div>
-                {comparisonRows.map((row) => (
-                  <div key={row.label} className="landing-comparison-row">
-                    <span className="landing-comparison-cell landing-comparison-cell-label">{row.label}</span>
-                    <span className="landing-comparison-cell">{row.pulse}</span>
-                    <span className="landing-comparison-cell">{row.typical}</span>
-                  </div>
+            <div className={styles.storyCopy}>
+              <span className={styles.storyNumber}>01 / ACQUISITION</span>
+              <h3>Know which routes bring people who actually engage.</h3>
+              <p>
+                Move past a list of pageviews. Read source quality across referrers,
+                campaign traffic, AI assistants, conversions, and attributed revenue.
+              </p>
+              <ul className={styles.detailList}>
+                {acquisitionDetails.map((detail) => (
+                  <li key={detail}>
+                    <CheckIcon />
+                    <span>{detail}</span>
+                  </li>
                 ))}
-              </div>
+              </ul>
+              <Link href="/demo?view=acquisition" className={styles.textLink}>
+                Explore acquisition in the demo
+                <ArrowIcon />
+              </Link>
             </div>
-          </FadeIn>
-        </div>
-      </section>
+          </article>
 
-      {/* How It Works Section */}
-      <section
-        id="how-it-works"
-        style={{
-          padding: '6rem 2rem',
-          borderTop: '1px solid var(--pulse-border)',
-          scrollMarginTop: '6rem',
-        }}
-      >
-        <div style={{ maxWidth: 900, margin: '0 auto' }}>
-          <FadeIn direction="up">
-            <div style={{ textAlign: 'center', marginBottom: '4rem' }}>
-              <Title level="h2" size="lg">
-                Up and running in minutes
-              </Title>
-              <p
-                style={{
-                  color: 'var(--pulse-text-secondary)',
-                  marginTop: '1rem',
-                  fontSize: '1.0625rem',
-                  lineHeight: 1.6,
-                }}
-              >
-                Three steps. No configuration headaches.
+          <article className={`${styles.productStory} ${styles.productStoryReversed}`}>
+            <div className={styles.storyVisual}>
+              <ProductScreenshot
+                src="/landing/pulse-uptime.webp"
+                alt="Pulse Demo Site uptime report showing current status, uptime history, and response-time monitoring."
+                view="Uptime"
+              />
+            </div>
+            <div className={styles.storyCopy}>
+              <span className={styles.storyNumber}>02 / RELIABILITY</span>
+              <h3>Put product performance beside product behavior.</h3>
+              <p>
+                See whether a conversion change is a traffic story, a product story,
+                or an availability problem—without jumping between disconnected tools.
               </p>
+              <ul className={styles.detailList}>
+                {uptimeDetails.map((detail) => (
+                  <li key={detail}>
+                    <CheckIcon />
+                    <span>{detail}</span>
+                  </li>
+                ))}
+              </ul>
+              <Link href="/demo?view=uptime" className={styles.textLink}>
+                Inspect uptime in the demo
+                <ArrowIcon />
+              </Link>
             </div>
-          </FadeIn>
+          </article>
+        </section>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem', marginBottom: '3rem' }}>
-            {steps.map((step, i) => (
-              <FadeIn key={step.number} direction="up" delay={i * 0.1}>
-                <div
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '1.5rem',
-                    background: 'var(--pulse-bg-card)',
-                    border: '1px solid var(--pulse-border)',
-                    borderRadius: 16,
-                    padding: '1.5rem 2rem',
-                  }}
-                >
-                  <div className="landing-step-number">{step.number}</div>
+        <section id="agents" className={styles.agentSection} aria-labelledby="agents-title">
+          <div className={styles.agentGrid}>
+            <div className={styles.agentCopy}>
+              <p className={styles.eyebrow}>
+                <span aria-hidden="true">Pulse / 03</span>
+                Scoped agent access
+              </p>
+              <h2 id="agents-title">Give agents the report, not the keys to the building.</h2>
+              <p>
+                Pulse exposes authenticated REST and MCP reporting surfaces. Limit an
+                agent to a site and the exact analytics or uptime scopes it needs, then
+                keep an audit trail of every report request.
+              </p>
+              <dl className={styles.agentFacts}>
+                <div>
+                  <dt>Transport</dt>
+                  <dd>REST + MCP</dd>
+                </div>
+                <div>
+                  <dt>Access</dt>
+                  <dd>Site-scoped</dd>
+                </div>
+                <div>
+                  <dt>Operations</dt>
+                  <dd>Report-only</dd>
+                </div>
+              </dl>
+            </div>
+
+            <div className={styles.codePanel} aria-label="Example scoped Pulse report request">
+              <div className={styles.codePanelHeader}>
+                <span>
+                  <i aria-hidden="true" />
+                  generate-report.ts
+                </span>
+                <span>REST</span>
+              </div>
+              <pre className={styles.codeBlock}>
+                <code>{`const report = await fetch(
+  '/api/agent/reports/generate',
+  {
+    method: 'POST',
+    headers: {
+      Authorization: \`Bearer \${PULSE_AGENT_TOKEN}\`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      siteId,
+      reports: [
+        'overview',
+        'acquisition',
+        'uptime_summary'
+      ],
+      from,
+      to
+    })
+  }
+);`}</code>
+              </pre>
+              <div className={styles.scopeBar}>
+                <span>Required scopes</span>
+                <ul aria-label="Required agent scopes">
+                  <li>reports:generate</li>
+                  <li>analytics:read</li>
+                  <li>uptime:read</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="self-hosting" className={styles.selfHostSection} aria-labelledby="self-host-title">
+          <div className={styles.selfHostGrid}>
+            <div className={styles.selfHostCopy}>
+              <p className={styles.eyebrow}>
+                <span aria-hidden="true">Pulse / 04</span>
+                Deployment preview
+              </p>
+              <span className={styles.comingSoon}>Self-hosting · Coming soon</span>
+              <h2 id="self-host-title">Your data plane. Your operational standards.</h2>
+              <p>
+                The self-hosted release is being prepared around a straightforward
+                Docker and PostgreSQL deployment, with your reverse proxy handling the
+                public edge.
+              </p>
+              <Link href="/self-host" className={styles.primaryButton}>
+                Explore self-hosting
+                <ArrowIcon />
+              </Link>
+            </div>
+            <div className={styles.deploymentPanel}>
+              <div className={styles.deploymentHeader}>
+                <span>Expected stack</span>
+                <span>01—03</span>
+              </div>
+              <ol className={styles.deploymentList}>
+                <li>
+                  <span>01</span>
                   <div>
-                    <h3
-                      style={{
-                        fontSize: '1.0625rem',
-                        fontWeight: 600,
-                        marginBottom: '0.25rem',
-                      }}
-                    >
-                      {step.title}
-                    </h3>
-                    <p style={{ fontSize: '0.875rem', color: 'var(--pulse-text-secondary)', lineHeight: 1.5 }}>
-                      {step.description}
-                    </p>
+                    <strong>Pulse application</strong>
+                    <p>Containerized web app and reporting surfaces.</p>
                   </div>
-                </div>
-              </FadeIn>
-            ))}
-          </div>
-
-          <FadeIn direction="up" delay={0.3}>
-            <div className="landing-code-window">
-              <div className="landing-code-header">
-                <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#ff5f57' }} />
-                <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#febc2e' }} />
-                <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#28c840' }} />
-                <span style={{ marginLeft: '0.5rem' }}>your-website.html</span>
-              </div>
-              <div className="landing-code-body">
-                <div>
-                  <span style={{ color: '#8888a0' }}>&lt;!-- Add this before &lt;/head&gt; --&gt;</span>
-                </div>
-                <div>
-                  <span style={{ color: '#c792ea' }}>&lt;script</span>
-                </div>
-                <div style={{ paddingLeft: '1.5rem' }}>
-                  <span style={{ color: '#82aaff' }}>defer</span>
-                </div>
-                <div style={{ paddingLeft: '1.5rem' }}>
-                  <span style={{ color: '#82aaff' }}>data-token</span>
-                  <span style={{ color: '#89ddff' }}>=</span>
-                  <span style={{ color: '#c3e88d' }}>&quot;SITE_TOKEN&quot;</span>
-                </div>
-                <div style={{ paddingLeft: '1.5rem' }}>
-                  <span style={{ color: '#82aaff' }}>data-web-vitals</span>
-                  <span style={{ color: '#89ddff' }}>=</span>
-                  <span style={{ color: '#c3e88d' }}>&quot;true&quot;</span>
-                </div>
-                <div style={{ paddingLeft: '1.5rem' }}>
-                  <span style={{ color: '#82aaff' }}>src</span>
-                  <span style={{ color: '#89ddff' }}>=</span>
-                  <span style={{ color: '#c3e88d' }}>&quot;https://pulse.yourdomain.com/t.js&quot;</span>
-                </div>
-                <div>
-                  <span style={{ color: '#c792ea' }}>&gt;&lt;/script&gt;</span>
-                </div>
-              </div>
+                  <i aria-hidden="true">APP</i>
+                </li>
+                <li>
+                  <span>02</span>
+                  <div>
+                    <strong>PostgreSQL</strong>
+                    <p>Your analytics and operational data store.</p>
+                  </div>
+                  <i aria-hidden="true">DB</i>
+                </li>
+                <li>
+                  <span>03</span>
+                  <div>
+                    <strong>Reverse proxy + TLS</strong>
+                    <p>Your domain, certificates, and network controls.</p>
+                  </div>
+                  <i aria-hidden="true">EDGE</i>
+                </li>
+              </ol>
             </div>
-          </FadeIn>
-        </div>
-      </section>
+          </div>
+        </section>
 
-      {/* CTA Section */}
-      <section
-        className="landing-cta-section"
-        style={{
-          padding: '6rem 2rem',
-          textAlign: 'center',
-          borderTop: '1px solid var(--pulse-border)',
-        }}
-      >
-        <FadeIn direction="up">
-          <div style={{ maxWidth: 600, margin: '0 auto' }}>
-            <h2
-              style={{
-                fontSize: 'clamp(1.75rem, 4vw, 2.5rem)',
-                fontWeight: 800,
-                letterSpacing: '-0.03em',
-                lineHeight: 1.1,
-                marginBottom: '1.25rem',
-              }}
-            >
-              <span style={{ color: 'var(--pulse-text-primary)' }}>Ready to own </span>
-              <span
-                style={{
-                  background: 'linear-gradient(135deg, #0ea5e9, #22d3ee)',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                  backgroundClip: 'text',
-                }}
-              >
-                your analytics?
-              </span>
-            </h2>
-            <p
-              style={{
-                color: 'var(--pulse-text-secondary)',
-                fontSize: '1.0625rem',
-                lineHeight: 1.6,
-                marginBottom: '2.5rem',
-              }}
-            >
-              Launch a privacy-first analytics stack your team can inspect,
-              control, and extend without adding another hosted dependency.
+        <section className={styles.closingCta} aria-labelledby="closing-title">
+          <div className={styles.closingContent}>
+            <p className={styles.eyebrow}>The complete signal, without the black box</p>
+            <h2 id="closing-title">See Pulse with a product story already in motion.</h2>
+            <p>
+              Explore a deterministic demo across overview, acquisition, and uptime.
+              No signup, credentials, or live customer data.
             </p>
-            <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
-              <Link href="/register">
-                <Button variant="primary" size="lg">Get Started Free</Button>
+            <div className={styles.closingActions}>
+              <Link href="/demo" className={styles.primaryButton}>
+                Try the live demo
+                <ArrowIcon />
               </Link>
-              <Link href="/pricing">
-                <Button variant="secondary" size="lg">See Offers</Button>
-              </Link>
-              <Link href="/demo">
-                <Button variant="outline" size="lg">View Demo</Button>
-              </Link>
-              <Link
-                href={repositoryUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <Button variant="outline" size="lg">View source</Button>
+              <Link href="/self-host" className={styles.secondaryButton}>
+                Self-hosting details
               </Link>
             </div>
           </div>
-        </FadeIn>
-      </section>
+        </section>
+      </main>
 
-      {/* Footer */}
-      <footer
-        style={{
-          padding: '3rem 2rem 2rem',
-          borderTop: '1px solid var(--pulse-border)',
-        }}
-      >
-        <div className="landing-footer-grid" style={{ padding: '0 0 2rem' }}>
-          <div>
-            <div style={{ marginBottom: '0.75rem' }}>
-              <Link href="/" aria-label="Pulse home" style={{ display: 'inline-flex' }}>
-                <Image
-                  src="/logo.png"
-                  alt="Pulse"
-                  width={104}
-                  height={28}
-                  style={{ height: 28, width: 'auto', objectFit: 'contain' }}
-                />
-              </Link>
-            </div>
-            <p style={{ fontSize: '0.8125rem', color: 'var(--pulse-text-secondary)', lineHeight: 1.6, maxWidth: 280 }}>
-              Open-source, self-hosted web analytics. Built for developers who value privacy.
-            </p>
-          </div>
-          <div>
-            <h4 style={{ fontSize: '0.8125rem', fontWeight: 600, marginBottom: '0.75rem', color: 'var(--pulse-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-              {footerSections[0].title}
-            </h4>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-              {footerSections[0].links.map((item) => (
-                <Link key={item.label} href={item.href} style={{ fontSize: '0.8125rem', color: 'var(--pulse-text-secondary)' }}>
-                  {item.label}
-                </Link>
-              ))}
-            </div>
-          </div>
-          <div>
-            <h4 style={{ fontSize: '0.8125rem', fontWeight: 600, marginBottom: '0.75rem', color: 'var(--pulse-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-              {footerSections[1].title}
-            </h4>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-              {footerSections[1].links.map((item) => (
-                <Link key={item.label} href={item.href} style={{ fontSize: '0.8125rem', color: 'var(--pulse-text-secondary)' }}>
-                  {item.label}
-                </Link>
-              ))}
-            </div>
-          </div>
-          <div>
-            <h4 style={{ fontSize: '0.8125rem', fontWeight: 600, marginBottom: '0.75rem', color: 'var(--pulse-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-              {footerSections[2].title}
-            </h4>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-              {footerSections[2].links.map((item) => (
-                item.external ? (
-                  <a
-                    key={item.label}
-                    href={item.href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{ fontSize: '0.8125rem', color: 'var(--pulse-text-secondary)' }}
-                  >
-                    {item.label}
-                  </a>
-                ) : (
-                  <Link key={item.label} href={item.href} style={{ fontSize: '0.8125rem', color: 'var(--pulse-text-secondary)' }}>
-                    {item.label}
-                  </Link>
-                )
-              ))}
-            </div>
-          </div>
-        </div>
-        <div
-          style={{
-            paddingTop: '1.5rem',
-            borderTop: '1px solid var(--pulse-border)',
-            textAlign: 'center',
-            fontSize: '0.75rem',
-            color: 'var(--pulse-text-secondary)',
-            maxWidth: 1200,
-            margin: '0 auto',
-          }}
-        >
-          Pulse Analytics &mdash; Open Source, Self-Hosted Web Analytics
+      <footer className={styles.footer}>
+        <div className={styles.footerInner}>
+          <Link href="/" className={styles.footerBrand} aria-label="Pulse home">
+            Pulse
+            <span>Private product telemetry</span>
+          </Link>
+          <nav aria-label="Footer navigation">
+            <Link href="/demo">Demo</Link>
+            <Link href="/self-host">Self-hosting</Link>
+            <Link href="/pricing">Pricing</Link>
+            <Link href="/login">Sign in</Link>
+          </nav>
+          <p>Analytics, uptime, and scoped reports on infrastructure you control.</p>
         </div>
       </footer>
     </div>

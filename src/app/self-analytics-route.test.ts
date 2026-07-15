@@ -30,6 +30,7 @@ describe('self analytics route', () => {
     expect(script).toContain('/api/collect');
     expect(script).toContain('web_vital');
     expect(script).toContain('doNotTrack');
+    expect(script).toContain("window.location.pathname === '/demo'");
   });
 
   it('builds tracker JavaScript without external endpoints', () => {
@@ -37,5 +38,14 @@ describe('self analytics route', () => {
 
     expect(script).toContain('/api/collect');
     expect(script).not.toContain('pulsewebanalytics.com');
+  });
+
+  it('excludes the public read-only demo from collection', () => {
+    const script = buildSelfAnalyticsScript('token');
+
+    expect(script).toContain('if (isReadOnlyDemo()) return;');
+    expect(script.indexOf('if (isReadOnlyDemo()) return;')).toBeLessThan(
+      script.indexOf('var payload = {')
+    );
   });
 });
