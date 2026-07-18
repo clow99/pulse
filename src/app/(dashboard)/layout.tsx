@@ -3,6 +3,7 @@ import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { DashboardShell } from '@/components/dashboard/DashboardShell';
 import type { SessionUser } from '@/types';
+import { Providers } from '../providers';
 
 export default async function DashboardLayout({
   children,
@@ -33,12 +34,14 @@ export default async function DashboardLayout({
   const org = membership.org;
   const sites = org.sites;
   return (
-    <DashboardShell
-      orgName={org.name}
-      orgId={org.id}
-      sites={sites.map((s) => ({ id: s.id, name: s.name, domain: s.domain }))}
-    >
-      {children}
-    </DashboardShell>
+    <Providers>
+      <DashboardShell
+        orgName={org.name}
+        orgId={org.id}
+        sites={sites.map((s) => ({ id: s.id, name: s.name, domain: s.domain }))}
+      >
+        {children}
+      </DashboardShell>
+    </Providers>
   );
 }

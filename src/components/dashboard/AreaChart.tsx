@@ -20,14 +20,25 @@ export interface AreaChartDataPoint {
 interface AreaChartProps {
   data: AreaChartDataPoint[];
   height?: number;
+  ariaLabel?: string;
+  staticRender?: boolean;
 }
 
 const defaultFormat = (n: number) => n.toLocaleString();
 
-export function AreaChart({ data, height = 320 }: AreaChartProps) {
-  return (
-    <FadeIn>
-      <div className="pulse-chart-container" style={{ height }}>
+export function AreaChart({
+  data,
+  height = 320,
+  ariaLabel = 'Visitors and pageviews over time',
+  staticRender = false,
+}: AreaChartProps) {
+  const chart = (
+      <div
+        className="pulse-chart-container"
+        style={{ height }}
+        role="img"
+        aria-label={ariaLabel}
+      >
         <ResponsiveContainer width="100%" height="100%">
           <RechartsAreaChart data={data} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
             <defs>
@@ -86,6 +97,7 @@ export function AreaChart({ data, height = 320 }: AreaChartProps) {
           </RechartsAreaChart>
         </ResponsiveContainer>
       </div>
-    </FadeIn>
   );
+
+  return staticRender ? chart : <FadeIn>{chart}</FadeIn>;
 }

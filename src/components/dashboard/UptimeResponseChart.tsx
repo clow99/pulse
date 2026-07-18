@@ -15,12 +15,18 @@ import type { UptimeTimeseriesPoint } from '@/types';
 interface UptimeResponseChartProps {
   data: UptimeTimeseriesPoint[];
   height?: number;
+  ariaLabel?: string;
+  staticRender?: boolean;
 }
 
-export function UptimeResponseChart({ data, height = 280 }: UptimeResponseChartProps) {
-  return (
-    <FadeIn>
-      <div style={{ height }}>
+export function UptimeResponseChart({
+  data,
+  height = 280,
+  ariaLabel = 'Average uptime response time over time',
+  staticRender = false,
+}: UptimeResponseChartProps) {
+  const chart = (
+      <div style={{ height }} role="img" aria-label={ariaLabel}>
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart data={data} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
             <defs>
@@ -66,6 +72,7 @@ export function UptimeResponseChart({ data, height = 280 }: UptimeResponseChartP
           </AreaChart>
         </ResponsiveContainer>
       </div>
-    </FadeIn>
   );
+
+  return staticRender ? chart : <FadeIn>{chart}</FadeIn>;
 }

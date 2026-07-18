@@ -1,5 +1,16 @@
 import type { NextConfig } from 'next';
 
+const isDevelopment = process.env.NODE_ENV === 'development';
+const scriptSources = [
+  "'self'",
+  "'unsafe-inline'",
+  ...(isDevelopment ? ["'unsafe-eval'"] : []),
+].join(' ');
+const connectSources = [
+  "'self'",
+  ...(isDevelopment ? ['ws:', 'wss:'] : []),
+].join(' ');
+
 const nextConfig: NextConfig = {
   output: 'standalone',
   turbopack: { root: process.cwd() },
@@ -7,7 +18,10 @@ const nextConfig: NextConfig = {
   serverExternalPackages: ['bcryptjs'],
   async headers() {
     const securityHeaders = [
-      { key: 'Content-Security-Policy', value: "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'" },
+      {
+        key: 'Content-Security-Policy',
+        value: `default-src 'self'; script-src ${scriptSources}; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src ${connectSources}; frame-ancestors 'none'; base-uri 'self'; form-action 'self'`,
+      },
       { key: 'Strict-Transport-Security', value: 'max-age=31536000; includeSubDomains' },
       { key: 'X-Content-Type-Options', value: 'nosniff' },
       { key: 'X-Frame-Options', value: 'DENY' },

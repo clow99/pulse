@@ -34,6 +34,8 @@ jobs:
       NEXTAUTH_SECRET: test-secret
       NEXTAUTH_URL: http://localhost:3000
       NEXT_PUBLIC_APP_URL: http://localhost:3000
+      PULSE_REGISTRY: 10.0.0.2:5000
+      SKOPEO_IMAGE: quay.io/skopeo/stable@sha256:c4c8a9d6fc95e331fa92fc31de3f6c9b5fe4761c82f0acb99669eef067fb7c33
 
     steps:
       - name: Checkout repository
@@ -150,34 +152,34 @@ jobs:
           docker image inspect pulse:latest > /dev/null
           docker image inspect pulse-migrate:latest > /dev/null
 
-      - name: Tag web image (live)
-        if: success() && github.event_name == 'push' && github.ref == 'refs/heads/main'
-        run: docker tag pulse:latest localhost:5000/pulse:live
-
-      - name: Tag web image (immutable)
-        if: success() && github.event_name == 'push' && github.ref == 'refs/heads/main'
-        run: docker tag pulse:latest localhost:5000/pulse:sha-${{ github.sha }}
-
-      - name: Tag migration image (live)
-        if: success() && github.event_name == 'push' && github.ref == 'refs/heads/main'
-        run: docker tag pulse-migrate:latest localhost:5000/pulse-migrate:live
-
-      - name: Tag migration image (immutable)
-        if: success() && github.event_name == 'push' && github.ref == 'refs/heads/main'
-        run: docker tag pulse-migrate:latest localhost:5000/pulse-migrate:sha-${{ github.sha }}
-
       - name: Push web image (immutable)
         if: success() && github.event_name == 'push' && github.ref == 'refs/heads/main'
-        run: docker push localhost:5000/pulse:sha-${{ github.sha }}
+        run: |
+          docker run --rm --network host \
+            -v /var/run/docker.sock:/var/run/docker.sock \
+            "$SKOPEO_IMAGE" copy --dest-tls-verify=false \
+            docker-daemon:pulse:latest "docker://$PULSE_REGISTRY/pulse:sha-${{ github.sha }}"
 
       - name: Push web image (live)
         if: success() && github.event_name == 'push' && github.ref == 'refs/heads/main'
-        run: docker push localhost:5000/pulse:live
+        run: |
+          docker run --rm --network host \
+            -v /var/run/docker.sock:/var/run/docker.sock \
+            "$SKOPEO_IMAGE" copy --dest-tls-verify=false \
+            docker-daemon:pulse:latest "docker://$PULSE_REGISTRY/pulse:live"
 
       - name: Push migration image (immutable)
         if: success() && github.event_name == 'push' && github.ref == 'refs/heads/main'
-        run: docker push localhost:5000/pulse-migrate:sha-${{ github.sha }}
+        run: |
+          docker run --rm --network host \
+            -v /var/run/docker.sock:/var/run/docker.sock \
+            "$SKOPEO_IMAGE" copy --dest-tls-verify=false \
+            docker-daemon:pulse-migrate:latest "docker://$PULSE_REGISTRY/pulse-migrate:sha-${{ github.sha }}"
 
       - name: Push migration image (live)
         if: success() && github.event_name == 'push' && github.ref == 'refs/heads/main'
-        run: docker push localhost:5000/pulse-migrate:live
+        run: |
+          docker run --rm --network host \
+            -v /var/run/docker.sock:/var/run/docker.sock \
+            "$SKOPEO_IMAGE" copy --dest-tls-verify=false \
+            docker-daemon:pulse-migrate:latest "docker://$PULSE_REGISTRY/pulse-migrate:live"

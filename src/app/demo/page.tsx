@@ -34,7 +34,7 @@ export default function DemoPage() {
         <div>
           <h2>Access remains invitation-only</h2>
           <p>
-            Public registration, fixed hosted plans, and purchase flows are not available. No public preview-request contact is published until the registered support mailbox passes an outside-in delivery test.
+            Public registration, fixed hosted plans, and purchase flows are not available. No public preview-request contact is published.
           </p>
         </div>
       </section>

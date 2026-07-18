@@ -21,10 +21,13 @@ describe('public claims', () => {
       readFile(path.join(root, 'src', 'app', 'page.tsx'), 'utf8'),
       readFile(path.join(root, 'src', 'app', 'pricing', 'page.tsx'), 'utf8'),
       readFile(path.join(root, 'src', 'app', 'demo', 'page.tsx'), 'utf8'),
+      readFile(path.join(root, 'src', 'app', 'self-host', 'page.tsx'), 'utf8'),
+      readFile(path.join(root, 'src', 'components', 'landing', 'LandingHeader.tsx'), 'utf8'),
+      readFile(path.join(root, 'src', 'components', 'landing', 'MobileMenu.tsx'), 'utf8'),
       readFile(path.join(root, 'README.md'), 'utf8'),
       readFile(path.join(root, 'prisma', 'seed.ts'), 'utf8'),
     ]);
-    const publicSurfaces = files.slice(0, 3).join('\n');
+    const publicSurfaces = files.slice(0, 6).join('\n');
     const allReviewedFiles = files.join('\n');
 
     for (const unsupported of [
@@ -38,6 +41,10 @@ describe('public claims', () => {
       'Get Started Free',
       'Open Demo Login',
       'Demo credentials',
+      'Live demo',
+      'live demo',
+      'Get started',
+      "href=\"/register\"",
     ]) {
       expect(publicSurfaces).not.toContain(unsupported);
     }

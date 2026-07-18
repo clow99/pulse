@@ -31,6 +31,10 @@ export function buildSelfAnalyticsScript(token: string) {
   var lastPage = '';
   var sentVitals = {};
 
+  function isReadOnlyDemo() {
+    return window.location.pathname === '/demo' || window.location.pathname.indexOf('/demo/') === 0;
+  }
+
   function randomId() {
     if (window.crypto && typeof window.crypto.randomUUID === 'function') {
       return window.crypto.randomUUID();
@@ -65,6 +69,8 @@ export function buildSelfAnalyticsScript(token: string) {
   }
 
   function send(type, name, properties) {
+    if (isReadOnlyDemo()) return;
+
     var payload = {
       token: token,
       type: type,
