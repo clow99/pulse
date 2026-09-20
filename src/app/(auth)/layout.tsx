@@ -1,3 +1,4 @@
+import Link from 'next/link';
 export default function AuthLayout({
   children,
 }: {
@@ -22,6 +23,7 @@ export default function AuthLayout({
         }}
       >
         {children}
+        <p className="pulse-auth-notice">Account and provider information is used to sign you in. Read the <Link href="/privacy">privacy notice</Link> and <Link href="/terms">terms</Link> before continuing. <Link href="/accessibility">Accessibility help</Link>.</p>
       </div>
     </div>
   );

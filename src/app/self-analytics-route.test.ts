@@ -20,17 +20,11 @@ describe('self analytics route', () => {
     expect(await response.text()).toBe(NOOP_SCRIPT);
   });
 
-  it('returns a same-origin tracker with the configured token', async () => {
-    process.env.PULSE_SELF_ANALYTICS_SITE_TOKEN = 'pulse-self-token';
-
+  it('keeps cached public pages from collecting even with the old configuration', async () => {
+    process.env.PULSE_SELF_ANALYTICS_SITE_TOKEN = 'synthetic-old-token';
     const response = GET();
-    const script = await response.text();
-
-    expect(script).toContain('pulse-self-token');
-    expect(script).toContain('/api/collect');
-    expect(script).toContain('web_vital');
-    expect(script).toContain('doNotTrack');
-    expect(script).toContain("window.location.pathname === '/demo'");
+    expect(await response.text()).toBe(NOOP_SCRIPT);
+    expect(response.headers.get('Cache-Control')).toBe('no-store');
   });
 
   it('builds tracker JavaScript without external endpoints', () => {

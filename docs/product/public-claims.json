@@ -7,8 +7,8 @@
     "status": "verified",
     "evidence": "Implemented dashboard and report routes plus repository tests for analytics, funnels, uptime, AI providers, daily briefs, and agent access.",
     "owner": "Cameron Low",
-    "reviewedAt": "2026-07-15T00:30:00Z",
-    "reviewBy": "2026-08-15T00:30:00Z"
+    "reviewedAt": "2026-09-19T23:00:00Z",
+    "reviewBy": "2026-10-19T23:00:00Z"
   },
   {
     "id": "PULSE-CLAIM-002",
@@ -18,8 +18,8 @@
     "status": "verified",
     "evidence": "public/t.js implements cookie-free visit identifiers and Do Not Track handling; tracking tests cover ingestion behavior.",
     "owner": "Cameron Low",
-    "reviewedAt": "2026-07-15T00:30:00Z",
-    "reviewBy": "2026-08-15T00:30:00Z"
+    "reviewedAt": "2026-09-19T23:00:00Z",
+    "reviewBy": "2026-10-19T23:00:00Z"
   },
   {
     "id": "PULSE-CLAIM-003",
@@ -29,8 +29,8 @@
     "status": "qualified",
     "evidence": "The pricing surface presents invitation-only evaluation options and no checkout, fixed price, public source, or registration call to action.",
     "owner": "Cameron Low",
-    "reviewedAt": "2026-07-15T00:30:00Z",
-    "reviewBy": "2026-08-15T00:30:00Z"
+    "reviewedAt": "2026-09-19T23:00:00Z",
+    "reviewBy": "2026-10-19T23:00:00Z"
   },
   {
     "id": "PULSE-CLAIM-004",
@@ -38,9 +38,9 @@
     "category": "access",
     "statement": "Pulse does not publish a reusable demo account; evaluation access is invitation-only.",
     "status": "verified",
-    "evidence": "The noindex preview notice contains no credentials, registration link, purchase link, or public preview-request contact.",
+    "evidence": "The noindex preview notice contains no credentials or purchase offer. Hosted registration now fails closed for credentials and new Google accounts; verified existing Google accounts retain access.",
     "owner": "Cameron Low",
-    "reviewedAt": "2026-07-15T00:30:00Z",
-    "reviewBy": "2026-08-15T00:30:00Z"
+    "reviewedAt": "2026-09-19T23:00:00Z",
+    "reviewBy": "2026-10-19T23:00:00Z"
   }
 ]

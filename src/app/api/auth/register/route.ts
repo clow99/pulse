@@ -2,8 +2,12 @@ import { NextResponse } from 'next/server';
 import { hash } from 'bcryptjs';
 import { prisma } from '@/lib/prisma';
 import { registerRequestSchema } from '@/lib/validation';
+import { publicRegistrationEnabled } from '@/lib/registration';
 
 export async function POST(request: Request) {
+  if (!publicRegistrationEnabled()) {
+    return NextResponse.json({ error: 'Public registration is closed. Existing invited accounts can sign in.' }, { status: 403 });
+  }
   try {
     const body = await request.json();
     const parsed = registerRequestSchema.safeParse(body);

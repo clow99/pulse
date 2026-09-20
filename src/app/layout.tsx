@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import Script from 'next/script';
+import Link from 'next/link';
 import '@velocityuikit/velocityui/dist/style.css';
 import './globals.css';
 
@@ -54,7 +54,14 @@ export default function RootLayout({
     <html lang="en" className="vui-theme-midnight">
       <body>
         {children}
-        <Script src="/self-analytics.js" strategy="afterInteractive" />
+        <footer className="pulse-policy-footer" aria-label="Website information">
+          <span>Pulse · Cameron Low</span>
+          <nav aria-label="Policies">
+            <Link href="/privacy">Privacy</Link>
+            <Link href="/terms">Terms</Link>
+            <Link href="/accessibility">Accessibility</Link>
+          </nav>
+        </footer>
       </body>
     </html>
   );

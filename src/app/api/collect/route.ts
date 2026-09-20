@@ -6,6 +6,7 @@ import { parseUserAgent } from '@/lib/ua-parser';
 import { deriveCountry, deriveLanguage } from '@/lib/geo';
 import { domainMatches, getWebVitalRating, parseRevenueProperties } from '@/lib/tracking';
 import { checkRateLimit } from '@/lib/rate-limit';
+import { cleanAnalyticsReferrer } from '@/lib/analytics-privacy';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -92,7 +93,7 @@ export async function POST(request: Request) {
           visitId: visitId || null,
           hostname,
           pathname,
-          referrer: referrer || '',
+          referrer: cleanAnalyticsReferrer(referrer),
           utmSource: utm_source || '',
           utmMedium: utm_medium || '',
           utmCampaign: utm_campaign || '',
@@ -118,7 +119,7 @@ export async function POST(request: Request) {
         properties: properties || {},
         hostname,
         pathname,
-        referrer: referrer || '',
+        referrer: cleanAnalyticsReferrer(referrer),
         utmSource: utm_source || '',
         utmMedium: utm_medium || '',
         utmCampaign: utm_campaign || '',

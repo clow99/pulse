@@ -47,3 +47,6 @@ postgres-data/
 
 # local browser verification artifacts
 .playwright-cli/
+
+/test-results/
+/playwright-report/

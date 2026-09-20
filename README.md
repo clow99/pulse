@@ -320,3 +320,12 @@ pulse/
 ## License
 
 This project is private. See the repository for license details.
+
+
+## Public-site review (19 September 2026)
+
+Cameron Low personally operates the hosted preview. Its public registration is closed by default, including new Google sign-ins; existing verified Google accounts retain access. An independent installation can explicitly set `PULSE_ALLOW_PUBLIC_REGISTRATION=true` after configuring its own operator notices and access policy. This setting is server-side and must not be enabled on the hosted preview without a separate availability decision.
+
+The optional website self-analytics script is now a no-op even if its old site-token setting remains. This does not change the separate `/t.js` tracker used by participating sites. New analytics referrers discard query strings, fragments and credentials; existing historical records are not rewritten by this release. No schema migration is introduced.
+
+Public notices: `/privacy`, `/terms`, `/accessibility`. The contact alias `hello@cameronlow.com` passed an independent delivery test (CL-0919-01, 19 September 2026; Cameron confirmed inbox receipt). It is for support and rights requests; no public preview-request CTA or availability expansion is introduced.

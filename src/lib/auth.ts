@@ -3,6 +3,7 @@ import Credentials from 'next-auth/providers/credentials';
 import Google from 'next-auth/providers/google';
 import { compare } from 'bcryptjs';
 import { prisma } from './prisma';
+import { mayCreateGoogleAccount } from './registration';
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   trustHost: true,
@@ -60,6 +61,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         let dbUser = await prisma.user.findUnique({
           where: { email: user.email },
         });
+
+        if (!mayCreateGoogleAccount(Boolean(dbUser), (profile as { email_verified?: boolean })?.email_verified === true)) {
+          return false;
+        }
 
         if (!dbUser) {
           dbUser = await prisma.user.create({

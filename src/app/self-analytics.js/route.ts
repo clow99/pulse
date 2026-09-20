@@ -4,9 +4,8 @@ export const runtime = 'nodejs';
 const endpoint = '/api/collect';
 
 export function GET() {
-  const token = process.env.PULSE_SELF_ANALYTICS_SITE_TOKEN?.trim();
-
-  return new Response(token ? buildSelfAnalyticsScript(token) : NOOP_SCRIPT, {
+  // Retain the URL for cached pages without continuing optional site tracking.
+  return new Response(NOOP_SCRIPT, {
     headers: {
       'Cache-Control': 'no-store',
       'Content-Type': 'application/javascript; charset=utf-8',

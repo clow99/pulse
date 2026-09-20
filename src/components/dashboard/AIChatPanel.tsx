@@ -374,6 +374,7 @@ export function AIChatPanel({ siteId }: AIChatPanelProps) {
                 </div>
 
                 {/* Input */}
+                <p className="pulse-auth-notice" style={{ padding: '0 1rem' }}>Sending shares this conversation and the site’s recent summary metrics, top pages, referrers and event summaries with the configured AI provider. Check with your operator before sharing confidential data. <a href="/privacy">Privacy details</a>.</p>
                 <form className="pulse-chat-input-area" onSubmit={handleSubmit}>
                   <textarea
                     ref={inputRef}

@@ -145,9 +145,9 @@ export default function LoginPage() {
         </Card.Body>
         <Card.Footer>
           <p style={{ fontSize: '0.875rem', color: 'var(--pulse-text-secondary)' }}>
-            Don&apos;t have an account?{' '}
+            Need access information?{' '}
             <Link href="/register" style={{ color: 'var(--pulse-accent)', fontWeight: 500 }}>
-              Sign up
+              Private preview
             </Link>
           </p>
         </Card.Footer>
