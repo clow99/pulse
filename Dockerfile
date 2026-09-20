@@ -22,9 +22,10 @@ ARG OCI_CREATED="unknown"
 LABEL org.opencontainers.image.source=$OCI_SOURCE \
       org.opencontainers.image.revision=$OCI_REVISION \
       org.opencontainers.image.created=$OCI_CREATED
-RUN npm install --global --no-audit --no-fund prisma@6.19.2
+# Reuse the audited, locked CLI and patched transitive dependencies from the build.
+COPY --from=builder /app/node_modules ./node_modules
 COPY prisma ./prisma
-CMD ["prisma", "migrate", "deploy"]
+CMD ["./node_modules/.bin/prisma", "migrate", "deploy"]
 
 # Stage 2: Production
 FROM node:24.18.1-alpine
