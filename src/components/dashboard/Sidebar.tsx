@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import Image from 'next/image';
+import { PulseLogo } from '@/components/brand/PulseLogo';
 import Link from 'next/link';
 import { usePathname, useSearchParams, useRouter } from 'next/navigation';
 import { signOut } from 'next-auth/react';
@@ -132,8 +132,8 @@ export function Sidebar({ orgName, sites }: SidebarProps) {
         >
           <DashboardIcon name="menu" />
         </button>
-        <span>
-          Pulse{' '}
+        <span className="pulse-mobile-brand">
+          <PulseLogo width={78} decorative />
           <span className="pulse-muted">
             /{' '}
             {sections
@@ -160,13 +160,7 @@ export function Sidebar({ orgName, sites }: SidebarProps) {
             aria-label="Pulse overview"
             onClick={() => setOpen(false)}
           >
-            <Image
-              src="/logo.png"
-              alt="Pulse"
-              width={113}
-              height={44}
-              priority
-            />
+            <PulseLogo width={116} priority />
           </Link>
           <button
             className="pulse-icon-button pulse-sidebar-close"

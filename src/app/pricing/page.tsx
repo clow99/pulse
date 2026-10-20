@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import Image from 'next/image';
+import { PulseLogo } from '@/components/brand/PulseLogo';
 import Link from 'next/link';
 import styles from './pricing.module.css';
 
@@ -60,7 +60,7 @@ export default function PricingPage() {
       <header className={styles.header}>
         <nav className={styles.nav} aria-label="Primary navigation">
           <Link className={styles.brand} href="/" aria-label="Pulse home">
-            <Image src="/logo.png" alt="Pulse" width={144} height={56} priority />
+            <PulseLogo width={132} priority />
           </Link>
           <div className={styles.navLinks}>
             <Link href="/demo">Private preview</Link>

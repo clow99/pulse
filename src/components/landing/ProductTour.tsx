@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { DEMO_SNAPSHOT, DEMO_VIEWS, type DemoView } from '@/lib/demo-data';
 import { DashboardIcon } from '@/components/dashboard/DashboardIcon';
 import styles from './landing.module.css';
+import { PulseLogo } from '@/components/brand/PulseLogo';
 
 const views = {
   overview: {
@@ -110,7 +111,7 @@ export function ProductTour() {
         <div className={styles.previewApp}>
           <div className={styles.previewSidebar} aria-hidden="true">
             <div className={styles.previewBrand}>
-              Pulse<span>.</span>
+              <PulseLogo width={88} decorative />
             </div>
             <div className={styles.previewSite}>
               <strong>Demo Site</strong>

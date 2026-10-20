@@ -5,6 +5,7 @@ import { ProductTour } from '@/components/landing/ProductTour';
 import { AgentExample } from '@/components/landing/AgentExample';
 import { DashboardIcon } from '@/components/dashboard/DashboardIcon';
 import styles from '@/components/landing/landing.module.css';
+import { PulseLogo } from '@/components/brand/PulseLogo';
 
 export const metadata: Metadata = {
   title: 'Pulse — Know your traffic. See the whole picture.',
@@ -418,7 +419,8 @@ export default function LandingPage() {
       <footer id="landing-footer" className={styles.footer}>
         <div className={styles.footerTop}>
           <Link href="/" className={styles.footerBrand}>
-            Pulse<span>Web analytics with perspective.</span>
+            <PulseLogo width={116} />
+            <span>Web analytics with perspective.</span>
           </Link>
           <nav aria-label="Footer navigation">
             <a href="#product">Product</a>

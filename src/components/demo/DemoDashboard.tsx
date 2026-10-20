@@ -1,5 +1,5 @@
-import Image from 'next/image';
 import Link from 'next/link';
+import { PulseLogo } from '@/components/brand/PulseLogo';
 import { AreaChart } from '@/components/dashboard/AreaChart';
 import { StatsCards } from '@/components/dashboard/StatsCards';
 import { UptimeResponseChart } from '@/components/dashboard/UptimeResponseChart';
@@ -37,14 +37,7 @@ export function DemoDashboard({ activeView }: DemoDashboardProps) {
 
       <header className={styles.topbar}>
         <Link className={styles.brand} href="/" aria-label="Pulse home">
-          <Image
-            className={styles.logo}
-            src="/logo.png"
-            alt="Pulse"
-            width={108}
-            height={42}
-            priority
-          />
+          <PulseLogo className={styles.logo} width={108} priority />
         </Link>
         <div className={styles.topbarActions}>
           <span className={styles.readOnlyBadge}>

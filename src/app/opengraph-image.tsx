@@ -21,7 +21,7 @@ async function readPublicImage(
   try {
     const bytes = await readFile(join(process.cwd(), 'public', path));
     const png = await sharp(bytes)
-      .resize(width, height, { fit, position: 'centre' })
+      .resize(width, height, { fit, position: 'centre', background: { r: 0, g: 0, b: 0, alpha: 0 } })
       .png({ compressionLevel: 9 })
       .toBuffer();
     return `data:image/png;base64,${png.toString('base64')}`;
@@ -34,7 +34,7 @@ export default async function OpenGraphImage() {
   const [heroBackground, overviewScreenshot, logo] = await Promise.all([
     readPublicImage('landing/hero-telemetry-desktop.webp', 1200, 630),
     readPublicImage('landing/pulse-overview.webp', 720, 448),
-    readPublicImage('logo.png', 154, 60, 'contain'),
+    readPublicImage('logo.svg', 154, 49, 'contain'),
   ]);
 
   return new ImageResponse(
@@ -46,8 +46,8 @@ export default async function OpenGraphImage() {
           width: '100%',
           height: '100%',
           overflow: 'hidden',
-          background: '#071014',
-          color: '#f3f8fa',
+          background: '#0b1017',
+          color: '#edf3fc',
           fontFamily: 'Arial, sans-serif',
         }}
       >
@@ -73,7 +73,7 @@ export default async function OpenGraphImage() {
             inset: 0,
             display: 'flex',
             background:
-              'linear-gradient(90deg, rgba(7,16,20,0.98) 0%, rgba(7,16,20,0.9) 46%, rgba(7,16,20,0.44) 100%)',
+              'linear-gradient(90deg, rgba(11,16,23,0.98) 0%, rgba(11,16,23,0.9) 46%, rgba(11,16,23,0.44) 100%)',
           }}
         />
 
@@ -100,11 +100,11 @@ export default async function OpenGraphImage() {
                 alt="Pulse"
                 src={logo}
                 width={154}
-                height={60}
+                height={49}
                 style={{ objectFit: 'contain' }}
               />
             ) : (
-              <div style={{ display: 'flex', color: '#f3f8fa', fontSize: '30px', fontWeight: 700 }}>
+              <div style={{ display: 'flex', color: '#edf3fc', fontSize: '30px', fontWeight: 700 }}>
                 Pulse
               </div>
             )}
@@ -112,7 +112,7 @@ export default async function OpenGraphImage() {
               style={{
                 display: 'flex',
                 marginTop: '48px',
-                color: '#77e5ef',
+                color: '#79c8f5',
                 fontSize: '15px',
                 fontWeight: 700,
                 letterSpacing: '3px',
@@ -145,10 +145,10 @@ export default async function OpenGraphImage() {
                   key={label}
                   style={{
                     display: 'flex',
-                    border: '1px solid rgba(110,231,242,0.3)',
+                    border: '1px solid rgba(121,200,245,0.3)',
                     borderRadius: '999px',
-                    background: 'rgba(10,35,41,0.78)',
-                    color: '#b9ebef',
+                    background: 'rgba(21,34,50,0.78)',
+                    color: '#b6e3ff',
                     padding: '8px 13px',
                     fontSize: '13px',
                     fontWeight: 700,
@@ -169,9 +169,9 @@ export default async function OpenGraphImage() {
               width: '720px',
               height: '448px',
               overflow: 'hidden',
-              border: '1px solid rgba(133,212,226,0.35)',
+              border: '1px solid rgba(121,200,245,0.35)',
               borderRadius: '22px',
-              background: '#09161b',
+              background: '#111b28',
               boxShadow: '0 30px 90px rgba(0,0,0,0.5)',
             }}
           >
@@ -196,7 +196,7 @@ export default async function OpenGraphImage() {
                   height: '100%',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  color: '#6e8990',
+                  color: '#9aaec4',
                   fontSize: '22px',
                 }}
               >

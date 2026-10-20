@@ -1,4 +1,4 @@
-import Image from 'next/image';
+import { PulseLogo } from '@/components/brand/PulseLogo';
 import Link from 'next/link';
 import { MobileMenu } from './MobileMenu';
 import styles from './landing.module.css';
@@ -15,14 +15,7 @@ export function LandingHeader() {
     <header id="landing-site-header" className={styles.siteHeader}>
       <div className={styles.headerInner}>
         <Link href="/" className={styles.logoLink} aria-label="Pulse home">
-          <Image
-            src="/logo.png"
-            alt="Pulse"
-            width={116}
-            height={45}
-            className={styles.logoImage}
-            priority
-          />
+          <PulseLogo width={116} className={styles.logoImage} priority />
         </Link>
 
         <nav className={styles.desktopNav} aria-label="Main navigation">

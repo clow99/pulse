@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { PulseLogo } from '@/components/brand/PulseLogo';
 export default function AuthLayout({
   children,
 }: {
@@ -22,6 +23,9 @@ export default function AuthLayout({
           position: 'relative',
         }}
       >
+        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1.5rem' }}>
+          <Link href="/" aria-label="Pulse home"><PulseLogo width={132} priority /></Link>
+        </div>
         {children}
         <p className="pulse-auth-notice">Account and provider information is used to sign you in. Read the <Link href="/privacy">privacy notice</Link> and <Link href="/terms">terms</Link> before continuing. <Link href="/accessibility">Accessibility help</Link>.</p>
       </div>

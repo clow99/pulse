@@ -2862,6 +2862,7 @@ a {
 .pulse-action-button.primary { color: #07151f; background: #70c7f5; border-color: #70c7f5; }
 .pulse-icon-button { width: 38px; padding: 8px; }
 .pulse-muted { color: var(--pulse-text-secondary); }
+.pulse-mobile-brand { display: inline-flex; align-items: center; gap: 10px; }
 .pulse-date-picker { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
 .pulse-range-presets { display: flex; flex-wrap: wrap; background: #101720; border: 1px solid #2d3948; border-radius: 7px; padding: 3px; gap: 3px; width: fit-content; }
 .pulse-range-presets button { border: 1px solid transparent; border-radius: 4px; padding: 7px 12px; background: transparent; color: #a3b0c1; font-size: 12px; cursor: pointer; min-height: 32px; }

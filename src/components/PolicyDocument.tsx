@@ -1,10 +1,11 @@
 import Link from 'next/link';
 import type { ReactNode } from 'react';
+import { PulseLogo } from '@/components/brand/PulseLogo';
 
 export function PolicyDocument({ title, children }: { title: string; children: ReactNode }) {
   return <>
     <a href="#policy-content" className="pulse-policy-skip">Skip to document</a>
-    <header className="pulse-policy-header"><Link href="/" aria-label="Pulse home">Pulse</Link><span>Website information</span></header>
+    <header className="pulse-policy-header"><Link href="/" aria-label="Pulse home"><PulseLogo width={116} /></Link><span>Website information</span></header>
     <main id="policy-content" tabIndex={-1} className="pulse-policy-document">
       <h1>{title}</h1><p className="pulse-policy-date">Effective 19 September 2026</p>
       {children}
