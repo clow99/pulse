@@ -4,9 +4,10 @@ import { useEffect, useState, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Title, Input, Button } from '@velocityuikit/velocityui';
 import { PageTransition } from '@/components/motion';
+import { useReportDateRange } from '@/components/dashboard/useReportDateRange';
 import { DateRangePicker } from '@/components/dashboard/DateRangePicker';
 import { ReportTable } from '@/components/dashboard/ReportTable';
-import { subDays, startOfDay, endOfDay, parseISO, format } from 'date-fns';
+import { startOfDay, endOfDay, parseISO } from 'date-fns';
 
 interface PagesRow {
   pathname: string;
@@ -25,12 +26,7 @@ export default function PagesPage() {
   const searchParams = useSearchParams();
   const siteId = searchParams.get('siteId') || '';
 
-  const [from, setFrom] = useState(() =>
-    format(startOfDay(subDays(new Date(), 30)), 'yyyy-MM-dd')
-  );
-  const [to, setTo] = useState(() =>
-    format(endOfDay(new Date()), 'yyyy-MM-dd')
-  );
+  const { from, to, setRange } = useReportDateRange();
   const [searchInput, setSearchInput] = useState('');
   const [appliedSearch, setAppliedSearch] = useState('');
   const [page, setPage] = useState(1);
@@ -70,8 +66,7 @@ export default function PagesPage() {
   }, [fetchData]);
 
   const handleDateChange = (newFrom: string, newTo: string) => {
-    setFrom(newFrom);
-    setTo(newTo);
+    setRange(newFrom, newTo);
     setPage(1);
   };
 

@@ -3,8 +3,9 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Button, Card, Input, Title, Badge } from '@velocityuikit/velocityui';
-import { subDays, startOfDay, endOfDay, format, parseISO } from 'date-fns';
+import { startOfDay, endOfDay, parseISO } from 'date-fns';
 import { PageTransition } from '@/components/motion';
+import { useReportDateRange } from '@/components/dashboard/useReportDateRange';
 import { DateRangePicker } from '@/components/dashboard/DateRangePicker';
 
 interface Goal {
@@ -40,8 +41,7 @@ interface GoalRecipe {
 
 export default function FunnelsPage() {
   const siteId = useSearchParams().get('siteId') || '';
-  const [from, setFrom] = useState(() => format(startOfDay(subDays(new Date(), 30)), 'yyyy-MM-dd'));
-  const [to, setTo] = useState(() => format(endOfDay(new Date()), 'yyyy-MM-dd'));
+  const { from, to, setRange } = useReportDateRange();
   const [goals, setGoals] = useState<Goal[]>([]);
   const [goalReports, setGoalReports] = useState<GoalReport[]>([]);
   const [funnelReports, setFunnelReports] = useState<FunnelReport[]>([]);
@@ -141,7 +141,7 @@ export default function FunnelsPage() {
       <div className="pulse-page">
         <div className="pulse-page-header">
           <Title level="h1" size="lg">Funnels</Title>
-          <DateRangePicker from={from} to={to} onChange={(nextFrom, nextTo) => { setFrom(nextFrom); setTo(nextTo); }} />
+          <DateRangePicker from={from} to={to} onChange={(nextFrom, nextTo) => { setRange(nextFrom, nextTo); }} />
         </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 320px), 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>

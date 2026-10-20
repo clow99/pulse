@@ -1,83 +1,126 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { LandingHeader } from '@/components/landing/LandingHeader';
-import { ProductScreenshot } from '@/components/landing/ProductScreenshot';
+import { ProductTour } from '@/components/landing/ProductTour';
+import { AgentExample } from '@/components/landing/AgentExample';
+import { DashboardIcon } from '@/components/dashboard/DashboardIcon';
 import styles from '@/components/landing/landing.module.css';
 
 export const metadata: Metadata = {
-  alternates: {
-    canonical: '/',
-  },
+  title: 'Pulse — Know your traffic. See the whole picture.',
+  description:
+    'Privacy-first web analytics, uptime monitoring, and AI-source attribution. Explore Pulse and its private-preview availability.',
+  alternates: { canonical: '/' },
   openGraph: {
     type: 'website',
     url: '/',
     siteName: 'Pulse',
-    title: 'Pulse — Analytics, uptime, and AI signals',
+    title: 'Pulse — Know your traffic. See the whole picture.',
     description:
-      'Understand acquisition, reliability, and agent-ready reports from one privacy-first signal stack.',
+      'Analytics, reliability, and scoped agent reports in one focused workspace.',
     images: [
       {
         url: '/opengraph-image',
         width: 1200,
         height: 630,
-        alt: 'Pulse analytics overview on a dark telemetry background',
+        alt: 'Pulse privacy-first analytics dashboard',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Pulse — Analytics, uptime, and AI signals',
-    description:
-      'Understand acquisition, reliability, and agent-ready reports from one privacy-first signal stack.',
+    title: 'Pulse — Know your traffic. See the whole picture.',
+    description: 'Privacy-first analytics, uptime, and AI-source attribution.',
     images: ['/opengraph-image'],
   },
 };
 
-const proofPoints = [
+const features = [
   {
-    index: '01',
-    title: 'Cookie-free by default',
-    description: 'Useful first-party analytics without placing tracking cookies on visitors.',
+    icon: 'acquisition',
+    number: '01',
+    title: 'Understand the journey.',
+    description:
+      'Follow visitors from their first referral to the pages, events, and goals that matter.',
+    details: [
+      'Referrers, campaigns, and AI sources',
+      'Custom events, goals, and funnels',
+      'Revenue attribution by channel',
+    ],
   },
   {
-    index: '02',
-    title: 'Docker + PostgreSQL',
-    description: 'A familiar deployment model built around infrastructure your team can inspect.',
+    icon: 'uptime',
+    number: '02',
+    title: 'Keep an eye on the experience.',
+    description:
+      'Bring availability and performance into the same workspace as your audience.',
+    details: [
+      'Uptime and response-time history',
+      'Incidents and notification channels',
+      'Optional Core Web Vitals collection',
+    ],
   },
   {
-    index: '03',
-    title: 'One operational view',
-    description: 'Analytics, acquisition, uptime, and scoped agent reports in one focused product.',
+    icon: 'insights',
+    number: '03',
+    title: 'Put your reports to work.',
+    description:
+      'Share the right context with your team, your tools, and the agents you choose.',
+    details: [
+      'CSV and JSON report exports',
+      'Read-only, shareable reports',
+      'Scoped REST and MCP access',
+    ],
   },
 ];
 
-const acquisitionDetails = [
-  'Referrers and campaign sources in one report',
-  'AI-assistant traffic alongside traditional source groups',
-  'Conversion and attributed-revenue context for each channel',
+const questions = [
+  {
+    question: 'Can I use Pulse today?',
+    answer: (
+      <>
+        Pulse is currently in private preview. Evaluation access is
+        invitation-only, with no public signup or checkout.{' '}
+        <Link href="/demo">Read the access details</Link>, or{' '}
+        <Link href="/login">sign in</Link> if you already have an account.
+      </>
+    ),
+  },
+  {
+    question: 'Does Pulse use tracking cookies?',
+    answer: (
+      <>
+        The first-party tracker does not set visitor cookies by default and
+        respects Do Not Track. It uses a temporary visit identifier in session
+        storage to connect pageviews within a visit. Dashboard authentication is
+        separate from visitor tracking.
+      </>
+    ),
+  },
+  {
+    question: 'Can I host Pulse on my own infrastructure?',
+    answer: (
+      <>
+        A self-managed release is being prepared around Docker and PostgreSQL.
+        You operate the database, backups, reverse proxy, and scheduler. The
+        release is coming soon;{' '}
+        <Link href="/self-host">review the expected setup</Link> before planning
+        an installation.
+      </>
+    ),
+  },
+  {
+    question: 'What can an external AI agent access?',
+    answer: (
+      <>
+        Agents use revocable tokens with explicit report scopes and can be
+        limited to a single site. REST and MCP report access does not give an
+        agent direct database access. Supported report requests are recorded in
+        the agent audit log.
+      </>
+    ),
+  },
 ];
-
-const uptimeDetails = [
-  'Current availability and uptime history at a glance',
-  'Response-time history beside analytics and Web Vitals',
-  'Incidents, alert channels, and public status surfaces',
-];
-
-function CheckIcon() {
-  return (
-    <svg viewBox="0 0 20 20" aria-hidden="true">
-      <path d="m4.5 10.2 3.3 3.3 7.7-7.7" />
-    </svg>
-  );
-}
-
-function ArrowIcon() {
-  return (
-    <svg viewBox="0 0 20 20" aria-hidden="true">
-      <path d="M4 10h11M11 6l4 4-4 4" />
-    </svg>
-  );
-}
 
 export default function LandingPage() {
   return (
@@ -86,307 +129,311 @@ export default function LandingPage() {
         Skip to main content
       </a>
       <LandingHeader />
-
       <main id="main-content" tabIndex={-1}>
         <section className={styles.hero} aria-labelledby="hero-title">
-          <div className={styles.heroInner}>
-            <div className={styles.heroCopy}>
-              <p className={styles.eyebrow}>
-                <span aria-hidden="true">Pulse / 01</span>
-                Private product telemetry
-              </p>
-              <h1 id="hero-title" className={styles.heroTitle}>
-                Analytics, uptime, and AI signals—on infrastructure you control.
-              </h1>
-              <p className={styles.heroDescription}>
-                See how people discover, use, and experience your product without
-                sending the story of your business to another analytics black box.
-              </p>
-              <div className={styles.heroActions}>
-                <Link href="/self-host" className={styles.primaryButton}>
-                  Explore self-hosting
-                  <ArrowIcon />
-                </Link>
-                <Link href="/demo" className={styles.secondaryButton}>
-                  Review private preview
-                </Link>
-              </div>
-              <div className={styles.heroFootnote}>
-                <span className={styles.liveMark} aria-hidden="true" />
-                Preview notice only. No public account or production connection is offered.
-              </div>
+          <div className={styles.heroGlow} aria-hidden="true" />
+          <div className={styles.heroCopy}>
+            <p className={styles.heroBadge}>
+              <span />
+              Privacy-first web analytics
+              <span className={styles.badgeDivider}>/</span>Private preview
+            </p>
+            <h1 id="hero-title">
+              Know your traffic.
+              <br />
+              <span>See the whole picture.</span>
+            </h1>
+            <p className={styles.heroDescription}>
+              Understand who finds you, what they do, and how your site
+              performs. Analytics, uptime, and AI-source attribution in one
+              focused workspace.
+            </p>
+            <div className={styles.heroActions}>
+              <a href="#product" className={styles.primaryButton}>
+                Explore the product
+                <DashboardIcon name="arrow" />
+              </a>
+              <Link href="/demo" className={styles.secondaryButton}>
+                Private-preview details
+              </Link>
             </div>
-
-            <div className={styles.heroVisual}>
-              <ProductScreenshot
-                src="/landing/pulse-overview.webp"
-                alt="Pulse Demo Site overview showing visitors, pageviews, tracked events, bounce rate, traffic trends, and an AI referral insight."
-                view="Overview"
-                variant="hero"
-                priority
-              />
-              <div className={styles.heroAnnotation} aria-hidden="true">
-                <span>Product signal</span>
-                <i />
-                <strong>Live + private</strong>
-              </div>
-            </div>
+            <p className={styles.heroNote}>
+              Cookie-free tracking. Your infrastructure. A clearer view.
+            </p>
           </div>
-          <div className={styles.heroIndex} aria-hidden="true">
-            <span>WEB ANALYTICS</span>
-            <span>RELIABILITY</span>
-            <span>AGENT REPORTS</span>
+          <div id="product" className={styles.tourAnchor}>
+            <ProductTour />
           </div>
         </section>
 
-        <section className={styles.proofSection} aria-label="Pulse foundations">
-          <div className={styles.proofGrid}>
-            {proofPoints.map((point) => (
-              <article key={point.index} className={styles.proofItem}>
-                <span className={styles.proofIndex}>{point.index}</span>
-                <div>
-                  <h2>{point.title}</h2>
-                  <p>{point.description}</p>
+        <section
+          className={styles.foundationStrip}
+          aria-label="Pulse foundations"
+        >
+          <span>
+            <DashboardIcon name="overview" />
+            Cookie-free by default
+          </span>
+          <span>
+            <DashboardIcon name="settings" />
+            Built for your infrastructure
+          </span>
+          <span>
+            <DashboardIcon name="events" />
+            Analytics + reliability
+          </span>
+          <span>
+            <DashboardIcon name="insights" />
+            Ready for your agents
+          </span>
+        </section>
+
+        <section
+          className={styles.featuresSection}
+          aria-labelledby="features-title"
+        >
+          <div className={styles.sectionHeading}>
+            <p className={styles.eyebrow}>
+              Less switching. More understanding.
+            </p>
+            <h2 id="features-title">
+              From the first visit
+              <br />
+              to the next decision.
+            </h2>
+            <p>
+              Bring the reports you check every day into one place, with the
+              context to connect them.
+            </p>
+          </div>
+          <div className={styles.featureGrid}>
+            {features.map((feature) => (
+              <article key={feature.number} className={styles.feature}>
+                <div className={styles.featureTop}>
+                  <span className={styles.featureIcon}>
+                    <DashboardIcon name={feature.icon} width={23} height={23} />
+                  </span>
+                  <span>{feature.number}</span>
                 </div>
+                <h3>{feature.title}</h3>
+                <p>{feature.description}</p>
+                <ul>
+                  {feature.details.map((detail) => (
+                    <li key={detail}>
+                      <span aria-hidden="true">✓</span>
+                      {detail}
+                    </li>
+                  ))}
+                </ul>
               </article>
             ))}
           </div>
         </section>
 
-        <section id="product" className={styles.productSection} aria-labelledby="product-title">
-          <div className={styles.sectionIntro}>
-            <p className={styles.eyebrow}>
-              <span aria-hidden="true">Pulse / 02</span>
-              The operating picture
-            </p>
-            <h2 id="product-title">Follow the signal from discovery to reliability.</h2>
+        <section
+          id="privacy"
+          className={styles.privacySection}
+          aria-labelledby="privacy-title"
+        >
+          <div className={styles.privacyIntro}>
+            <p className={styles.eyebrow}>Privacy is part of the foundation</p>
+            <h2 id="privacy-title">
+              Your analytics.
+              <br />
+              <span>Your ground rules.</span>
+            </h2>
             <p>
-              Pulse connects the reports product teams check every day, so a spike in
-              traffic, a change in acquisition, and a slow endpoint are part of the
-              same investigation.
+              Useful product data should come with clear boundaries. Pulse keeps
+              collection deliberate and access under your control.
+            </p>
+            <Link href="/self-host" className={styles.textLink}>
+              Explore the self-managed approach
+              <DashboardIcon name="arrow" />
+            </Link>
+          </div>
+          <div className={styles.privacyPrinciples}>
+            <article>
+              <span>01</span>
+              <div>
+                <h3>No visitor tracking cookies by default.</h3>
+                <p>
+                  The first-party tracker uses a temporary visit identifier in
+                  session storage, rather than setting visitor cookies.
+                </p>
+              </div>
+            </article>
+            <article>
+              <span>02</span>
+              <div>
+                <h3>Respect a visitor’s choice.</h3>
+                <p>
+                  The tracker respects Do Not Track. Core Web Vitals collection
+                  is optional.
+                </p>
+              </div>
+            </article>
+            <article>
+              <span>03</span>
+              <div>
+                <h3>Control where your data lives.</h3>
+                <p>
+                  The self-managed architecture uses your PostgreSQL database
+                  and infrastructure. The public release is coming soon.
+                </p>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <section
+          id="agents"
+          className={styles.agentSection}
+          aria-labelledby="agents-title"
+        >
+          <div className={styles.agentCopy}>
+            <p className={styles.eyebrow}>
+              A better starting point for your agents
+            </p>
+            <h2 id="agents-title">
+              Give them context.
+              <br />
+              <span>Keep control.</span>
+            </h2>
+            <p>
+              Let your agent work with analytics and uptime reports through REST
+              or MCP. Choose the site, grant the report scopes it needs, and
+              revoke access when you’re done.
+            </p>
+            <div className={styles.agentTags}>
+              <span>Site-scoped tokens</span>
+              <span>Read-only reports</span>
+              <span>Audited requests</span>
+            </div>
+            <a className={styles.textLink} href="#questions">
+              How agent access works
+              <DashboardIcon name="arrow" />
+            </a>
+          </div>
+          <AgentExample />
+        </section>
+
+        <section
+          id="self-hosting"
+          className={styles.accessSection}
+          aria-labelledby="access-title"
+        >
+          <div className={styles.sectionHeading}>
+            <p className={styles.eyebrow}>Where Pulse is today</p>
+            <h2 id="access-title">
+              A focused product.
+              <br />A considered rollout.
+            </h2>
+            <p>
+              Pulse is in private preview. Here’s what that means for access and
+              self-hosting.
             </p>
           </div>
-
-          <article className={styles.productStory}>
-            <div className={styles.storyVisual}>
-              <ProductScreenshot
-                src="/landing/pulse-acquisition.webp"
-                alt="Pulse Demo Site acquisition report showing source groups, AI-assistant traffic, conversions, revenue, and top referrers."
-                view="Acquisition"
-              />
-            </div>
-            <div className={styles.storyCopy}>
-              <span className={styles.storyNumber}>01 / ACQUISITION</span>
-              <h3>Know which routes bring people who actually engage.</h3>
+          <div className={styles.accessGrid}>
+            <article className={styles.accessCard}>
+              <span className={styles.accessLabel}>
+                <i />
+                Invitation-only
+              </span>
+              <h3>Private preview</h3>
               <p>
-                Move past a list of pageviews. Read source quality across referrers,
-                campaign traffic, AI assistants, conversions, and attributed revenue.
+                Evaluation access is coordinated privately with invited
+                participants. Public signup, fixed-price plans, and checkout are
+                not available.
               </p>
-              <ul className={styles.detailList}>
-                {acquisitionDetails.map((detail) => (
-                  <li key={detail}>
-                    <CheckIcon />
-                    <span>{detail}</span>
-                  </li>
-                ))}
-              </ul>
-              <Link href="/demo?view=acquisition" className={styles.textLink}>
-                Review private-preview access
-                <ArrowIcon />
+              <Link href="/demo" className={styles.secondaryButton}>
+                Read access details
+                <DashboardIcon name="arrow" />
               </Link>
-            </div>
-          </article>
-
-          <article className={`${styles.productStory} ${styles.productStoryReversed}`}>
-            <div className={styles.storyVisual}>
-              <ProductScreenshot
-                src="/landing/pulse-uptime.webp"
-                alt="Pulse Demo Site uptime report showing current status, uptime history, and response-time monitoring."
-                view="Uptime"
-              />
-            </div>
-            <div className={styles.storyCopy}>
-              <span className={styles.storyNumber}>02 / RELIABILITY</span>
-              <h3>Put product performance beside product behavior.</h3>
-              <p>
-                See whether a conversion change is a traffic story, a product story,
-                or an availability problem—without jumping between disconnected tools.
-              </p>
-              <ul className={styles.detailList}>
-                {uptimeDetails.map((detail) => (
-                  <li key={detail}>
-                    <CheckIcon />
-                    <span>{detail}</span>
-                  </li>
-                ))}
-              </ul>
-              <Link href="/demo?view=uptime" className={styles.textLink}>
-                Review private-preview access
-                <ArrowIcon />
+              <Link href="/login" className={styles.subtleLink}>
+                Already invited? Sign in ↗
               </Link>
-            </div>
-          </article>
-        </section>
-
-        <section id="agents" className={styles.agentSection} aria-labelledby="agents-title">
-          <div className={styles.agentGrid}>
-            <div className={styles.agentCopy}>
-              <p className={styles.eyebrow}>
-                <span aria-hidden="true">Pulse / 03</span>
-                Scoped agent access
-              </p>
-              <h2 id="agents-title">Give agents the report, not the keys to the building.</h2>
+            </article>
+            <article className={styles.accessCard}>
+              <span className={`${styles.accessLabel} ${styles.comingSoon}`}>
+                Coming soon
+              </span>
+              <h3>Self-managed release</h3>
               <p>
-                Pulse exposes authenticated REST and MCP reporting surfaces. Limit an
-                agent to a site and the exact analytics or uptime scopes it needs, then
-                keep an audit trail of every report request.
+                A deployment model built around Docker, PostgreSQL, and your own
+                domain. Review the expected architecture and operational
+                requirements.
               </p>
-              <dl className={styles.agentFacts}>
-                <div>
-                  <dt>Transport</dt>
-                  <dd>REST + MCP</dd>
-                </div>
-                <div>
-                  <dt>Access</dt>
-                  <dd>Site-scoped</dd>
-                </div>
-                <div>
-                  <dt>Operations</dt>
-                  <dd>Report-only</dd>
-                </div>
-              </dl>
-            </div>
-
-            <div className={styles.codePanel} aria-label="Example scoped Pulse report request">
-              <div className={styles.codePanelHeader}>
-                <span>
-                  <i aria-hidden="true" />
-                  generate-report.ts
-                </span>
-                <span>REST</span>
-              </div>
-              <pre className={styles.codeBlock}>
-                <code>{`const report = await fetch(
-  '/api/agent/reports/generate',
-  {
-    method: 'POST',
-    headers: {
-      Authorization: \`Bearer \${PULSE_AGENT_TOKEN}\`,
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      siteId,
-      reports: [
-        'overview',
-        'acquisition',
-        'uptime_summary'
-      ],
-      from,
-      to
-    })
-  }
-);`}</code>
-              </pre>
-              <div className={styles.scopeBar}>
-                <span>Required scopes</span>
-                <ul aria-label="Required agent scopes">
-                  <li>reports:generate</li>
-                  <li>analytics:read</li>
-                  <li>uptime:read</li>
-                </ul>
-              </div>
-            </div>
+              <Link href="/self-host" className={styles.secondaryButton}>
+                Explore self-hosting
+                <DashboardIcon name="arrow" />
+              </Link>
+              <Link href="/pricing" className={styles.subtleLink}>
+                Review evaluation options ↗
+              </Link>
+            </article>
           </div>
         </section>
 
-        <section id="self-hosting" className={styles.selfHostSection} aria-labelledby="self-host-title">
-          <div className={styles.selfHostGrid}>
-            <div className={styles.selfHostCopy}>
-              <p className={styles.eyebrow}>
-                <span aria-hidden="true">Pulse / 04</span>
-                Deployment preview
-              </p>
-              <span className={styles.comingSoon}>Self-hosting · Coming soon</span>
-              <h2 id="self-host-title">Your data plane. Your operational standards.</h2>
-              <p>
-                The self-hosted release is being prepared around a straightforward
-                Docker and PostgreSQL deployment, with your reverse proxy handling the
-                public edge.
-              </p>
-              <Link href="/self-host" className={styles.primaryButton}>
-                Explore self-hosting
-                <ArrowIcon />
-              </Link>
-            </div>
-            <div className={styles.deploymentPanel}>
-              <div className={styles.deploymentHeader}>
-                <span>Expected stack</span>
-                <span>01—03</span>
-              </div>
-              <ol className={styles.deploymentList}>
-                <li>
-                  <span>01</span>
-                  <div>
-                    <strong>Pulse application</strong>
-                    <p>Containerized web app and reporting surfaces.</p>
-                  </div>
-                  <i aria-hidden="true">APP</i>
-                </li>
-                <li>
-                  <span>02</span>
-                  <div>
-                    <strong>PostgreSQL</strong>
-                    <p>Your analytics and operational data store.</p>
-                  </div>
-                  <i aria-hidden="true">DB</i>
-                </li>
-                <li>
-                  <span>03</span>
-                  <div>
-                    <strong>Reverse proxy + TLS</strong>
-                    <p>Your domain, certificates, and network controls.</p>
-                  </div>
-                  <i aria-hidden="true">EDGE</i>
-                </li>
-              </ol>
-            </div>
+        <section
+          id="questions"
+          className={styles.faqSection}
+          aria-labelledby="faq-title"
+        >
+          <div>
+            <p className={styles.eyebrow}>A few useful answers</p>
+            <h2 id="faq-title">
+              Before you
+              <br />
+              take a closer look.
+            </h2>
+          </div>
+          <div className={styles.faqList}>
+            {questions.map(({ question, answer }) => (
+              <details key={question}>
+                <summary>
+                  {question}
+                  <span aria-hidden="true">+</span>
+                </summary>
+                <div className={styles.faqAnswer}>{answer}</div>
+              </details>
+            ))}
           </div>
         </section>
 
         <section className={styles.closingCta} aria-labelledby="closing-title">
-          <div className={styles.closingContent}>
-            <p className={styles.eyebrow}>The complete signal, without the black box</p>
-            <h2 id="closing-title">See Pulse with a product story already in motion.</h2>
+          <div>
+            <p className={styles.eyebrow}>The signal is all here</p>
+            <h2 id="closing-title">Make room for a clearer view.</h2>
             <p>
-              Review the private-preview status for analytics, acquisition, and uptime.
-              No public signup, credentials, or live customer data.
+              Explore the reports. Understand the approach. See where Pulse
+              fits.
             </p>
-            <div className={styles.closingActions}>
-              <Link href="/demo" className={styles.primaryButton}>
-                Private preview
-                <ArrowIcon />
-              </Link>
-              <Link href="/self-host" className={styles.secondaryButton}>
-                Self-hosting details
-              </Link>
-            </div>
           </div>
+          <a className={styles.primaryButton} href="#product">
+            Take another look
+            <DashboardIcon name="arrow" />
+          </a>
         </section>
       </main>
-
-      <footer className={styles.footer}>
-        <div className={styles.footerInner}>
-          <Link href="/" className={styles.footerBrand} aria-label="Pulse home">
-            Pulse
-            <span>Private product telemetry</span>
+      <footer id="landing-footer" className={styles.footer}>
+        <div className={styles.footerTop}>
+          <Link href="/" className={styles.footerBrand}>
+            Pulse<span>Web analytics with perspective.</span>
           </Link>
           <nav aria-label="Footer navigation">
-            <Link href="/demo">Private preview</Link>
+            <a href="#product">Product</a>
+            <a href="#privacy">Privacy</a>
             <Link href="/self-host">Self-hosting</Link>
-            <Link href="/pricing">Pricing</Link>
+            <Link href="/pricing">Evaluation options</Link>
             <Link href="/login">Sign in</Link>
           </nav>
-          <p>Analytics, uptime, and scoped reports on infrastructure you control.</p>
+        </div>
+        <div className={styles.footerBottom}>
+          <span>Analytics, reliability, and agent reports.</span>
+          <Link href="/demo">
+            <span className={styles.footerDot} />
+            Currently in private preview
+          </Link>
         </div>
       </footer>
     </div>

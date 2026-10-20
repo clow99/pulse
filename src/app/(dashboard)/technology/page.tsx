@@ -5,10 +5,11 @@ import { useSearchParams } from 'next/navigation';
 import { Title, Tabs } from '@velocityuikit/velocityui';
 import { motion } from 'framer-motion';
 import { PageTransition } from '@/components/motion';
+import { useReportDateRange } from '@/components/dashboard/useReportDateRange';
 import { DateRangePicker } from '@/components/dashboard/DateRangePicker';
 import { BarChart } from '@/components/dashboard/BarChart';
 import { ReportTable } from '@/components/dashboard/ReportTable';
-import { subDays, startOfDay, endOfDay, parseISO, format } from 'date-fns';
+import { startOfDay, endOfDay, parseISO } from 'date-fns';
 
 interface TechnologyItem {
   browser?: string;
@@ -59,12 +60,7 @@ export default function TechnologyPage() {
   const searchParams = useSearchParams();
   const siteId = searchParams.get('siteId') || '';
 
-  const [from, setFrom] = useState(() =>
-    format(startOfDay(subDays(new Date(), 30)), 'yyyy-MM-dd')
-  );
-  const [to, setTo] = useState(() =>
-    format(endOfDay(new Date()), 'yyyy-MM-dd')
-  );
+  const { from, to, setRange } = useReportDateRange();
   const [activeTab, setActiveTab] = useState('browsers');
   const [data, setData] = useState<TechnologyData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -93,8 +89,7 @@ export default function TechnologyPage() {
   }, [fetchData]);
 
   const handleDateChange = (newFrom: string, newTo: string) => {
-    setFrom(newFrom);
-    setTo(newTo);
+    setRange(newFrom, newTo);
   };
 
   const tabItems = TECHNOLOGY_TABS.map((tab) => {

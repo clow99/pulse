@@ -3,8 +3,9 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Card, Title } from '@velocityuikit/velocityui';
-import { subDays, startOfDay, endOfDay, format, parseISO } from 'date-fns';
+import { startOfDay, endOfDay, parseISO } from 'date-fns';
 import { PageTransition } from '@/components/motion';
+import { useReportDateRange } from '@/components/dashboard/useReportDateRange';
 import { DateRangePicker } from '@/components/dashboard/DateRangePicker';
 import { ReportTable } from '@/components/dashboard/ReportTable';
 
@@ -36,8 +37,7 @@ const breakdownLabels: Record<string, string> = {
 
 export default function RevenuePage() {
   const siteId = useSearchParams().get('siteId') || '';
-  const [from, setFrom] = useState(() => format(startOfDay(subDays(new Date(), 30)), 'yyyy-MM-dd'));
-  const [to, setTo] = useState(() => format(endOfDay(new Date()), 'yyyy-MM-dd'));
+  const { from, to, setRange } = useReportDateRange();
   const [data, setData] = useState<RevenueData | null>(null);
   const [activeBreakdown, setActiveBreakdown] = useState('sources');
 
@@ -64,7 +64,7 @@ export default function RevenuePage() {
       <div className="pulse-page">
         <div className="pulse-page-header">
           <Title level="h1" size="lg">Revenue</Title>
-          <DateRangePicker from={from} to={to} onChange={(nextFrom, nextTo) => { setFrom(nextFrom); setTo(nextTo); }} />
+          <DateRangePicker from={from} to={to} onChange={(nextFrom, nextTo) => { setRange(nextFrom, nextTo); }} />
         </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>

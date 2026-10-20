@@ -5,21 +5,21 @@ import styles from './landing.module.css';
 
 const navLinks = [
   { label: 'Product', href: '#product' },
+  { label: 'Privacy', href: '#privacy' },
   { label: 'Agent access', href: '#agents' },
   { label: 'Self-hosting', href: '#self-hosting' },
-  { label: 'Pricing', href: '/pricing' },
 ];
 
 export function LandingHeader() {
   return (
-    <header className={styles.siteHeader}>
+    <header id="landing-site-header" className={styles.siteHeader}>
       <div className={styles.headerInner}>
         <Link href="/" className={styles.logoLink} aria-label="Pulse home">
           <Image
             src="/logo.png"
             alt="Pulse"
-            width={900}
-            height={350}
+            width={116}
+            height={45}
             className={styles.logoImage}
             priority
           />
@@ -38,7 +38,7 @@ export function LandingHeader() {
             Sign in
           </Link>
           <Link href="/demo" className={styles.headerCta}>
-            Private preview
+            Access details
             <span aria-hidden="true">↗</span>
           </Link>
         </div>

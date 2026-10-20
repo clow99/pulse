@@ -1,16 +1,12 @@
 'use client';
 
-import { Button, Input } from '@velocityuikit/velocityui';
+import { useId, useRef, useState } from 'react';
 import {
-  endOfDay,
-  format,
-  isAfter,
-  parseISO,
-  startOfDay,
-  subDays,
-  isValid,
-} from 'date-fns';
-import { useState } from 'react';
+  DATE_PRESETS,
+  dateInputValue,
+  presetDateRange,
+  validDateRange,
+} from '@/lib/report-date-range';
 
 interface DateRangePickerProps {
   from: string;
@@ -18,126 +14,124 @@ interface DateRangePickerProps {
   onChange: (from: string, to: string) => void;
 }
 
-type PresetKey = 'today' | '7d' | '30d' | '90d' | 'custom';
-
-function getPresetRange(key: PresetKey): { from: string; to: string } {
-  const now = new Date();
-  switch (key) {
-    case 'today': {
-      const start = startOfDay(now);
-      const end = endOfDay(now);
-      return { from: format(start, 'yyyy-MM-dd'), to: format(end, 'yyyy-MM-dd') };
-    }
-    case '7d': {
-      const start = startOfDay(subDays(now, 6));
-      const end = endOfDay(now);
-      return { from: format(start, 'yyyy-MM-dd'), to: format(end, 'yyyy-MM-dd') };
-    }
-    case '30d': {
-      const start = startOfDay(subDays(now, 29));
-      const end = endOfDay(now);
-      return { from: format(start, 'yyyy-MM-dd'), to: format(end, 'yyyy-MM-dd') };
-    }
-    case '90d': {
-      const start = startOfDay(subDays(now, 89));
-      const end = endOfDay(now);
-      return { from: format(start, 'yyyy-MM-dd'), to: format(end, 'yyyy-MM-dd') };
-    }
-    case 'custom':
-      return { from: '', to: '' };
-    default: {
-      const _: never = key;
-      return { from: '', to: '' };
-    }
-  }
-}
-
 export function DateRangePicker({ from, to, onChange }: DateRangePickerProps) {
-  const [activePreset, setActivePreset] = useState<PresetKey | null>(null);
-  const [customFrom, setCustomFrom] = useState(from);
-  const [customTo, setCustomTo] = useState(to);
+  const id = useId();
+  const customButton = useRef<HTMLButtonElement>(null);
   const [showCustom, setShowCustom] = useState(false);
-
-  function handlePresetClick(key: PresetKey) {
-    if (key === 'custom') {
-      setCustomFrom(from);
-      setCustomTo(to);
-      setShowCustom(true);
-      setActivePreset('custom');
-      return;
-    }
-    setShowCustom(false);
-    setActivePreset(key);
-    const range = getPresetRange(key);
-    onChange(range.from, range.to);
-  }
-
-  function handleCustomApply() {
-    const fromDate = parseISO(customFrom);
-    const toDate = parseISO(customTo);
-    if (!isValid(fromDate) || !isValid(toDate) || isAfter(fromDate, toDate)) {
-      return;
-    }
-    onChange(customFrom, customTo);
-  }
+  const [customFrom, setCustomFrom] = useState('');
+  const [customTo, setCustomTo] = useState('');
+  const [error, setError] = useState('');
+  const active = DATE_PRESETS.find(({ days }) => {
+    const range = presetDateRange(days);
+    return (
+      dateInputValue(from) === range.from && dateInputValue(to) === range.to
+    );
+  });
 
   return (
-    <div className="pulse-date-range">
-      <Button
-        variant={activePreset === 'today' ? 'secondary' : 'ghost'}
-        size="sm"
-        onClick={() => handlePresetClick('today')}
+    <div className="pulse-date-picker">
+      <div
+        className="pulse-range-presets"
+        role="group"
+        aria-label="Reporting period"
       >
-        Today
-      </Button>
-      <Button
-        variant={activePreset === '7d' ? 'secondary' : 'ghost'}
-        size="sm"
-        onClick={() => handlePresetClick('7d')}
-      >
-        7d
-      </Button>
-      <Button
-        variant={activePreset === '30d' ? 'secondary' : 'ghost'}
-        size="sm"
-        onClick={() => handlePresetClick('30d')}
-      >
-        30d
-      </Button>
-      <Button
-        variant={activePreset === '90d' ? 'secondary' : 'ghost'}
-        size="sm"
-        onClick={() => handlePresetClick('90d')}
-      >
-        90d
-      </Button>
-      <Button
-        variant={activePreset === 'custom' ? 'secondary' : 'ghost'}
-        size="sm"
-        onClick={() => handlePresetClick('custom')}
-      >
-        Custom
-      </Button>
+        {DATE_PRESETS.map(({ key, label, days }) => (
+          <button
+            key={key}
+            type="button"
+            aria-pressed={active?.key === key}
+            onClick={() => {
+              const range = presetDateRange(days);
+              setShowCustom(false);
+              onChange(range.from, range.to);
+            }}
+          >
+            {label}
+          </button>
+        ))}
+        <button
+          ref={customButton}
+          type="button"
+          aria-pressed={!active || showCustom}
+          aria-expanded={showCustom}
+          aria-controls={id}
+          onClick={() => {
+            setCustomFrom(dateInputValue(from));
+            setCustomTo(dateInputValue(to));
+            setError('');
+            setShowCustom(!showCustom);
+          }}
+        >
+          Custom
+        </button>
+      </div>
       {showCustom && (
-        <div className="pulse-date-range-custom">
-          <Input
-            type="date"
-            value={customFrom}
-            onChange={(e) => setCustomFrom(e.target.value)}
-            size="sm"
-            style={{ width: 140 }}
-          />
-          <Input
-            type="date"
-            value={customTo}
-            onChange={(e) => setCustomTo(e.target.value)}
-            size="sm"
-            style={{ width: 140 }}
-          />
-          <Button variant="primary" size="sm" onClick={handleCustomApply}>
-            Apply
-          </Button>
-        </div>
+        <form
+          id={id}
+          className="pulse-range-custom"
+          onKeyDown={(event) => {
+            if (event.key === 'Escape') {
+              setShowCustom(false);
+              customButton.current?.focus();
+            }
+          }}
+          onSubmit={(event) => {
+            event.preventDefault();
+            if (!validDateRange(customFrom, customTo)) {
+              setError(
+                'Choose both dates, with the end on or after the start.',
+              );
+              return;
+            }
+            onChange(customFrom, customTo);
+            setShowCustom(false);
+            customButton.current?.focus();
+          }}
+        >
+          <label>
+            From
+            <input
+              autoFocus
+              type="date"
+              required
+              value={customFrom}
+              onChange={(e) => {
+                setCustomFrom(e.target.value);
+                setError('');
+              }}
+            />
+          </label>
+          <label>
+            To
+            <input
+              type="date"
+              required
+              value={customTo}
+              onChange={(e) => {
+                setCustomTo(e.target.value);
+                setError('');
+              }}
+            />
+          </label>
+          <button className="pulse-action-button primary" type="submit">
+            Apply range
+          </button>
+          <button
+            className="pulse-action-button"
+            type="button"
+            onClick={() => {
+              setShowCustom(false);
+              customButton.current?.focus();
+            }}
+          >
+            Cancel
+          </button>
+          {error && (
+            <p className="pulse-range-error" role="alert">
+              {error}
+            </p>
+          )}
+        </form>
       )}
     </div>
   );

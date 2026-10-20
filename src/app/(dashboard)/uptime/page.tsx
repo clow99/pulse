@@ -5,11 +5,12 @@ import { useSearchParams } from 'next/navigation';
 import { Title } from '@velocityuikit/velocityui';
 import { PageTransition } from '@/components/motion';
 import { StatsCards } from '@/components/dashboard/StatsCards';
+import { useReportDateRange } from '@/components/dashboard/useReportDateRange';
 import { DateRangePicker } from '@/components/dashboard/DateRangePicker';
 import { ReportTable } from '@/components/dashboard/ReportTable';
 import { UptimeTimeline } from '@/components/dashboard/UptimeTimeline';
 import { UptimeResponseChart } from '@/components/dashboard/UptimeResponseChart';
-import { subDays, startOfDay, endOfDay } from 'date-fns';
+import { reportDateRange } from '@/lib/report-date-range';
 import type { UptimeSummary, UptimeTimeseriesPoint, UptimeCheckResult } from '@/types';
 
 interface UptimeData {
@@ -93,8 +94,7 @@ export default function UptimePage() {
   const searchParams = useSearchParams();
   const siteId = searchParams.get('siteId') || '';
 
-  const [from, setFrom] = useState(() => startOfDay(subDays(new Date(), 30)).toISOString());
-  const [to, setTo] = useState(() => endOfDay(new Date()).toISOString());
+  const { from, to, setRange } = useReportDateRange();
   const [data, setData] = useState<UptimeData | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -102,7 +102,7 @@ export default function UptimePage() {
     if (!siteId) return;
     setLoading(true);
     try {
-      const params = new URLSearchParams({ siteId, from, to });
+      const params = new URLSearchParams({ siteId, ...reportDateRange(from, to) });
       const res = await fetch(`/api/reports/uptime?${params}`);
       if (res.ok) {
         setData(await res.json());
@@ -119,8 +119,7 @@ export default function UptimePage() {
   }, [fetchData]);
 
   const handleDateChange = (newFrom: string, newTo: string) => {
-    setFrom(newFrom);
-    setTo(newTo);
+    setRange(newFrom, newTo);
   };
 
   const summary = data?.summary;

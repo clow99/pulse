@@ -4,9 +4,10 @@ import { useEffect, useState, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Title, Accordion, Badge } from '@velocityuikit/velocityui';
 import { PageTransition } from '@/components/motion';
+import { useReportDateRange } from '@/components/dashboard/useReportDateRange';
 import { DateRangePicker } from '@/components/dashboard/DateRangePicker';
 import { ReportTable } from '@/components/dashboard/ReportTable';
-import { subDays, startOfDay, endOfDay, parseISO, format } from 'date-fns';
+import { startOfDay, endOfDay, parseISO } from 'date-fns';
 
 interface EventsRow {
   name: string;
@@ -35,12 +36,7 @@ export default function EventsPage() {
   const searchParams = useSearchParams();
   const siteId = searchParams.get('siteId') || '';
 
-  const [from, setFrom] = useState(() =>
-    format(startOfDay(subDays(new Date(), 30)), 'yyyy-MM-dd')
-  );
-  const [to, setTo] = useState(() =>
-    format(endOfDay(new Date()), 'yyyy-MM-dd')
-  );
+  const { from, to, setRange } = useReportDateRange();
   const [data, setData] = useState<EventsRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedEvent, setSelectedEvent] = useState<EventDetails | null>(null);
@@ -98,8 +94,7 @@ export default function EventsPage() {
   }, [fetchData]);
 
   const handleDateChange = (newFrom: string, newTo: string) => {
-    setFrom(newFrom);
-    setTo(newTo);
+    setRange(newFrom, newTo);
     setSelectedEvent(null);
   };
 

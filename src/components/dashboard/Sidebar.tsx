@@ -1,18 +1,17 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname, useSearchParams, useRouter } from 'next/navigation';
-import { motion, AnimatePresence } from 'framer-motion';
 import { signOut } from 'next-auth/react';
+import { DashboardIcon } from './DashboardIcon';
 
 interface Site {
   id: string;
   name: string;
   domain: string;
 }
-
 interface SidebarProps {
   orgName: string;
   siteName: string;
@@ -20,436 +19,233 @@ interface SidebarProps {
   sites: Site[];
 }
 
-interface NavSection {
-  label: string;
-  items: { href: string; label: string; icon: string }[];
-}
-
-const NAV_SECTIONS: NavSection[] = [
+const sections = [
+  { label: 'Workspace', items: [['portfolio', 'Portfolio']] },
   {
-    label: 'PROJECTS',
+    label: 'Analytics',
     items: [
-      { href: '/portfolio', label: 'Portfolio', icon: '\u25A6' },
+      ['overview', 'Overview'],
+      ['pages', 'Pages'],
+      ['events', 'Events'],
+      ['funnels', 'Funnels'],
+      ['acquisition', 'Acquisition'],
+      ['technology', 'Technology'],
+      ['revenue', 'Revenue'],
     ],
   },
   {
-    label: 'ANALYTICS',
+    label: 'Monitoring',
     items: [
-      { href: '/overview', label: 'Overview', icon: '\u25C9' },
-      { href: '/pages', label: 'Pages', icon: '\u25A4' },
-      { href: '/events', label: 'Events', icon: '\u25C6' },
-      { href: '/funnels', label: 'Funnels', icon: '\u25B3' },
-    ],
-  },
-  {
-    label: 'ACQUISITION',
-    items: [
-      { href: '/acquisition', label: 'Acquisition', icon: '\u2197' },
-      { href: '/technology', label: 'Technology', icon: '\u2699' },
-      { href: '/revenue', label: 'Revenue', icon: '$' },
-    ],
-  },
-  {
-    label: 'MONITORING',
-    items: [
-      { href: '/uptime', label: 'Uptime', icon: '\u25CE' },
-      { href: '/performance', label: 'Performance', icon: '\u23F1' },
-      { href: '/insights', label: 'Insights', icon: '\u2726' },
-    ],
-  },
-  {
-    label: 'MANAGE',
-    items: [
-      { href: '/settings', label: 'Settings', icon: '\u2699' },
+      ['uptime', 'Uptime'],
+      ['performance', 'Performance'],
+      ['insights', 'Insights'],
     ],
   },
 ];
 
-export function Sidebar({ orgName, siteName, orgId, sites }: SidebarProps) {
+export function Sidebar({ orgName, sites }: SidebarProps) {
   const pathname = usePathname();
-  const searchParams = useSearchParams();
+  const params = useSearchParams();
   const router = useRouter();
-  const [isMobileOpen, setIsMobileOpen] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
-
-  const [dropdownOpen, setDropdownOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
-
-  const requestedSiteId = searchParams.get('siteId');
-  const defaultSiteId = sites[0]?.id ?? '';
-  const siteId = requestedSiteId || defaultSiteId;
+  const [open, setOpen] = useState(false);
+  const drawer = useRef<HTMLElement>(null);
+  const menuButton = useRef<HTMLButtonElement>(null);
+  const requestedSite = params.get('siteId');
+  const siteId =
+    sites.find((site) => site.id === requestedSite)?.id || sites[0]?.id || '';
 
   useEffect(() => {
-    if (requestedSiteId || !defaultSiteId) return;
-
-    const params = new URLSearchParams(searchParams.toString());
-    params.set('siteId', defaultSiteId);
-    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
-  }, [defaultSiteId, pathname, requestedSiteId, router, searchParams]);
-
-  const handleSiteSelect = (newSiteId: string) => {
-    if (!newSiteId || newSiteId === siteId) {
-      setDropdownOpen(false);
-      return;
-    }
-    const params = new URLSearchParams(searchParams.toString());
-    params.set('siteId', newSiteId);
-    router.push(`${pathname}?${params.toString()}`);
-    setDropdownOpen(false);
-    setIsMobileOpen(false);
-  };
+    if (!siteId || requestedSite === siteId) return;
+    const next = new URLSearchParams(params.toString());
+    next.set('siteId', siteId);
+    router.replace(`${pathname}?${next}`, { scroll: false });
+  }, [siteId, requestedSite, params, pathname, router]);
 
   useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
-        setDropdownOpen(false);
+    if (!open) return;
+    const panel = drawer.current!;
+    const trigger = menuButton.current;
+    const content = document.getElementById('dashboard-content');
+    const oldOverflow = document.body.style.overflow;
+    const oldInert = content?.inert ?? false;
+    document.body.style.overflow = 'hidden';
+    if (content) content.inert = true;
+    panel.setAttribute('role', 'dialog');
+    panel.setAttribute('aria-modal', 'true');
+    const focusable = () =>
+      Array.from(
+        panel.querySelectorAll<HTMLElement>('button, a, select'),
+      ).filter((el) => el.getClientRects().length > 0);
+    focusable()[0]?.focus();
+    const handleKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setOpen(false);
+      if (event.key !== 'Tab') return;
+      const elements = focusable();
+      const first = elements[0];
+      const last = elements[elements.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last?.focus();
+      }
+      if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first?.focus();
       }
     };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+    const handleResize = () => {
+      if (window.innerWidth >= 768) setOpen(false);
+    };
+    document.addEventListener('keydown', handleKey);
+    window.addEventListener('resize', handleResize);
+    return () => {
+      document.body.style.overflow = oldOverflow;
+      if (content) content.inert = oldInert;
+      panel.removeAttribute('role');
+      panel.removeAttribute('aria-modal');
+      document.removeEventListener('keydown', handleKey);
+      window.removeEventListener('resize', handleResize);
+      trigger?.focus();
+    };
+  }, [open]);
 
-  useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 768);
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
-
-  const sidebarContent = (
-    <>
-      {/* Branding */}
-      <div
-        style={{
-          padding: '1.25rem 1rem 0.75rem',
-          borderBottom: '1px solid var(--pulse-border)',
-        }}
-      >
-        <div style={{ marginBottom: '1rem' }}>
-          <Image
-            src="/logo.png"
-            alt="Pulse"
-            width={144}
-            height={56}
-            style={{
-              height: 56,
-              width: 144,
-              objectFit: 'contain',
-            }}
-          />
-        </div>
-        <div
-          style={{
-            fontSize: '0.6875rem',
-            textTransform: 'uppercase',
-            letterSpacing: '0.06em',
-            color: 'var(--pulse-text-secondary)',
-            marginBottom: '0.5rem',
-          }}
-        >
-          {orgName}
-        </div>
-        {sites.length > 0 ? (
-          <div ref={dropdownRef} style={{ position: 'relative' }}>
-            <button
-              type="button"
-              onClick={() => setDropdownOpen((prev) => !prev)}
-              style={{
-                width: '100%',
-                padding: '0.5rem 0.75rem',
-                fontSize: '0.8125rem',
-                backgroundColor: 'var(--pulse-bg-card)',
-                border: `1px solid ${dropdownOpen ? 'var(--pulse-accent)' : 'var(--pulse-border)'}`,
-                borderRadius: '6px',
-                color: 'var(--pulse-text-primary)',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                gap: '0.5rem',
-                textAlign: 'left',
-                transition: 'border-color 0.15s',
-              }}
-            >
-              <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                {sites.find((s) => s.id === siteId)?.name || sites.find((s) => s.id === siteId)?.domain || 'Select site'}
-              </span>
-              <svg
-                width="12"
-                height="12"
-                viewBox="0 0 12 12"
-                fill="none"
-                style={{
-                  flexShrink: 0,
-                  transform: dropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)',
-                  transition: 'transform 0.15s',
-                }}
-              >
-                <path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </button>
-            <AnimatePresence>
-              {dropdownOpen && (
-                <motion.ul
-                  initial={{ opacity: 0, y: -4 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -4 }}
-                  transition={{ duration: 0.12 }}
-                  style={{
-                    position: 'absolute',
-                    top: 'calc(100% + 4px)',
-                    left: 0,
-                    right: 0,
-                    listStyle: 'none',
-                    margin: 0,
-                    padding: '4px',
-                    backgroundColor: 'var(--pulse-bg-card)',
-                    border: '1px solid var(--pulse-border)',
-                    borderRadius: '8px',
-                    boxShadow: '0 8px 24px rgba(0, 0, 0, 0.4)',
-                    zIndex: 100,
-                    maxHeight: '200px',
-                    overflowY: 'auto',
-                  }}
-                >
-                  {sites.map((site) => {
-                    const isSelected = site.id === siteId;
-                    return (
-                      <li key={site.id}>
-                        <button
-                          type="button"
-                          onClick={() => handleSiteSelect(site.id)}
-                          style={{
-                            width: '100%',
-                            padding: '0.4375rem 0.625rem',
-                            fontSize: '0.8125rem',
-                            backgroundColor: isSelected ? 'rgba(14, 165, 233, 0.12)' : 'transparent',
-                            color: isSelected ? 'var(--pulse-accent)' : 'var(--pulse-text-primary)',
-                            border: 'none',
-                            borderRadius: '5px',
-                            cursor: 'pointer',
-                            textAlign: 'left',
-                            display: 'block',
-                            transition: 'background-color 0.1s',
-                          }}
-                          onMouseEnter={(e) => {
-                            if (!isSelected) e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.05)';
-                          }}
-                          onMouseLeave={(e) => {
-                            e.currentTarget.style.backgroundColor = isSelected ? 'rgba(14, 165, 233, 0.12)' : 'transparent';
-                          }}
-                        >
-                          {site.name || site.domain}
-                        </button>
-                      </li>
-                    );
-                  })}
-                </motion.ul>
-              )}
-            </AnimatePresence>
-          </div>
-        ) : (
-          <div style={{ fontSize: '0.8125rem', color: 'var(--pulse-text-secondary)' }}>
-            {siteName || 'No sites'}
-          </div>
-        )}
-      </div>
-
-      {/* Nav sections */}
-      <nav
-        style={{
-          flex: 1,
-          padding: '0.5rem 0.75rem',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '0.125rem',
-          overflowY: 'auto',
-        }}
-      >
-        {NAV_SECTIONS.map((section) => (
-          <div key={section.label} style={{ marginBottom: '0.25rem' }}>
-            <div
-              style={{
-                fontSize: '0.625rem',
-                fontWeight: 600,
-                textTransform: 'uppercase',
-                letterSpacing: '0.08em',
-                color: 'var(--pulse-text-secondary)',
-                padding: '0.75rem 0.875rem 0.375rem',
-              }}
-            >
-              {section.label}
-            </div>
-            {section.items.map((item) => {
-              const keepSite = !item.href.startsWith('/portfolio') && !item.href.startsWith('/projects');
-              const href = `${item.href}${siteId && keepSite ? `?siteId=${siteId}` : ''}`;
-              const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
-
-              return (
-                <motion.div
-                  key={item.href}
-                  whileHover={{ backgroundColor: 'rgba(14, 165, 233, 0.08)' }}
-                  style={{ borderRadius: '8px' }}
-                >
-                  <Link
-                    href={href}
-                    onClick={() => isMobile && setIsMobileOpen(false)}
-                    style={{
-                      position: 'relative',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '0.75rem',
-                      padding: '0.5rem 0.875rem',
-                      borderRadius: '8px',
-                      fontSize: '0.875rem',
-                      color: isActive ? 'var(--pulse-text-primary)' : 'var(--pulse-text-secondary)',
-                      textDecoration: 'none',
-                      transition: 'color 0.15s',
-                    }}
-                  >
-                    {isActive && (
-                      <motion.div
-                        layoutId="activeNav"
-                        style={{
-                          position: 'absolute',
-                          left: 0,
-                          top: 0,
-                          bottom: 0,
-                          width: '100%',
-                          backgroundColor: 'rgba(14, 165, 233, 0.15)',
-                          borderRadius: '8px',
-                          borderLeft: '3px solid var(--pulse-accent)',
-                          zIndex: -1,
-                        }}
-                        transition={{
-                          type: 'spring',
-                          stiffness: 400,
-                          damping: 35,
-                        }}
-                      />
-                    )}
-                    <span style={{ fontSize: '1rem' }}>{item.icon}</span>
-                    <span>{item.label}</span>
-                  </Link>
-                </motion.div>
-              );
-            })}
-          </div>
-        ))}
-      </nav>
-
-      {/* Footer */}
-      <div
-        style={{
-          padding: '0.75rem',
-          borderTop: '1px solid var(--pulse-border)',
-        }}
-      >
-        <button
-          type="button"
-          onClick={() => signOut({ callbackUrl: '/login' })}
-          style={{
-            width: '100%',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.75rem',
-            padding: '0.5rem 0.875rem',
-            borderRadius: '8px',
-            fontSize: '0.875rem',
-            color: 'var(--pulse-text-secondary)',
-            backgroundColor: 'transparent',
-            border: 'none',
-            cursor: 'pointer',
-            textAlign: 'left',
-          }}
-        >
-          <span style={{ fontSize: '1rem' }}>{'\u21B6'}</span>
-          <span>Sign out</span>
-        </button>
-      </div>
-    </>
-  );
-
-  const sidebarWrapperStyles: React.CSSProperties = {
-    width: 240,
-    height: '100vh',
-    backgroundColor: 'var(--pulse-bg-secondary)',
-    borderRight: '1px solid var(--pulse-border)',
-    display: 'flex',
-    flexDirection: 'column',
-    flexShrink: 0,
-    position: 'fixed' as const,
-    left: 0,
-    top: 0,
-    zIndex: 50,
-  };
-
-  if (isMobile) {
-    return (
-      <>
-        <button
-          type="button"
-          onClick={() => setIsMobileOpen(true)}
-          style={{
-            position: 'fixed',
-            top: '1rem',
-            left: '1rem',
-            zIndex: 51,
-            width: 40,
-            height: 40,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            backgroundColor: 'var(--pulse-bg-card)',
-            border: '1px solid var(--pulse-border)',
-            borderRadius: '8px',
-            color: 'var(--pulse-text-primary)',
-            cursor: 'pointer',
-          }}
-          aria-label="Open menu"
-        >
-          <span style={{ fontSize: '1.25rem' }}>{'\u2630'}</span>
-        </button>
-
-        <AnimatePresence>
-          {isMobileOpen && (
-            <>
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                style={{
-                  position: 'fixed',
-                  inset: 0,
-                  backgroundColor: 'rgba(0,0,0,0.5)',
-                  zIndex: 49,
-                }}
-                onClick={() => setIsMobileOpen(false)}
-              />
-              <motion.div
-                initial={{ x: -240 }}
-                animate={{ x: 0 }}
-                exit={{ x: -240 }}
-                transition={{ type: 'spring', stiffness: 300, damping: 35 }}
-                style={{
-                  ...sidebarWrapperStyles,
-                  boxShadow: '4px 0 24px rgba(0,0,0,0.3)',
-                }}
-              >
-                {sidebarContent}
-              </motion.div>
-            </>
-          )}
-        </AnimatePresence>
-
-        <div style={{ width: 0, flexShrink: 0 }} />
-      </>
-    );
+  function reportHref(path: string) {
+    const next = new URLSearchParams();
+    if (path !== 'portfolio' && siteId) next.set('siteId', siteId);
+    for (const key of ['from', 'to']) {
+      const value = params.get(key);
+      if (value) next.set(key, value);
+    }
+    return `/${path}${next.size ? `?${next}` : ''}`;
   }
 
   return (
-    <div style={sidebarWrapperStyles}>
-      {sidebarContent}
-    </div>
+    <>
+      <div className="pulse-mobile-bar">
+        <button
+          ref={menuButton}
+          type="button"
+          className="pulse-icon-button"
+          aria-label="Open navigation"
+          aria-expanded={open}
+          aria-controls="pulse-navigation"
+          onClick={() => setOpen(true)}
+        >
+          <DashboardIcon name="menu" />
+        </button>
+        <span>
+          Pulse{' '}
+          <span className="pulse-muted">
+            /{' '}
+            {sections
+              .flatMap((s) => s.items)
+              .find(([path]) => pathname === `/${path}`)?.[1] || 'Workspace'}
+          </span>
+        </span>
+      </div>
+      {open && (
+        <div
+          className="pulse-sidebar-backdrop"
+          onClick={() => setOpen(false)}
+        />
+      )}
+      <aside
+        ref={drawer}
+        id="pulse-navigation"
+        className={`pulse-sidebar ${open ? 'is-open' : ''}`}
+        aria-label="Workspace navigation"
+      >
+        <div className="pulse-sidebar-brand">
+          <Link
+            href={reportHref('overview')}
+            aria-label="Pulse overview"
+            onClick={() => setOpen(false)}
+          >
+            <Image
+              src="/logo.png"
+              alt="Pulse"
+              width={113}
+              height={44}
+              priority
+            />
+          </Link>
+          <button
+            className="pulse-icon-button pulse-sidebar-close"
+            type="button"
+            aria-label="Close navigation"
+            onClick={() => setOpen(false)}
+          >
+            <DashboardIcon name="close" />
+          </button>
+        </div>
+        <div className="pulse-workspace-picker">
+          <span className="pulse-workspace-label">{orgName}</span>
+          <label htmlFor="pulse-site-select">Website</label>
+          <select
+            id="pulse-site-select"
+            value={siteId}
+            disabled={!sites.length}
+            onChange={(event) => {
+              const next = new URLSearchParams(params.toString());
+              next.set('siteId', event.target.value);
+              router.push(`${pathname}?${next}`, { scroll: false });
+              setOpen(false);
+            }}
+          >
+            {!sites.length && <option value="">No websites yet</option>}
+            {sites.map((site) => (
+              <option key={site.id} value={site.id}>
+                {site.name || site.domain}
+              </option>
+            ))}
+          </select>
+          <span className="pulse-site-domain">
+            {sites.find((site) => site.id === siteId)?.domain ||
+              'Add a site to start collecting data'}
+          </span>
+        </div>
+        <nav className="pulse-sidebar-nav" aria-label="Main navigation">
+          {sections.map((section) => (
+            <div key={section.label} className="pulse-nav-section">
+              <p>{section.label}</p>
+              {section.items.map(([path, label]) => (
+                <Link
+                  key={path}
+                  href={reportHref(path)}
+                  aria-current={pathname === `/${path}` ? 'page' : undefined}
+                  onClick={() => setOpen(false)}
+                >
+                  <DashboardIcon name={path} />
+                  <span>{label}</span>
+                  {pathname === `/${path}` && (
+                    <span className="pulse-nav-active-dot" />
+                  )}
+                </Link>
+              ))}
+            </div>
+          ))}
+        </nav>
+        <div className="pulse-sidebar-footer">
+          <Link
+            href={reportHref('settings')}
+            aria-current={pathname.startsWith('/settings') ? 'page' : undefined}
+            onClick={() => setOpen(false)}
+          >
+            <DashboardIcon name="settings" />
+            Settings
+          </Link>
+          <button
+            type="button"
+            onClick={() => signOut({ callbackUrl: '/login' })}
+          >
+            <DashboardIcon name="logout" />
+            Sign out
+          </button>
+          <div className="pulse-sidebar-note">
+            <span />
+            Privacy-first analytics
+          </div>
+        </div>
+      </aside>
+    </>
   );
 }

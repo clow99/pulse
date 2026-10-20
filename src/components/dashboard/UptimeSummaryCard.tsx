@@ -9,6 +9,7 @@ interface UptimeSummaryCardProps {
   data: UptimeSummary | null;
   siteId: string;
   loading?: boolean;
+  staticValues?: boolean;
 }
 
 const STATUS_CONFIG = {
@@ -28,13 +29,13 @@ function formatTimeAgo(dateStr: string): string {
   return `${days}d ago`;
 }
 
-export function UptimeSummaryCard({ data, siteId, loading }: UptimeSummaryCardProps) {
+export function UptimeSummaryCard({ data, siteId, loading, staticValues = false }: UptimeSummaryCardProps) {
   const status = data?.currentStatus ?? 'unknown';
   const config = STATUS_CONFIG[status];
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 12 }}
+      initial={staticValues ? false : { opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay: 0.1 }}
       className="pulse-uptime-summary-card"
@@ -60,7 +61,7 @@ export function UptimeSummaryCard({ data, siteId, loading }: UptimeSummaryCardPr
         <div className="pulse-uptime-summary-body">
           <div className="pulse-uptime-summary-metric">
             <span className="pulse-uptime-summary-value">
-              {data ? (
+              {data && staticValues ? `${data.uptimePercentage.toFixed(2)}%` : data ? (
                 <AnimatedCounter
                   value={data.uptimePercentage}
                   formatFn={(v) => `${v.toFixed(2)}%`}

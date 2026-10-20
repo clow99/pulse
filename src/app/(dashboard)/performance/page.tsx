@@ -3,8 +3,9 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Card, Title, Badge } from '@velocityuikit/velocityui';
-import { subDays, startOfDay, endOfDay, format, parseISO } from 'date-fns';
+import { startOfDay, endOfDay, parseISO } from 'date-fns';
 import { PageTransition } from '@/components/motion';
+import { useReportDateRange } from '@/components/dashboard/useReportDateRange';
 import { DateRangePicker } from '@/components/dashboard/DateRangePicker';
 import { ReportTable } from '@/components/dashboard/ReportTable';
 
@@ -32,8 +33,7 @@ interface PerformanceData {
 
 export default function PerformancePage() {
   const siteId = useSearchParams().get('siteId') || '';
-  const [from, setFrom] = useState(() => format(startOfDay(subDays(new Date(), 30)), 'yyyy-MM-dd'));
-  const [to, setTo] = useState(() => format(endOfDay(new Date()), 'yyyy-MM-dd'));
+  const { from, to, setRange } = useReportDateRange();
   const [data, setData] = useState<PerformanceData | null>(null);
 
   const loadData = useCallback(async () => {
@@ -62,7 +62,7 @@ export default function PerformancePage() {
               Core Web Vitals are collected only for sites with web-vitals tracking enabled.
             </p>
           </div>
-          <DateRangePicker from={from} to={to} onChange={(nextFrom, nextTo) => { setFrom(nextFrom); setTo(nextTo); }} />
+          <DateRangePicker from={from} to={to} onChange={(nextFrom, nextTo) => { setRange(nextFrom, nextTo); }} />
         </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>

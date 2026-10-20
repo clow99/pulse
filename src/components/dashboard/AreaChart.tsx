@@ -1,6 +1,7 @@
 'use client';
 
 import { FadeIn } from '@/components/motion';
+import { useId } from 'react';
 import {
   Area,
   AreaChart as RechartsAreaChart,
@@ -32,6 +33,7 @@ export function AreaChart({
   ariaLabel = 'Visitors and pageviews over time',
   staticRender = false,
 }: AreaChartProps) {
+  const gradientId = useId().replace(/:/g, '');
   const chart = (
       <div
         className="pulse-chart-container"
@@ -42,11 +44,11 @@ export function AreaChart({
         <ResponsiveContainer width="100%" height="100%">
           <RechartsAreaChart data={data} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
             <defs>
-              <linearGradient id="areaGradientPageviews" x1="0" y1="0" x2="0" y2="1">
+              <linearGradient id={`${gradientId}-pageviews`} x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%" stopColor="#0ea5e9" stopOpacity={0.4} />
                 <stop offset="100%" stopColor="#0ea5e9" stopOpacity={0} />
               </linearGradient>
-              <linearGradient id="areaGradientVisitors" x1="0" y1="0" x2="0" y2="1">
+              <linearGradient id={`${gradientId}-visitors`} x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%" stopColor="#22c55e" stopOpacity={0.4} />
                 <stop offset="100%" stopColor="#22c55e" stopOpacity={0} />
               </linearGradient>
@@ -83,7 +85,8 @@ export function AreaChart({
               dataKey="pageviews"
               name="Pageviews"
               stroke="#0ea5e9"
-              fill="url(#areaGradientPageviews)"
+              fill={`url(#${gradientId}-pageviews)`}
+              isAnimationActive={!staticRender}
               strokeWidth={2}
             />
             <Area
@@ -91,7 +94,8 @@ export function AreaChart({
               dataKey="visitors"
               name="Visitors"
               stroke="#22c55e"
-              fill="url(#areaGradientVisitors)"
+              fill={`url(#${gradientId}-visitors)`}
+              isAnimationActive={!staticRender}
               strokeWidth={2}
             />
           </RechartsAreaChart>
