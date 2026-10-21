@@ -6,8 +6,9 @@ ARG PULSE_SCHEMA_VERSION=20260713010000_project_intelligence_v1
 ENV PULSE_RELEASE_SHA=${PULSE_RELEASE_SHA}
 ENV PULSE_SCHEMA_VERSION=${PULSE_SCHEMA_VERSION}
 COPY package.json package-lock.json ./
-# Auth.js 5 currently declares Nodemailer 7 as an optional peer while Pulse
-# deliberately uses Nodemailer 9. Pulse does not use Auth.js' email provider.
+# Auth.js and mcp-handler declare older peer ranges. Pulse uses patched
+# Nodemailer 10 and MCP SDK 1; dependency-contracts.test.ts checks compatibility.
+# Pulse does not use Auth.js' email provider.
 RUN npm ci --no-audit --no-fund --legacy-peer-deps
 COPY . .
 RUN npx prisma generate
