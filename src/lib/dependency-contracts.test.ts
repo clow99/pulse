@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { createMcpHandler, withMcpAuth } from 'mcp-handler';
 import nodemailer from 'nodemailer';
 import { registerPulseMcpTools } from './mcp-tools';
+import { collectPayloadSchema, registerSchema } from './validation';
 
 const handler = createMcpHandler(
   registerPulseMcpTools,
@@ -31,6 +32,20 @@ async function rpcResult(response: Response) {
 }
 
 describe('patched dependency contracts', () => {
+  it('preserves tracking defaults and bounded event-property validation', () => {
+    const event = { token: 'synthetic-site', type: 'event', url: 'https://example.invalid/', name: 'checkout' };
+    expect(collectPayloadSchema.parse(event)).toMatchObject({ referrer: '', utm_source: '' });
+    expect(collectPayloadSchema.safeParse({ ...event, properties: { amount: 12, paid: true, coupon: null } }).success).toBe(true);
+    const oversized = Object.fromEntries(Array.from({ length: 26 }, (_, index) => [`key${index}`, 'value']));
+    expect(collectPayloadSchema.safeParse({ ...event, properties: oversized }).success).toBe(false);
+  });
+
+  it('keeps password-confirmation errors attached to the expected form field', () => {
+    const result = registerSchema.safeParse({ name: 'Synthetic', email: 'test@example.invalid', password: 'Synthetic password 123!', confirmPassword: 'Different password 123!' });
+    expect(result.success).toBe(false);
+    if (!result.success) expect(result.error.issues).toEqual(expect.arrayContaining([expect.objectContaining({ path: ['confirmPassword'], message: 'Passwords do not match' })]));
+  });
+
   it('initializes the existing MCP HTTP handler and exposes Pulse tool schemas', async () => {
     const initialized = await rpcResult(await handler(rpcRequest('initialize', {
       protocolVersion: '2025-03-26',
