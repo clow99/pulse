@@ -117,6 +117,9 @@ jobs:
       - name: Run tests
         run: npm test
 
+      - name: Validate public release claims
+        run: npm run claims:validate
+
       - name: Audit production dependencies
         run: npm audit --omit=dev --audit-level=high
 
@@ -142,6 +145,8 @@ jobs:
       - name: Build migration Docker image
         run: >-
           docker build -f Dockerfile --target migrator
+          --build-arg PULSE_RELEASE_SHA=${{ github.sha }}
+          --build-arg PULSE_SCHEMA_VERSION=20260713010000_project_intelligence_v1
           --build-arg OCI_SOURCE=https://git.cameronlow.com/cam/pulse
           --build-arg OCI_REVISION=${{ github.sha }}
           --build-arg OCI_CREATED=${OCI_CREATED}
@@ -152,6 +157,9 @@ jobs:
           docker image inspect pulse:latest > /dev/null
           docker image inspect pulse-migrate:latest > /dev/null
 
+      - name: Verify production image against CI database
+        run: bash scripts/smoke-release-image.sh pulse:latest "$GITHUB_SHA"
+
       - name: Push web image (immutable)
         if: success() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: |
@@ -159,14 +167,6 @@ jobs:
             -v /var/run/docker.sock:/var/run/docker.sock \
             "$SKOPEO_IMAGE" copy --dest-tls-verify=false \
             docker-daemon:pulse:latest "docker://$PULSE_REGISTRY/pulse:sha-${{ github.sha }}"
-
-      - name: Push web image (live)
-        if: success() && github.event_name == 'push' && github.ref == 'refs/heads/main'
-        run: |
-          docker run --rm --network host \
-            -v /var/run/docker.sock:/var/run/docker.sock \
-            "$SKOPEO_IMAGE" copy --dest-tls-verify=false \
-            docker-daemon:pulse:latest "docker://$PULSE_REGISTRY/pulse:live"
 
       - name: Push migration image (immutable)
         if: success() && github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -183,3 +183,7 @@ jobs:
             -v /var/run/docker.sock:/var/run/docker.sock \
             "$SKOPEO_IMAGE" copy --dest-tls-verify=false \
             docker-daemon:pulse-migrate:latest "docker://$PULSE_REGISTRY/pulse-migrate:live"
+
+      - name: Promote tested web image and verify Echo deployment
+        if: success() && github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: node scripts/release-to-echo.mjs

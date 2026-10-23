@@ -33,6 +33,8 @@ If the mail connector or provider requires reauthentication, record the blocker 
 
 ## Approval and promotion
 
+Routine application releases now use the [automatic Echo deployment policy](../deployment.md), explicitly requested by Cameron. The exact-tip approval below applies to the historical Phase 0 claim/availability tranche and to separately controlled migration or availability changes, not to ordinary schema-preserving pushes on `main`.
+
 Merging `main` publishes the production image. Immediately before merge, Cameron must explicitly approve the exact branch tip and evidence set. A passing build, a pushed branch, or an agent recommendation is not approval.
 
 After approval, merge the reviewed commit, require the Gitea Actions release to push both immutable and compatibility tags, and bind the Echo container to the full-SHA image. Then verify loopback readiness, running OCI revision, restart count, public DNS/TLS, exact public copy, noindex demo response, desktop/mobile screenshots, console/network behavior, and support contact only if mail delivery has passed.

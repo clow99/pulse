@@ -102,6 +102,8 @@ Open [http://localhost:3000](http://localhost:3000).
 
 ## Production
 
+The private Echo deployment automatically follows successful `main` releases through Gitea Actions and Watchtower, with readiness verification and rollback. See [automatic Echo deployments](docs/deployment.md). Production migrations remain a separately controlled step.
+
 ### Option A — Node
 
 ```bash
