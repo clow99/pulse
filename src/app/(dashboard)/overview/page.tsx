@@ -245,7 +245,7 @@ export default function OverviewPage() {
           <div className="pulse-overview-toolbar">
             <div>
               <p className="pulse-control-label">Reporting period</p>
-              <DateRangePicker from={from} to={to} onChange={setRange} />
+              <DateRangePicker from={from} to={to} onChange={setRange} showSummary={false} />
             </div>
             <div className="pulse-overview-actions">
               <button

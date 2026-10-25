@@ -66,28 +66,40 @@ export function Sidebar({ orgName, sites }: SidebarProps) {
     const panel = drawer.current!;
     const trigger = menuButton.current;
     const content = document.getElementById('dashboard-content');
+    const assistant = document.getElementById('dashboard-assistant');
     const oldOverflow = document.body.style.overflow;
     const oldInert = content?.inert ?? false;
+    const oldAssistantInert = assistant?.inert ?? false;
     document.body.style.overflow = 'hidden';
     if (content) content.inert = true;
+    if (assistant) assistant.inert = true;
     panel.setAttribute('role', 'dialog');
     panel.setAttribute('aria-modal', 'true');
     const focusable = () =>
       Array.from(
-        panel.querySelectorAll<HTMLElement>('button, a, select'),
-      ).filter((el) => el.getClientRects().length > 0);
-    focusable()[0]?.focus();
+        panel.querySelectorAll<HTMLElement>(
+          'button:not(:disabled), a[href], select:not(:disabled)',
+        ),
+      ).filter(
+        (el) =>
+          el.getClientRects().length > 0 &&
+          getComputedStyle(el).visibility === 'visible',
+      );
+    const initialFocus = requestAnimationFrame(() =>
+      focusable()[0]?.focus({ preventScroll: true }),
+    );
     const handleKey = (event: KeyboardEvent) => {
       if (event.key === 'Escape') setOpen(false);
       if (event.key !== 'Tab') return;
       const elements = focusable();
       const first = elements[0];
       const last = elements[elements.length - 1];
-      if (event.shiftKey && document.activeElement === first) {
+      const outside = !panel.contains(document.activeElement);
+      if (event.shiftKey && (outside || document.activeElement === first)) {
         event.preventDefault();
         last?.focus();
       }
-      if (!event.shiftKey && document.activeElement === last) {
+      if (!event.shiftKey && (outside || document.activeElement === last)) {
         event.preventDefault();
         first?.focus();
       }
@@ -99,7 +111,9 @@ export function Sidebar({ orgName, sites }: SidebarProps) {
     window.addEventListener('resize', handleResize);
     return () => {
       document.body.style.overflow = oldOverflow;
+      cancelAnimationFrame(initialFocus);
       if (content) content.inert = oldInert;
+      if (assistant) assistant.inert = oldAssistantInert;
       panel.removeAttribute('role');
       panel.removeAttribute('aria-modal');
       document.removeEventListener('keydown', handleKey);
@@ -138,7 +152,12 @@ export function Sidebar({ orgName, sites }: SidebarProps) {
             /{' '}
             {sections
               .flatMap((s) => s.items)
-              .find(([path]) => pathname === `/${path}`)?.[1] || 'Workspace'}
+              .find(([path]) => pathname === `/${path}`)?.[1] ||
+              (pathname.startsWith('/settings')
+                ? 'Settings'
+                : pathname.startsWith('/projects/')
+                  ? 'Project'
+                  : 'Workspace')}
           </span>
         </span>
       </div>
@@ -172,7 +191,12 @@ export function Sidebar({ orgName, sites }: SidebarProps) {
           </button>
         </div>
         <div className="pulse-workspace-picker">
-          <span className="pulse-workspace-label">{orgName}</span>
+          <span className="pulse-workspace-label">
+            <span className="pulse-workspace-avatar" aria-hidden="true">
+              {orgName.trim().charAt(0).toUpperCase() || 'P'}
+            </span>
+            <span>{orgName}</span>
+          </span>
           <label htmlFor="pulse-site-select">Website</label>
           <select
             id="pulse-site-select"
@@ -205,7 +229,14 @@ export function Sidebar({ orgName, sites }: SidebarProps) {
                 <Link
                   key={path}
                   href={reportHref(path)}
-                  aria-current={pathname === `/${path}` ? 'page' : undefined}
+                  aria-current={
+                    pathname === `/${path}`
+                      ? 'page'
+                      : path === 'portfolio' &&
+                          pathname.startsWith('/projects/')
+                        ? true
+                        : undefined
+                  }
                   onClick={() => setOpen(false)}
                 >
                   <DashboardIcon name={path} />

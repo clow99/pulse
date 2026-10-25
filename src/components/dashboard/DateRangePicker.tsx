@@ -1,6 +1,8 @@
 'use client';
 
 import { useId, useRef, useState } from 'react';
+import { format, parseISO } from 'date-fns';
+import { DashboardIcon } from './DashboardIcon';
 import {
   DATE_PRESETS,
   dateInputValue,
@@ -12,15 +14,25 @@ interface DateRangePickerProps {
   from: string;
   to: string;
   onChange: (from: string, to: string) => void;
+  showSummary?: boolean;
 }
 
-export function DateRangePicker({ from, to, onChange }: DateRangePickerProps) {
+export function DateRangePicker({
+  from,
+  to,
+  onChange,
+  showSummary = true,
+}: DateRangePickerProps) {
   const id = useId();
   const customButton = useRef<HTMLButtonElement>(null);
   const [showCustom, setShowCustom] = useState(false);
   const [customFrom, setCustomFrom] = useState('');
   const [customTo, setCustomTo] = useState('');
   const [error, setError] = useState('');
+  const hasValidRange = validDateRange(from, to);
+  const selectedRange = hasValidRange
+    ? `${format(parseISO(from), 'MMM d, yyyy')} – ${format(parseISO(to), 'MMM d, yyyy')}`
+    : 'Choose a date range';
   const active = DATE_PRESETS.find(({ days }) => {
     const range = presetDateRange(days);
     return (
@@ -30,6 +42,12 @@ export function DateRangePicker({ from, to, onChange }: DateRangePickerProps) {
 
   return (
     <div className="pulse-date-picker">
+      {showSummary && (
+        <div className="pulse-range-summary">
+          <DashboardIcon name="calendar" width={16} height={16} />
+          <span>{selectedRange}</span>
+        </div>
+      )}
       <div
         className="pulse-range-presets"
         role="group"
@@ -39,7 +57,7 @@ export function DateRangePicker({ from, to, onChange }: DateRangePickerProps) {
           <button
             key={key}
             type="button"
-            aria-pressed={active?.key === key}
+            aria-pressed={active?.key === key && !showCustom}
             onClick={() => {
               const range = presetDateRange(days);
               setShowCustom(false);
@@ -69,6 +87,8 @@ export function DateRangePicker({ from, to, onChange }: DateRangePickerProps) {
         <form
           id={id}
           className="pulse-range-custom"
+          aria-label="Custom reporting period"
+          noValidate
           onKeyDown={(event) => {
             if (event.key === 'Escape') {
               setShowCustom(false);
@@ -95,6 +115,8 @@ export function DateRangePicker({ from, to, onChange }: DateRangePickerProps) {
               type="date"
               required
               value={customFrom}
+              aria-invalid={!!error}
+              aria-describedby={error ? `${id}-error` : undefined}
               onChange={(e) => {
                 setCustomFrom(e.target.value);
                 setError('');
@@ -107,6 +129,8 @@ export function DateRangePicker({ from, to, onChange }: DateRangePickerProps) {
               type="date"
               required
               value={customTo}
+              aria-invalid={!!error}
+              aria-describedby={error ? `${id}-error` : undefined}
               onChange={(e) => {
                 setCustomTo(e.target.value);
                 setError('');
@@ -127,7 +151,7 @@ export function DateRangePicker({ from, to, onChange }: DateRangePickerProps) {
             Cancel
           </button>
           {error && (
-            <p className="pulse-range-error" role="alert">
+            <p id={`${id}-error`} className="pulse-range-error" role="alert">
               {error}
             </p>
           )}

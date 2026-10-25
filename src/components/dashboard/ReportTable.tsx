@@ -1,7 +1,7 @@
 'use client';
 
-import { Button, Pagination, Table } from '@velocityuikit/velocityui';
-import { motion } from 'framer-motion';
+import { Button, Pagination } from '@velocityuikit/velocityui';
+import { DashboardIcon } from './DashboardIcon';
 
 export interface ReportTableColumn {
   key: string;
@@ -21,40 +21,9 @@ interface ReportTableProps {
   onPageChange?: (page: number) => void;
   onRowClick?: (row: any) => void;
   loading?: boolean;
-}
-
-function toTableColumns(
-  columns: ReportTableColumn[],
-  onRowClick?: (row: any) => void
-) {
-  const base: any[] = columns.map((col) => ({
-    key: col.key,
-    header: col.header,
-    sortable: col.sortable ?? false,
-    render: col.render
-      ? (value: unknown, row: any) => col.render!(value, row)
-      : undefined,
-  }));
-  if (onRowClick) {
-    base.push({
-      key: '_action',
-      header: '',
-      sortable: false,
-      render: (_: unknown, row: any) => (
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={(e: React.MouseEvent) => {
-            e.stopPropagation();
-            onRowClick(row);
-          }}
-        >
-          View
-        </Button>
-      ),
-    });
-  }
-  return base;
+  label?: string;
+  emptyTitle?: string;
+  emptyDescription?: string;
 }
 
 export function ReportTable({
@@ -68,41 +37,111 @@ export function ReportTable({
   onPageChange,
   onRowClick,
   loading = false,
+  label = 'Report results',
+  emptyTitle = 'No results for this period',
+  emptyDescription = 'Try a wider date range or adjust your filters.',
 }: ReportTableProps) {
-  const tableColumns = toTableColumns(columns, onRowClick);
-
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.3 }}
+    <div
       className="pulse-chart-container pulse-report-table-shell"
+      aria-busy={loading}
     >
       {loading && (
-        <div className="pulse-loading-overlay">
-          <div
-            style={{
-              width: 32,
-              height: 32,
-              border: '3px solid var(--pulse-border)',
-              borderTopColor: 'var(--pulse-accent)',
-              borderRadius: '50%',
-              animation: 'spin 0.8s linear infinite',
-            }}
-          />
+        <div className="pulse-loading-overlay" role="status">
+          <span className="pulse-spinner" aria-hidden="true" />
+          <span>Loading report…</span>
         </div>
       )}
-      <Table
-        columns={tableColumns}
-        data={data as Record<string, unknown>[]}
-        sortKey={sortKey}
-        sortDir={sortDir}
-        onSort={onSort}
-        className="pulse-report-table"
-        size="sm"
-      />
-      {totalPages > 1 && onPageChange && (
-        <div style={{ marginTop: '1rem', display: 'flex', justifyContent: 'center' }}>
+      <div
+        className="pulse-table-scroll pulse-report-table"
+        role="region"
+        aria-label={label}
+        tabIndex={0}
+        inert={loading}
+      >
+        <table aria-label={label}>
+          <thead>
+            <tr>
+              {columns.map((column) => {
+                const sorted = sortKey === column.key;
+                const nextDirection =
+                  sorted && sortDir === 'asc' ? 'desc' : 'asc';
+                return (
+                  <th
+                    key={column.key}
+                    scope="col"
+                    aria-sort={
+                      column.sortable && onSort
+                        ? sorted
+                          ? sortDir === 'asc'
+                            ? 'ascending'
+                            : 'descending'
+                          : 'none'
+                        : undefined
+                    }
+                  >
+                    {column.sortable && onSort ? (
+                      <button
+                        type="button"
+                        className="pulse-table-sort"
+                        onClick={() => onSort(column.key, nextDirection)}
+                        aria-label={`Sort by ${column.header}, ${nextDirection === 'asc' ? 'ascending' : 'descending'}`}
+                      >
+                        {column.header}
+                        <span aria-hidden="true">
+                          {sorted ? (sortDir === 'asc' ? '↑' : '↓') : '↕'}
+                        </span>
+                      </button>
+                    ) : (
+                      column.header
+                    )}
+                  </th>
+                );
+              })}
+              {onRowClick && <th scope="col">Details</th>}
+            </tr>
+          </thead>
+          <tbody>
+            {data.map((row, index) => (
+              <tr key={index}>
+                {columns.map((column) => (
+                  <td key={column.key}>
+                    {column.render
+                      ? column.render(row[column.key], row)
+                      : typeof row[column.key] === 'number'
+                        ? row[column.key].toLocaleString()
+                        : (row[column.key] ?? '—')}
+                  </td>
+                ))}
+                {onRowClick && (
+                  <td>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => onRowClick(row)}
+                      aria-label={`View ${String(row[columns[0]?.key] ?? 'details')}`}
+                    >
+                      View
+                    </Button>
+                  </td>
+                )}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      {!loading && !data.length && (
+        <div className="pulse-table-empty" role="status">
+          <DashboardIcon name="search" width={28} height={28} />
+          <h2>{emptyTitle}</h2>
+          <p>{emptyDescription}</p>
+        </div>
+      )}
+      {!!data.length && totalPages > 1 && onPageChange && (
+        <div className="pulse-table-pagination" inert={loading}>
+          <span>
+            Page {page} of {totalPages}
+          </span>
           <Pagination
             page={page}
             totalPages={totalPages}
@@ -110,6 +149,6 @@ export function ReportTable({
           />
         </div>
       )}
-    </motion.div>
+    </div>
   );
 }

@@ -47,7 +47,9 @@ export function DashboardShell({
         <main id="dashboard-content" className="dashboard-main" tabIndex={-1}>
           {children}
         </main>
-        <AIChatPanel siteId={selectedSite?.id ?? ''} />
+        <div id="dashboard-assistant">
+          <AIChatPanel siteId={selectedSite?.id ?? ''} />
+        </div>
       </div>
     </DashboardContext.Provider>
   );

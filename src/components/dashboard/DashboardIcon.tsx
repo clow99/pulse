@@ -21,6 +21,11 @@ const paths: Record<string, string> = {
   menu: 'M4 6h16 M4 12h16 M4 18h16',
   close: 'm6 6 12 12 M6 18 18 6',
   logout: 'M9 4H4v16h5 M10 12h11 M16 7l5 5-5 5',
+  calendar: 'M8 2v4 M16 2v4 M3 10h18 M4 4h16v17H4z M8 14h2 M14 14h2',
+  search: 'M21 21l-5-5 M18 10a8 8 0 1 1-16 0 8 8 0 0 1 16 0',
+  globe:
+    'M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0 M3 12h18 M12 3a17 17 0 0 1 0 18 17 17 0 0 1 0-18',
+  check: 'm5 12 4 4L19 6',
 };
 
 export function DashboardIcon({
