@@ -1,7 +1,9 @@
 import { lookup } from 'dns/promises';
-import { isIP } from 'net';
+import { isIP, type LookupFunction } from 'net';
+import { Agent, fetch as undiciFetch, type RequestInit as UndiciRequestInit } from 'undici';
 
 const MAX_REDIRECTS = 5;
+const DEFAULT_TIMEOUT_MS = 10_000;
 
 function blockedIpv4(address: string) {
   const parts = address.split('.').map(Number);
@@ -24,13 +26,20 @@ function blockedIpv4(address: string) {
 }
 
 function blockedIpv6(address: string) {
-  const normalized = address.toLowerCase().split('%')[0];
-  if (normalized === '::' || normalized === '::1') return true;
-  if (normalized.startsWith('fc') || normalized.startsWith('fd')) return true;
-  if (/^fe[89ab]/.test(normalized)) return true;
-  if (normalized.startsWith('2001:db8:')) return true;
-  const mapped = normalized.match(/^::ffff:(\d+\.\d+\.\d+\.\d+)$/)?.[1];
-  return mapped ? blockedIpv4(mapped) : false;
+  const literal = address.toLowerCase().split('%')[0];
+  const normalized = new URL(`http://[${literal}]/`).hostname.slice(1, -1);
+  // URL canonicalization converts IPv4-mapped literals to hexadecimal form.
+  // Reject the entire mapped/compatible and transition spaces rather than let
+  // an IPv6 spelling reach an IPv4-only private address.
+  if (normalized.startsWith('::') || /^0:0:0:0:0:/.test(normalized)) return true;
+  // Public Internet IPv6 unicast uses 2000::/3. Exclude transition and
+  // documentation ranges within it as well.
+  if (!/^[23][0-9a-f]{3}:/.test(normalized)) return true;
+  return normalized.startsWith('2001:db8:') ||
+    normalized.startsWith('2002:') ||
+    normalized.startsWith('2001:0:') ||
+    normalized.startsWith('2001::') ||
+    /^3fff:[0-9a-f]{0,3}:/.test(normalized);
 }
 
 export function isBlockedAddress(address: string) {
@@ -40,7 +49,7 @@ export function isBlockedAddress(address: string) {
   return true;
 }
 
-export async function assertSafeHttpUrl(input: string) {
+export async function resolveSafeHttpUrl(input: string) {
   const url = new URL(input);
   if (!['http:', 'https:'].includes(url.protocol)) {
     throw new Error('Only HTTP and HTTPS URLs are allowed');
@@ -52,14 +61,28 @@ export async function assertSafeHttpUrl(input: string) {
     throw new Error('Invalid URL port');
   }
 
-  const literalVersion = isIP(url.hostname);
+  const hostname = url.hostname.replace(/^\[|\]$/g, '');
+  const literalVersion = isIP(hostname);
   const addresses = literalVersion
-    ? [{ address: url.hostname }]
-    : await lookup(url.hostname, { all: true, verbatim: true });
+    ? [{ address: hostname, family: literalVersion }]
+    : await lookup(hostname, { all: true, verbatim: true });
   if (addresses.length === 0 || addresses.some(({ address }) => isBlockedAddress(address))) {
     throw new Error('URL resolves to a blocked network address');
   }
-  return url;
+  return { url, addresses };
+}
+
+export async function assertSafeHttpUrl(input: string) {
+  return (await resolveSafeHttpUrl(input)).url;
+}
+
+function abortable<T>(operation: Promise<T>, signal: AbortSignal): Promise<T> {
+  signal.throwIfAborted();
+  return new Promise((resolve, reject) => {
+    const abort = () => reject(signal.reason);
+    signal.addEventListener('abort', abort, { once: true });
+    operation.then(resolve, reject).finally(() => signal.removeEventListener('abort', abort));
+  });
 }
 
 export async function safeFetch(
@@ -67,14 +90,61 @@ export async function safeFetch(
   init: RequestInit = {},
   redirectsRemaining = MAX_REDIRECTS
 ): Promise<Response> {
-  const url = await assertSafeHttpUrl(input);
-  const response = await fetch(url, { ...init, redirect: 'manual' });
-  if (![301, 302, 303, 307, 308].includes(response.status)) return response;
-  if (redirectsRemaining <= 0) throw new Error('Too many redirects');
+  // Share the caller's deadline across DNS, response consumption and every
+  // redirect. Use a bounded default when no caller deadline is supplied.
+  const signal = init.signal ?? AbortSignal.timeout(DEFAULT_TIMEOUT_MS);
+  return fetchSafeUrl(input, { ...init, signal }, redirectsRemaining);
+}
 
-  const location = response.headers.get('location');
-  if (!location) throw new Error('Redirect response is missing a location');
-  const redirectedUrl = new URL(location, url);
-  const method = response.status === 303 ? 'GET' : init.method;
-  return safeFetch(redirectedUrl.toString(), { ...init, method }, redirectsRemaining - 1);
+async function fetchSafeUrl(
+  input: string,
+  init: RequestInit & { signal: AbortSignal },
+  redirectsRemaining: number
+): Promise<Response> {
+  const { signal } = init;
+  signal.throwIfAborted();
+  const { url, addresses } = await abortable(resolveSafeHttpUrl(input), signal);
+  signal.throwIfAborted();
+
+  // Pin the connection to the exact addresses checked above. Resolving once
+  // for validation and again inside fetch would allow DNS rebinding.
+  const pinnedLookup: LookupFunction = (_hostname, options, callback) => {
+    if (options.all) {
+      callback(null, addresses);
+      return;
+    }
+    const address = addresses.find((candidate) => !options.family || candidate.family === options.family);
+    if (!address) {
+      callback(new Error('No safe address matches the requested address family'), '', 0);
+      return;
+    }
+    callback(null, address.address, address.family);
+  };
+  const dispatcher = new Agent({ connect: { lookup: pinnedLookup } });
+  const destroy = () => { void dispatcher.destroy().catch(() => {}); };
+  signal.addEventListener('abort', destroy, { once: true });
+
+  try {
+    const options = { ...init, signal, redirect: 'manual' as const, dispatcher };
+    // Pair the dispatcher with its own fetch implementation: Node's bundled
+    // fetch can use an older dispatcher protocol than the installed package.
+    const response = await undiciFetch(url, options as UndiciRequestInit);
+    // close() is graceful: a caller can still consume the response body, and
+    // the deadline destroys the connection if the body is left unread.
+    void dispatcher.close().catch(() => {}).finally(() => signal.removeEventListener('abort', destroy));
+    if (![301, 302, 303, 307, 308].includes(response.status)) return response as unknown as Response;
+    await response.body?.cancel();
+    if (redirectsRemaining <= 0) throw new Error('Too many redirects');
+
+    const location = response.headers.get('location');
+    if (!location) throw new Error('Redirect response is missing a location');
+    const redirectedUrl = new URL(location, url);
+    const method = response.status === 303 ? 'GET' : init.method;
+    const body = response.status === 303 ? undefined : init.body;
+    return fetchSafeUrl(redirectedUrl.toString(), { ...init, method, body, signal }, redirectsRemaining - 1);
+  } catch (error) {
+    signal.removeEventListener('abort', destroy);
+    await dispatcher.destroy();
+    throw error;
+  }
 }

@@ -26,7 +26,7 @@
     "date-fns": "^4.1.0",
     "framer-motion": "^12.0.0",
     "mcp-handler": "^1.1.0",
-    "next": "16.4.3",
+    "next": "16.4.6",
     "next-auth": "5.0.0-beta.32",
     "nodemailer": "10.2.1",
     "openai": "^6.31.0",
@@ -39,6 +39,7 @@
     "sharp": "0.35.5",
     "three": "^0.173.0",
     "ua-parser-js": "^2.0.10",
+    "undici": "8.12.4",
     "zod": "4.6.7"
   },
   "devDependencies": {
@@ -53,15 +54,19 @@
     "@types/three": "^0.173.0",
     "@types/ua-parser-js": "^0.7.39",
     "eslint": "^9.39.4",
-    "eslint-config-next": "16.3.8",
+    "eslint-config-next": "16.4.6",
     "prisma": "^6.5.0",
     "tsx": "^4.19.0",
     "typescript": "^5.7.0",
-    "vitest": "4.1.11"
+    "vitest": "4.1.12"
   },
   "overrides": {
     "deepmerge-ts": "8.0.0",
     "effect": "3.20.0",
-    "esbuild": "0.28.2"
+    "esbuild": "0.28.2",
+    "@typescript-eslint/typescript-estree": {
+      "minimatch": "11.0.1"
+    },
+    "eslint-plugin-react-hooks": "7.0.1"
   }
 }

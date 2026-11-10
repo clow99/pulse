@@ -1,8 +1,9 @@
 import { createHash, randomBytes } from 'crypto';
 import tls from 'tls';
+import { isIP } from 'net';
 import type { Monitor, Prisma, UptimeCheck } from '@prisma/client';
 import { prisma } from './prisma';
-import { assertSafeHttpUrl, safeFetch } from './safe-fetch';
+import { assertSafeHttpUrl, resolveSafeHttpUrl, safeFetch } from './safe-fetch';
 import { sendNotification, type NotificationPayload } from './notifications';
 
 export interface MonitorConfig {
@@ -73,26 +74,39 @@ async function runHttpMonitor(monitor: Monitor): Promise<MonitorResult> {
 async function runSslMonitor(monitor: Monitor): Promise<MonitorResult> {
   const config = monitorConfig(monitor);
   if (!config.url) throw new Error('SSL monitor URL is missing');
-  const url = await assertSafeHttpUrl(config.url);
   const started = Date.now();
   const certificate = await new Promise<tls.PeerCertificate>((resolve, reject) => {
-    const socket = tls.connect({
-      host: url.hostname,
-      port: Number(url.port || 443),
-      servername: url.hostname,
-      rejectUnauthorized: false,
-    });
-    socket.setTimeout(monitor.timeoutMs);
-    socket.once('secureConnect', () => {
-      const cert = socket.getPeerCertificate();
-      socket.end();
-      resolve(cert);
-    });
-    socket.once('timeout', () => {
-      socket.destroy();
-      reject(new Error('TLS connection timed out'));
-    });
-    socket.once('error', reject);
+    let socket: tls.TLSSocket | undefined;
+    let completed = false;
+    const fail = (error: unknown) => {
+      if (completed) return;
+      completed = true;
+      clearTimeout(timer);
+      socket?.destroy();
+      reject(error);
+    };
+    // Bound both DNS resolution and the TLS handshake. A late DNS result must
+    // never create a connection after this check has already timed out.
+    const timer = setTimeout(() => fail(new Error('TLS connection timed out')), monitor.timeoutMs);
+    void resolveSafeHttpUrl(config.url!).then(({ url, addresses }) => {
+      if (completed) return;
+      const hostname = url.hostname.replace(/^\[|\]$/g, '');
+      socket = tls.connect({
+        host: addresses[0].address,
+        port: Number(url.port || 443),
+        servername: isIP(hostname) ? undefined : hostname,
+        rejectUnauthorized: false,
+      });
+      socket.once('secureConnect', () => {
+        if (completed) return;
+        const cert = socket!.getPeerCertificate();
+        completed = true;
+        clearTimeout(timer);
+        socket!.end();
+        resolve(cert);
+      });
+      socket.once('error', fail);
+    }).catch(fail);
   });
   const expiresAt = new Date(certificate.valid_to);
   const daysRemaining = Math.floor((expiresAt.getTime() - Date.now()) / 86_400_000);

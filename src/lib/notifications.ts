@@ -35,7 +35,9 @@ export async function sendNotification(
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
-    });
+      signal: AbortSignal.timeout(10_000),
+    }, 0);
+    await res.body?.cancel();
     if (!res.ok) {
       throw new Error(`Webhook notification failed with HTTP ${res.status}`);
     }

@@ -5,10 +5,10 @@
     "category": "capability",
     "statement": "Pulse combines traffic, conversion, revenue, AI-source, uptime, and agent-report views in one analytics product.",
     "status": "verified",
-    "evidence": "Implemented dashboard and report routes plus repository tests for analytics, funnels, uptime, AI providers, daily briefs, and agent access.",
+    "evidence": "Source review confirms dashboard pages and API report routes for traffic, funnels/goals, revenue, AI-source attribution, uptime and scoped agent reports. Existing tracking, funnel-analysis, agent-auth and daily-briefs tests cover related calculations and boundaries; this review does not assert signed-in end-to-end verification.",
     "owner": "Cameron Low",
-    "reviewedAt": "2026-09-19T23:00:00Z",
-    "reviewBy": "2026-10-19T23:00:00Z"
+    "reviewedAt": "2026-11-10T01:23:47Z",
+    "reviewBy": "2026-12-10T01:23:47Z"
   },
   {
     "id": "PULSE-CLAIM-002",
@@ -16,10 +16,10 @@
     "category": "privacy",
     "statement": "The first-party Pulse tracker does not set visitor cookies by default and respects Do Not Track.",
     "status": "verified",
-    "evidence": "public/t.js implements cookie-free visit identifiers and Do Not Track handling; tracking tests cover ingestion behavior.",
+    "evidence": "Reviewed public/t.js: it exits for navigator/window Do Not Track before sending, stores temporary visit identifiers in sessionStorage and contains no cookie writes. src/lib/analytics-privacy.test.ts covers referrer minimization; the cookie/DNT statement is verified from tracker source.",
     "owner": "Cameron Low",
-    "reviewedAt": "2026-09-19T23:00:00Z",
-    "reviewBy": "2026-10-19T23:00:00Z"
+    "reviewedAt": "2026-11-10T01:23:47Z",
+    "reviewBy": "2026-12-10T01:23:47Z"
   },
   {
     "id": "PULSE-CLAIM-003",
@@ -27,10 +27,10 @@
     "category": "availability",
     "statement": "Self-managed and hosted Pulse access are private-preview options with no public purchase or fixed-price offer.",
     "status": "qualified",
-    "evidence": "The pricing surface presents invitation-only evaluation options and no checkout, fixed price, public source, or registration call to action.",
+    "evidence": "Reviewed src/app/pricing/page.tsx and src/app/self-host/page.tsx: self-managed and managed options are invitation-only private previews with no checkout, fixed-price or public-registration offer. src/lib/public-claims.test.ts guards unsupported public offers and registration links.",
     "owner": "Cameron Low",
-    "reviewedAt": "2026-09-19T23:00:00Z",
-    "reviewBy": "2026-10-19T23:00:00Z"
+    "reviewedAt": "2026-11-10T01:23:47Z",
+    "reviewBy": "2026-12-10T01:23:47Z"
   },
   {
     "id": "PULSE-CLAIM-004",
@@ -38,9 +38,9 @@
     "category": "access",
     "statement": "Pulse does not publish a reusable demo account; evaluation access is invitation-only.",
     "status": "verified",
-    "evidence": "The noindex preview notice contains no credentials or purchase offer. Hosted registration now fails closed for credentials and new Google accounts; verified existing Google accounts retain access.",
+    "evidence": "Reviewed src/app/demo/page.tsx: noindex invitation-only notice with no credentials. src/app/(auth)/register/page.tsx and src/app/api/auth/register/route.ts fail closed unless explicitly enabled; src/lib/auth.ts applies the verified-email/existing-account Google gate. src/lib/registration.test.ts covers default-closed registration and existing verified Google access.",
     "owner": "Cameron Low",
-    "reviewedAt": "2026-09-19T23:00:00Z",
-    "reviewBy": "2026-10-19T23:00:00Z"
+    "reviewedAt": "2026-11-10T01:23:47Z",
+    "reviewBy": "2026-12-10T01:23:47Z"
   }
 ]

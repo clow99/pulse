@@ -4,6 +4,7 @@ import type { ScheduledReport } from '@prisma/client';
 import { defaultDateRange, getReportData, type ReportKind } from '@/lib/reports';
 import { normalizeProductReport } from '@/lib/report-catalog';
 import { prisma } from '@/lib/prisma';
+import { safeFetch } from '@/lib/safe-fetch';
 
 function verifySecret(request: Request) {
   const secret = process.env.SCHEDULED_REPORT_SECRET || process.env.INSIGHTS_CRON_SECRET;
@@ -74,11 +75,13 @@ async function buildScheduledPayload(report: ScheduledReport & { site: { name: s
 
 async function deliverScheduledReport(report: ScheduledReport, payload: unknown) {
   if (report.channelType === 'webhook') {
-    const res = await fetch(report.target, {
+    const res = await safeFetch(report.target, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
-    });
+      signal: AbortSignal.timeout(10_000),
+    }, 0);
+    await res.body?.cancel();
     if (!res.ok) throw new Error(`Webhook delivery failed with HTTP ${res.status}`);
     return;
   }

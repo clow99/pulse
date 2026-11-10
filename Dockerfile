@@ -1,5 +1,5 @@
 # Stage 1: Build
-FROM node:24.18.1-alpine AS builder
+FROM node:24.22.2-alpine AS builder
 WORKDIR /app
 ARG PULSE_RELEASE_SHA=development
 ARG PULSE_SCHEMA_VERSION=20260713010000_project_intelligence_v1
@@ -15,7 +15,7 @@ RUN npx prisma generate
 RUN npm run build
 
 # One-shot migration image. This is intentionally separate from app startup.
-FROM node:24.18.1-alpine AS migrator
+FROM node:24.22.2-alpine AS migrator
 WORKDIR /app
 ARG OCI_SOURCE="https://git.cameronlow.com/cam/pulse"
 ARG OCI_REVISION="development"
@@ -29,7 +29,7 @@ COPY prisma ./prisma
 CMD ["./node_modules/.bin/prisma", "migrate", "deploy"]
 
 # Stage 2: Production
-FROM node:24.18.1-alpine
+FROM node:24.22.2-alpine
 WORKDIR /app
 
 ENV NODE_ENV=production
